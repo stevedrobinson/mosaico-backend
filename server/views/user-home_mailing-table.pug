@@ -1,0 +1,70 @@
+- const { mailings }  = data
+
+table.mdl-data-table
+  thead: tr
+    th.bsCheckbox
+      input.js-mailing-selection-all(type="checkbox" id="line-all")
+      label(for=`line-all`)
+    if _config.debug
+      th.mdl-data-table__cell--non-numeric Id
+    th.mdl-data-table__cell--non-numeric
+      +reorder('/', 'name', 'home.saved.name')
+    th.mdl-data-table__cell--non-numeric
+      +reorder('/', 'template', 'home.saved.template-name')
+    if (!isAdmin)
+      th.mdl-data-table__cell--non-numeric
+        +reorder('/', 'author', 'home.saved.created-by')
+    th.mdl-data-table__cell--non-numeric= __('home.saved.tags')
+    th.mdl-data-table__cell--non-numeric
+      +reorder('/', 'createdAt', 'home.saved.created')
+    th.mdl-data-table__cell--non-numeric
+      +reorder('/', 'updatedAt', 'home.saved.last-change')
+    if (isAdmin)
+      th.mdl-data-table__cell--action= __('home.saved.transfer')
+    th.mdl-data-table__cell--action= __('home.saved.rename')
+    th.mdl-data-table__cell--action= __('home.saved.duplicate')
+
+  tbody.js-tbody-selection
+    if !mailings.length
+      - let length = _config.debug ? 11 : 10
+      tr: td(style="text-align: center;" colspan=length)= __('home.no.mailing')
+    else
+      each mailing, index in mailings
+        tr
+          td.bsCheckbox
+            //- mailings[] ensure that req.body.mailing will always be an array
+            input(
+              name="mailings[]"
+              type="checkbox"
+              id=`line-${mailing._id}`
+              data-tags=mailing.tags.join(',')
+              value=mailing._id
+            )
+            label(for=`line-${mailing._id}`)
+          if _config.debug
+            td.mdl-data-table__cell--non-numeric= mailing._id
+          td.mdl-data-table__cell--non-numeric
+            a(href=mailing.url.update).js-name= mailing.name
+            td.mdl-data-table__cell--non-numeric
+              if (isAdmin)
+                a(href=mailing.url.template)= mailing.templateName
+              else
+                span= mailing.templateName
+
+          if (!isAdmin)
+            td.mdl-data-table__cell--non-numeric: span= mailing.author
+          td.mdl-data-table__cell--long-text: span= mailing.tags.join(', ')
+          td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.createdAt)
+          td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.updatedAt)
+          if (isAdmin)
+            td.mdl-data-table__cell--action
+              a.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent(
+                title="rename"
+                href=mailing.url.transfer
+              )
+                i.material-icons forward
+          td.mdl-data-table__cell--action
+            a.js-rename.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent(data-href=mailing.url.update title="rename" href="#"): i.material-icons title
+          td.mdl-data-table__cell--action
+            a.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent(href=mailing.url.duplicate title="duplicate")
+              i.material-icons content_copy

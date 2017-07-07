@@ -120,6 +120,8 @@ function _viewModelPluginInstance(pluginFunction) {
   };
 }
 
+if (process.env.MOSAICO) {
+
 var _templateUrlConverter = function(basePath, url) {
   if (!url.match(/^[^\/]*:/) && !url.match(/^\//) && !url.match(/^\[/) && !url.match(/^#?$/)) {
     // TODO this could be smarter joining the urls...
@@ -156,6 +158,39 @@ var templateLoader = function(performanceAwareCaller, templateFileName, template
     res.init();
   });
 };
+
+} else if (process.env.CUSTOM) {
+
+// keep function signatures
+var templateLoader = function(performanceAwareCaller, templateFileName, templateMetadata, jsorjson, extensions, galleryUrl) {
+  console.info('TEMPLATE LOADER')
+
+  // see ext/custom-extensions.js#templateUrlConverter
+  var templateUrlConverter = ko.bindingHandlers.wysiwygSrc.templateUrlConverter;
+
+  var metadata  = templateMetadata;
+
+  // Keep XHR to load template.
+  // Don't want to output all the html in initialization
+  $.ajax({
+    url:      templateFileName,
+    method:   'GET',
+    success:  onSuccess,
+    error:    onError,
+  });
+
+  function onSuccess(templatecode, textStatus, jqXHR) {
+    var res = templateCompiler(performanceAwareCaller, templateUrlConverter, "template", templatecode, jsorjson, metadata, extensions, galleryUrl);
+    res.init();
+  }
+
+  function onError(jqXHR, textStatus, errorThrown) {
+    console.error('cannot retrieve HTML data from template');
+    $('.mo-standalone').html('<h1>error</h1><h2>' + errorThrown + '</h2>');
+  }
+};
+
+}
 
 var templateCompiler = function(performanceAwareCaller, templateUrlConverter, templateName, templatecode, jsorjson, metadata, extensions, galleryUrl) {
   // we strip content before <html> tag and after </html> because jquery doesn't parse it.

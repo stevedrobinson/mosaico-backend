@@ -1,0 +1,22 @@
+extends _layout-login.pug
+
+block content
+  h1 ERROR #{err.status}
+  if err.message
+    h2= err.message
+  if err.reason
+    pre= err.reason
+  if err.description
+    pre= err.description
+  if err.status >= 500
+    hr
+    if err.error
+      pre= err.error
+    if err.stacktrace
+      details
+        summary stacktrace
+        div
+          if Array.isArray(err.stacktrace)
+            pre= err.stacktrace.join('\n')
+          else
+            pre= err.stacktrace

@@ -1,0 +1,80 @@
+doctype html
+
+block vars
+
+- var page  = pageClass || ''
+- var title = pageTitle || ''
+
+html(lang=getLocale())
+  head
+    include _head-material
+
+  body.mdl-color--grey-100.mdl-color-text--grey-700(class=page)
+    .mdl-layout.mdl-js-layout
+      header.mdl-layout__header.mdl-layout__header--scroll
+        .mdl-layout__header-row
+          //- Title
+          span.mdl-layout-title
+            | #{__('home.welcome')} #{_user.name}
+          //- Add spacer, to align navigation to the right
+          .mdl-layout-spacer
+          //- Navigation. We hide it in small screens
+          nav.mdl-navigation
+            a.mdl-navigation__link.navigation--mailings(href="/") mailings
+            a.mdl-navigation__link.navigation--templates(href="/templates/select") templates
+            if _user.isAdmin
+              a.mdl-navigation__link(href="/admin")
+                i#nav-groups.material-icons group
+                .mdl-tooltip(data-mdl-for="nav-groups") groups
+              a.mdl-navigation__link(href="/users")
+                i#nav-users.material-icons person
+                .mdl-tooltip(data-mdl-for="nav-users") users
+              a.mdl-navigation__link(href="/templates")
+                i#nav-templates.material-icons web
+                .mdl-tooltip(data-mdl-for="nav-templates") templates list
+
+            if getLocale() === 'en'
+              a.mdl-navigation__link(href=mergeQueries('/', _query, { lang: 'fr' })) version française
+            else
+              a.mdl-navigation__link(href=mergeQueries('/', _query, { lang: 'en' })) english version
+
+            a.mdl-navigation__link(href="/logout"): i.material-icons power_settings_new
+
+      main.mdl-layout__content
+        .page-content
+          block content
+
+      if _config.debug
+        footer(style="background: #eee; text-align: left")
+          pre= JSON.stringify(data, null, '  ')
+          pre= _debug
+
+    //- dialogs box should be a child of <body>
+    //- https://github.com/GoogleChrome/dialog-polyfill#limitations
+    block dialog
+
+    #notification.mdl-js-snackbar.mdl-snackbar
+      .mdl-snackbar__text
+      .mdl-snackbar__action(type="button")
+
+    //- Put some i18n here to be accessible for home JS application
+    script.
+      window.badesenderI18n = {
+        snackbarDeleteMessage:  '!{__(`home.snackbar.deleteMessage`)}',
+        snackbarRenameMessage:  '!{__(`home.snackbar.renameMessage`)}',
+        snackbarError:          '!{__(`home.snackbar.errorMessage`)}',
+        pikaday: {
+          previousMonth:  '!{__(`pikaday.previousMonth`)}',
+          nextMonth:      '!{__(`pikaday.nextMonth`)}',
+          months:         '!{__(`pikaday.months`)}'.split(' '),
+          weekdays:       '!{__(`pikaday.weekdays`)}'.split(' '),
+          weekdaysShort:  '!{__(`pikaday.weekdaysShort`)}'.split(' '),
+        },
+        table: {
+          selection: {
+            singular: '!{__(`table.selection.singular`)}',
+            plural:   '!{__(`table.selection.plural`)}',
+          },
+        },
+      };
+    script(defer src=md5Url('/user.js') )

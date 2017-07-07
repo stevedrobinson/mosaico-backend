@@ -2,10 +2,13 @@
 /* global global: false */
 /* global XMLHttpRequest: false */
 
-var templateLoader = require('./template-loader.js');
-var console = require("console");
+var url     = require('url');
+var console = require('console');
 var ko = require("knockout");
 var $ = require("jquery");
+
+var templateLoader = require('./template-loader.js');
+
 require("./ko-bindings.js");
 var performanceAwareCaller = require("./timed-call.js").timedCall;
 
@@ -17,6 +20,8 @@ var localStorageLoader = require("./ext/localstorage.js");
 
 if (typeof ko == 'undefined') throw "Cannot find knockout.js library!";
 if (typeof $ == 'undefined') throw "Cannot find jquery library!";
+
+if (process.env.MOSAICO) {
 
 function _canonicalize(url) {
   var div = global.document.createElement('div');
@@ -65,6 +70,8 @@ var applyBindingOptions = function(options, ko) {
   if (options && options.tinymceConfigFull)
     ko.bindingHandlers.wysiwyg.fullOptions = options.tinymceConfigFull;
 };
+
+}
 
 var start = function(options, templateFile, templateMetadata, jsorjson, customExtensions) {
 
@@ -136,6 +143,8 @@ var start = function(options, templateFile, templateMetadata, jsorjson, customEx
 
 };
 
+if (process.env.MOSAICO) {
+
 var initFromLocalStorage = function(options, hash_key, customExtensions) {
   try {
     var lsData = localStorageLoader(hash_key, options.emailProcessorBackend);
@@ -171,6 +180,50 @@ var init = function(options, customExtensions) {
   }
   return true;
 };
+
+}
+
+if (process.env.CUSTOM) {
+
+//////
+// CUSTOM MOSAICO SPECIFIC
+//////
+
+// don't replace mosaico code for better merging
+
+// Keep an empty function for not breaking start function
+// Even if applyBindingOptions can be surcharged,
+// it's better to remove this not necessary piece of code
+var applyBindingOptions = $.noop
+
+// FLOW:
+// => init
+// => start
+// in ./template-loader.js
+// => templateLoader: Ajax datas
+// => templateCompiler:
+//    -> Initialize viewmodel (./viewmodel.js)
+//    -> Add server datas
+//    -> apply plugins (server-storage, setEditorIcon + mosaico defined)
+
+var customExt = require('./ext/custom-extensions')
+
+var init = function(opts, customExtensions) {
+  console.info('CUSTOM MOSAICO – init')
+  console.log(opts)
+  var hasDatas = opts && opts.metadata && opts.data
+  // editor.jade script need a return value
+  if (!hasDatas) return false;
+
+  customExt.extendViewModel(opts, customExtensions)
+  customExt.extendKnockout(opts)
+
+  start(opts, void(0), opts.metadata, opts.data, customExtensions)
+
+  return true;
+}
+
+}
 
 module.exports = {
   isCompatible: templateLoader.isCompatible,

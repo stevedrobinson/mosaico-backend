@@ -1,0 +1,24 @@
+doctype html
+
+block vars
+
+- var page = pageClass || ''
+- var title = pageTitle || ''
+
+html(lang=getLocale())
+  head
+    include _head-material
+
+body.mdl-color--primary.mdl-color-text--grey-700.center-content
+  main
+    .lang
+      if getLocale() === 'en'
+        a(href=_path + "?lang=fr") version française
+      else
+        a(href=_path + "?lang=en") english version
+
+    block content
+      if _config.debug
+        footer(style="background: #eee")
+          pre= JSON.stringify(data, null, '  ')
+          pre= _debug

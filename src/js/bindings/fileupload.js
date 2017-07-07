@@ -10,8 +10,8 @@
 //require("jquery-file-upload/js/jquery.fileupload-image.js");
 //require("jquery-file-upload/js/jquery.fileupload-validate.js");
 
-var $ = require("jquery");
-var ko = require("knockout");
+var $       = require("jquery");
+var ko      = require("knockout");
 var console = require("console");
 
 // experimental image preloading.
@@ -43,6 +43,8 @@ ko.bindingHandlers['preloader'] = {
     }
   }
 };
+
+if (process.env.MOSAICO) {
 
 // TODO we don't use advattr and advstyle, maybe we should simply remove this code.
 ko.bindingHandlers['advattr'] = {
@@ -122,6 +124,8 @@ ko.bindingHandlers['advstyle'] = {
   }
 };
 
+}
+
 // Utility to log inizialization and disposal of DOM elements.
 ko.bindingHandlers['domlog'] = {
   init: function(element, valueAccessor) {
@@ -180,10 +184,10 @@ ko.bindingHandlers['fudroppable'] = {
 
 ko.bindingHandlers['fileupload'] = {
   extendOptions: {},
-  remoteFilePreprocessor: function(url) { return url; },
+  // remoteFilePreprocessor method has been set in app.js
   init: function(element, valueAccessor) {
     // TODO domnodedisposal doesn't work when the upload is done by "clicking"
-    // Probably jquery-fileupload moves the DOM somewhere else so that KO doesn't 
+    // Probably jquery-fileupload moves the DOM somewhere else so that KO doesn't
     // detect the removal anymore.
     ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
       $(element).fileupload('destroy');
@@ -250,6 +254,7 @@ ko.bindingHandlers['fileupload'] = {
       }
     });
 
+    // extendOptions is setted in app.js#start
     ko.utils.extend(options, ko.bindingHandlers['fileupload'].extendOptions);
 
     var working = 0;
@@ -281,6 +286,13 @@ ko.bindingHandlers['fileupload'] = {
       }
       return text;
     };
+
+    // 
+    if (options.uploadToTemplate) {
+      options.url = ko.bindingHandlers['fileupload'].extendOptions.url.template;
+    } else {
+      options.url = ko.bindingHandlers['fileupload'].extendOptions.url.mailing;
+    }
 
     $fu.fileupload(options);
 

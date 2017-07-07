@@ -13,19 +13,21 @@ var render = function() {
   timeout = undefined;
 
   if (typeof tinymce.activeEditor !== 'undefined' && tinymce.activeEditor !== null &&
-      typeof tinymce.activeEditor.theme !== 'undefined' && tinymce.activeEditor.theme !== null && 
+      typeof tinymce.activeEditor.theme !== 'undefined' && tinymce.activeEditor.theme !== null &&
       typeof tinymce.activeEditor.theme.panel !== 'undefined' && tinymce.activeEditor.theme.panel !== null &&
       typeof tinymce.activeEditor.theme.panel.visible !== 'undefined') {
     // @see FloatPanel.js function repositionPanel(panel)
     // First condition group is for Tinymce 4.0/4.1
     // Second condition group is for Tinymce 4.2/4.3 where "._property" are now available as ".state.get('property')".
-    if ((typeof tinymce.activeEditor.theme.panel._visible !== 'undefined' && tinymce.activeEditor.theme.panel._visible && tinymce.activeEditor.theme.panel._fixed) || 
+    if ((typeof tinymce.activeEditor.theme.panel._visible !== 'undefined' && tinymce.activeEditor.theme.panel._visible && tinymce.activeEditor.theme.panel._fixed) ||
         (typeof tinymce.activeEditor.theme.panel.state !== 'undefined' && tinymce.activeEditor.theme.panel.state.get('visible') && tinymce.activeEditor.theme.panel.state.get('fixed'))) {
       tinymce.activeEditor.theme.panel.fixed(false);
     }
 
     tinymce.activeEditor.nodeChanged();
-    tinymce.activeEditor.theme.panel.visible(true);
+    // Don't force tinymce to be visible on scrolls
+    // If setted, This will show the tinymce controls event when none are selected
+    // tinymce.activeEditor.theme.panel.visible(true);
     if (tinymce.activeEditor.theme.panel.layoutRect().y <= 40)
       tinymce.activeEditor.theme.panel.moveBy(0, 40 - tinymce.activeEditor.theme.panel.layoutRect().y);
 

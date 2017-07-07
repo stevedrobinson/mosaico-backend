@@ -1,0 +1,31 @@
+extends _layout-admin.pug
+
+block vars
+  - var pageClass = 'js-admin-home'
+  - var pageTitle = 'groups list'
+
+block content
+  .page-content
+    if !data.groups.length
+      h4.home-subtitle no groups yet
+    else
+      table.mdl-data-table.mdl-js-data-table.mdl-shadow--2dp
+        thead
+          tr
+            if _config.debug
+              th.mdl-data-table__cell--non-numeric id
+            th.mdl-data-table__cell--non-numeric group name
+            th.mdl-data-table__cell--non-numeric created at
+            //- th.mdl-data-table__cell--action delete
+        tbody
+          each group in data.groups
+            tr
+              if _config.debug
+                td.mdl-data-table__cell--non-numeric= group._id
+              td.mdl-data-table__cell--non-numeric: a(href=group.url.show)= group.name
+              td.mdl-data-table__cell--non-numeric= formatDate(group.createdAt)
+              //- td.mdl-data-table__cell--action: form(action=group.url.delete method="post")
+              //-   button.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent(type="submit")
+              //-     i.material-icons delete
+    a.mdl-button.mdl-js-button.mdl-button--fab.mdl-js-ripple-effect.mdl-button--colored(href="/groups")
+      i.material-icons group_add

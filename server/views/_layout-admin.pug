@@ -1,0 +1,60 @@
+doctype html
+
+block vars
+
+- var page = pageClass || ''
+- var title = pageTitle || ''
+
+html(lang=getLocale())
+  head
+    include _head-material
+
+  body.mdl-color--grey-100.mdl-color-text--grey-700(class=page)
+    .mdl-layout.mdl-js-layout.mdl-layout--fixed-header
+      header.mdl-layout__header
+        .mdl-layout__header-row
+          //- Title
+          span.mdl-layout-title= title
+          //- Add spacer, to align navigation to the right
+          .mdl-layout-spacer
+          //- Navigation. We hide it in small screens
+          nav.mdl-navigation.mdl-layout--large-screen-only
+            a.mdl-navigation__link(href="/") mailings
+            a.mdl-navigation__link(href="/templates/select") templates
+            a.mdl-navigation__link(href="/admin")
+              i#nav-groups.material-icons group
+              .mdl-tooltip(data-mdl-for="nav-groups") groups
+            a.mdl-navigation__link(href="/users")
+              i#nav-users.material-icons person
+              .mdl-tooltip(data-mdl-for="nav-users") users
+            a.mdl-navigation__link(href="/templates")
+              i#nav-templates.material-icons web
+              .mdl-tooltip(data-mdl-for="nav-templates") templates list
+            a.mdl-navigation__link(href="/logout")
+              i.material-icons power_settings_new
+
+      .mdl-layout__drawer
+        span.mdl-layout-title= title
+        nav.mdl-navigation
+          a.mdl-navigation__link(href="/") mailings
+          a.mdl-navigation__link(href="/new-mailing") groups
+          a.mdl-navigation__link(href="/admin") groups
+          a.mdl-navigation__link(href="/users") users
+          a.mdl-navigation__link(href="/groups") groups
+          a.mdl-navigation__link(href="/logout") logout
+
+      main.mdl-layout__content(class=page === 'full-width-layout' ? 'mdl-grid mdl-grid--no-spacing' : '' )
+        block content
+
+        if _config.debug
+          footer(style="background: #eee")
+            pre= JSON.stringify(data, null, '  ')
+            pre= _debug
+
+    dialog.js-dialog-confirm.mdl-dialog
+      h4.mdl-dialog__title.js-dialog-title
+      .mdl-dialog__content: p.js-dialog-description
+      .mdl-dialog__actions
+        a(href="#").js-dialog-confirm.mdl-button.mdl-button--accent.mdl-js-button ok
+        button(type="button").js-dialog-cancel.js-close-rename-dialog.mdl-button cancel
+    script(defer src=md5Url('/admin.js'))

@@ -17,9 +17,11 @@
     <!-- /ko -->
 
     <span>
-    <input id="showGallery" type="checkbox" data-bind="checked: $root.showGallery, button: { refreshOn: $root.showGallery, 
+    <input id="showGallery" type="checkbox" data-bind="checked: $root.showGallery, button: { refreshOn: $root.showGallery,
     icons: { primary: 'fa fa-fw fa-picture-o', secondary: null }, text: true, label: $root.t('Gallery') }"><label title="Show image gallery" for="showGallery" data-bind="attr: { title: $root.t('Show image gallery') }">show gallery</label></input>
     </span>
+
+    <!-- ko template: {name: 'edit-name' } --># mailing name #<!-- /ko -->
 
     <input id="previewFrameToggle" type="checkbox" data-bind="checked: $root.showPreviewFrame, button: { refreshOn: $root.showPreviewFrame, icons: { primary: 'fa fa-fw fa-tablet', secondary: null }, text: false, label: $root.t('Preview') }"><label title="Show live preview" for="previewFrameToggle" data-bind="attr: { title: $root.t('Show live preview') }">PREVIEW</label></input>
 
@@ -44,7 +46,7 @@
     <!-- ko if: typeof $root.download !== 'undefined' -->
     <form id="downloadForm" action="#" method="POST">
     <input type="hidden" name="action" value="download" />
-    <input type="hidden" name="filename" value="email.html" />
+    <input type="hidden" name="filename" value="email.html" id="downloadHtmlFilename" />
     <input type="hidden" name="html" id="downloadHtmlTextarea" />
     <a title="Download template" href="javascript:void(0)" data-bind="attr: { title: $root.t('Download template') }, click: $root.download.execute, clickBubble: false, button: { disabled: !$root.download.enabled(), icons: { primary: 'fa fa-fw fa-download' }, label: $root.t($root.download.name), text: true }">DOWNLOAD</a>
     </form>
@@ -52,12 +54,14 @@
     </div>
   </div>
 
+  <!-- ko template: {name: 'dialog-select-image' } --># dialog image selection #<!-- /ko -->
+
   <!-- ko if: $root.showToolbox -->
   <div id="main-toolbox" class="mo" data-bind="scrollable: true, withProperties: { templateMode: 'edit' }">
     <div data-bind="template: { name: 'toolbox' }"></div>
   </div>
   <!-- /ko -->
-  
+
   <div id="main-preview" class="mo" data-bind="scrollable: true, if: $root.showPreviewFrame">
     <div id="preview-toolbar">
       <div data-bind="visible: $root.showPreviewFrame, buttonset: { }" style="display: inline-block">

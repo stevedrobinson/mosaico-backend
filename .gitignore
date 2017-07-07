@@ -1,8 +1,12 @@
 bower_components
 node_modules
-uploads/**
-!uploads/README.md
-.tmp/**
-!.tmp/README.md
+/tmp/**
+/uploads/**
+/server/views/maintenance-pages/*.html
 build
 dist
+.backendrc
+npm-debug.log
+*.orig
+/s3-*
+server/md5public.json

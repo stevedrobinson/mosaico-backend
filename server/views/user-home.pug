@@ -1,0 +1,196 @@
+extends _layout-user.pug
+include _table-reorder.pug
+
+block vars
+  - var pageClass = 'user-home';
+
+block content
+  - const { isAdmin }     = _user
+  - const { pagination, users, templates, tagsList, summary, filterQuery }  = data
+
+  section.be-table.mdl-shadow--2dp.js-line-selection
+
+    //- HEADER
+    header.be-table__header
+      h4.be-table-header__title= __('home.saved.caption')
+      //- filters summary
+      dl.be-table-header__summary
+        for entry in summary
+          dt= __(entry.message)
+          if entry.value
+            dd= entry.value
+      //- filters icons
+      if summary.length
+        a#tt-clear-filter.be-table-header__filter(
+          href=mergeQueries('/', {
+            page:   1,
+            sort:   _query.sort,
+            dir:    _query.dir,
+            limit:  _query.limit,
+          } )
+        )
+          i.material-icons clear
+        .mdl-tooltip.mdl-tooltip--large(for="tt-clear-filter")= __('filter.reset')
+      span#tt-open-filter.be-table-header__filter.js-toggle-filter
+        i.material-icons filter_list
+      .mdl-tooltip.mdl-tooltip--large(for="tt-open-filter")= __('filter.title')
+
+    //- FILTERS
+    form.be-table__filter.js-filter(action='/')
+
+      input(type="hidden" value="" name="page")
+      each param in ['sort', 'desc', 'limit']
+        if (_query[param])
+          input(type="hidden" value=_query[param] name=param)
+
+      .be-table-filter__row
+        .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+          input#name-field(
+            name="name"
+            value=filterQuery.name
+          ).mdl-textfield__input
+          label.mdl-textfield__label(for="name-field")= __('filter.name')
+
+        if !isAdmin
+          .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+            select#author-field(
+              name="_user"
+              multiple
+            ).mdl-textfield__input
+              each user in users
+                - const { _id, name } = user
+                - const selected = !filterQuery._user ? false : filterQuery._user.includes(`${_id}`)
+                option(value=_id selected=selected)= name
+            label(for="author-field").mdl-textfield__label= __('filter.author')
+        else
+          div
+
+        .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+          select#template-field(
+            name="_template"
+            multiple
+          ).mdl-textfield__input
+            each template in templates
+              - const { _id, name } = template
+              - const selected = !filterQuery._template ? false : filterQuery._template.includes(`${_id}`)
+              option(value=template._id selected=selected)= template.name
+          label(for="template-field").mdl-textfield__label= __('filter.template')
+
+      .be-table-filter__row
+        //- don't use fieldsets, not working with flexbox
+        div.be-table-filter-row__dual-field
+          .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+            input#createat-gte-field(
+              type="date"
+              name="createdAt[$gte]"
+              value=!filterQuery.createdAt ? false : filterQuery.createdAt.$gte
+            ).mdl-textfield__input
+            label.mdl-textfield__label(for="createat-gte-field")= __('filter.createdat.start')
+            i.material-icons date_range
+
+          .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+            input#createat-lte-field(
+              type="date"
+              name="createdAt[$lte]"
+              value=!filterQuery.createdAt ? false : filterQuery.createdAt.$lte
+            ).mdl-textfield__input
+            label.mdl-textfield__label(for="createat-lte-field")= __('filter.createdat.end')
+            i.material-icons date_range
+
+        div.be-table-filter-row__dual-field
+          .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+            input#updatedat-gte-field(
+              type="date"
+              name="updatedAt[$gte]"
+              value=!filterQuery.updatedAt ? false : filterQuery.updatedAt.$gte
+            ).mdl-textfield__input
+            label.mdl-textfield__label(for="updatedat-gte-field")= __('filter.updatedat.start')
+            i.material-icons date_range
+
+          .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+            input#updatedat-lte-field(
+              type="date"
+              name="updatedAt[$lte]"
+              value=!filterQuery.updatedAt ? false : filterQuery.updatedAt.$lte
+            ).mdl-textfield__input
+            label.mdl-textfield__label(for="updatedat-lte-field")= __('filter.updatedat.end')
+            i.material-icons date_range
+
+        .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+          select#tag-field(
+            name="tags"
+            multiple
+          ).mdl-textfield__input
+            each tag in tagsList
+              //- - const { _id, name } = user
+              - const selected = !filterQuery.tags ? false : filterQuery.tags.includes(`${tag}`)
+              option(value=tag selected=selected)= tag
+          label(for="tag-field").mdl-textfield__label= __('filter.tag')
+
+      .be-table-filter__row
+        div
+        div
+        div.be-table-filter-row__action
+          a(
+            href=mergeQueries('/', {page: 1, sort: _query.sort, dir: _query.dir, limit: _query.limit})
+          ).mdl-button.mdl-js-button.mdl-js-ripple-effect= __('filter.reset')
+          button.mdl-button.mdl-js-button.mdl-button--accent(type="submit")= __('filter.submit')
+
+    //- MAILINGS
+    form.js-action-form.be-table__actions(action="/mailings" method="post")
+      //- appearing menu when selecting something
+      include user-home_selection-actions.pug
+      //- mailings listing
+      include user-home_mailing-table.pug
+
+    .be-table__footer
+      span.be-table-footer__rows= __('pagination.row')
+      select.be-table-footer__limit.js-pagination(name="limit")
+        each limit in [25, 50, 100]
+          option(
+            value=mergeQueries('/', _query, { page: 1, limit })
+            selected= _query.limit === `${limit}`
+          )= limit
+      span.be-table-footer__position #{pagination.current} #{__('pagination.of')} #{pagination.total}
+      if !pagination.prev
+        span.be-table-footer__nav: i.material-icons keyboard_arrow_left
+      else
+        a.be-table-footer__nav( href=mergeQueries('/', _query, { page: pagination.prev, } ) )
+          i.material-icons keyboard_arrow_left
+      | &nbsp;
+      if !pagination.next
+        span.be-table-footer__nav: i.material-icons keyboard_arrow_right
+      else
+        a.be-table-footer__nav( href=mergeQueries('/', _query, { page: pagination.next, }) )
+          i.material-icons keyboard_arrow_right
+
+block dialog
+
+  dialog.js-dialog-rename.mdl-dialog
+    h4.mdl-dialog__title= __('home.rename.dialog-title')
+    .mdl-dialog__content
+      .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+        input.mdl-textfield__input#rename-field(type="text" name="rename" required)
+        label.mdl-textfield__label(for="rename-field")= __('home.rename.dialog-name')
+    .mdl-dialog__actions
+      button(type="button").js-post.mdl-button.mdl-button--accent.mdl-js-button= __('home.rename.dialog-confirm')
+      button(type="button").js-close-rename-dialog.mdl-button= __('home.rename.dialog-cancel')
+
+  dialog.js-dialog-delete.mdl-dialog
+    h4.mdl-dialog__title= __('home.delete.dialog-title')
+    .mdl-dialog__content
+      p= __('home.delete.dialog-content')
+      ul.js-delete-selection-list
+    .mdl-dialog__actions
+      button(type="button").js-delete-confirm.mdl-button.mdl-button--accent.mdl-js-button= __('home.delete.dialog-confirm')
+      button(type="button").js-close-delete-dialog.mdl-button= __('home.delete.dialog-cancel')
+
+  dialog.js-dialog-add-tag.mdl-dialog
+    h4.mdl-dialog__title= __('tags.dialog.title')
+    .mdl-dialog__content
+      .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+        input.mdl-textfield__input#addtag-field(type="text" name="addtag" required)
+        label.mdl-textfield__label(for="addtag-field")= __('tags.dialog.label')
+    .mdl-dialog__actions
+      button(type="button").js-add-tag.mdl-button.mdl-button--accent.mdl-js-button= __('tags.dialog.apply')
+      button(type="button").js-hide-tag-dialog.mdl-button= __('tags.dialog.cancel')

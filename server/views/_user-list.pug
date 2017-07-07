@@ -1,0 +1,48 @@
+mixin user-list()
+  table.mdl-data-table.mdl-js-data-table&attributes(attributes)
+    thead
+      tr
+        if _config.debug
+          th.mdl-data-table__cell--non-numeric id
+        th.mdl-data-table__cell--non-numeric email
+        th.mdl-data-table__cell--non-numeric user name
+        th.mdl-data-table__cell--non-numeric from group
+        th.mdl-data-table__cell--non-numeric(colspan="2") status
+        th.mdl-data-table__cell--action language
+        th.mdl-data-table__cell--non-numeric created at
+        th.mdl-data-table__cell--action password mail
+        th.mdl-data-table__cell--action deactivate
+    tbody
+      each user in data.users
+        tr
+          if _config.debug
+            td.mdl-data-table__cell--non-numeric= user._id
+          td.mdl-data-table__cell--non-numeric: a(href=user.url.show)= user.email
+          td.mdl-data-table__cell--non-numeric= user.safename
+          td.mdl-data-table__cell--non-numeric
+            a(href=user.url.group) #{user._group.name}
+          td.mdl-data-table__cell--non-numeric: i.material-icons= user.status.icon
+          td.mdl-data-table__cell--non-numeric= user.status.value
+          td.mdl-data-table__cell--action= user.lang
+          td.mdl-data-table__cell--non-numeric= formatDate(user.createdAt)
+          td.mdl-data-table__cell--action
+            if !user.isDeactivated
+              form.js-reset-user(action='/users/reset' method="post" data-name=user.safename)
+                input(type="hidden" name="redirect" value="/users")
+                input(type="hidden" name="id" value=user._id)
+                button.mdl-button.mdl-js-button.mdl-button--accent(type="submit")= user.status.actionMsgShort
+          td.mdl-data-table__cell--action
+            if !user.isDeactivated
+              a.js-user-deactivate(
+                href=user.url.delete
+                data-name=user.safename
+              ).mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent
+                i.material-icons airline_seat_individual_suite
+            else
+              //- no reactivation for now
+              a.js-user-activate(
+                href=user.url.restore
+                data-name=user.safename
+              ).mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent
+                i.material-icons accessibility
+

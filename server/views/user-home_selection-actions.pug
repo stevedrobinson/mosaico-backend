@@ -1,0 +1,35 @@
+
+.be-table__header.be-table__header--selection.js-line-actions
+
+  h4.be-table-header__title.be-table-header__title.js-selection-count
+
+  //- put it here for FireFox bug
+  //- http://stackoverflow.com/questions/32991051/absolutely-positioned-flex-item-not-being-removed-from-normal-flow-in-firefox
+  dl.beTagsPanel.js-tags
+    dt.beTagsPanel__title
+     span= __('tags.title')
+     button.mdl-button.mdl-js-button.mdl-button--icon.js-close-tags-panel(type="button")
+      i.material-icons close
+    dd.beTagsPanel__listWrapper: ul.beTagsPanel__list.js-tags-list
+      each tag in tagsList
+        include _tag-item.pug
+
+    dd.beTagsPanel__actions
+      button.js-open-tag-dialog.mdl-button.mdl-js-button.mdl-js-ripple-effect(type="button")= __('tags.new')
+      button.mdl-button.mdl-js-button.mdl-button--accent(
+        type="submit"
+        formaction=mergeQueries('/mailings', _query, { _method: 'PATCH', })
+      )= __('tags.apply')
+
+  div
+
+    button#set-label.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent.js-open-tags-panel(type="button")
+      i.material-icons label
+    span(for="set-label").mdl-tooltip.mdl-tooltip--large= __('tags.set')
+
+    button#delete-mailing.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent.js-delete-mailings(
+      type="submit"
+      formaction=mergeQueries('/mailings', _query, { _method: 'DELETE', })
+    )
+      i.material-icons delete
+    span(for="delete-mailing").mdl-tooltip.mdl-tooltip--large= __('home.saved.delete')
