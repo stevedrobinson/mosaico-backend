@@ -11,30 +11,29 @@ const { handleValidatorsErrors,
 
 function list(req, res, next) {
   Users
-  .find({})
-  .populate('_group')
-  .sort({ isDeactivated: 1, createdAt: -1  })
-  .then(function onUsers(users) {
+  .find( {} )
+  .populate( '_group' )
+  .sort( { isDeactivated: 1, createdAt: -1 } )
+  .then( users => {
     return res.render('user-list', {
-      data: { users: users, }
+      data: { users }
     })
   })
-  .catch(next)
+  .catch( next )
 }
 
 function show(req, res, next) {
   // group is for member mailing…
-  var groupId     = req.params.groupId
   // …userId when it's created :)
-  var userId        = req.params.userId
+  const { groupId, userId } = req.params
 
   // CREATE
   if (groupId) {
     Groups
     .findById(groupId)
-    .then( (group) => {
+    .then( group => {
       res.render('user-new-edit', { data: {
-        group: group,
+        group,
       }})
     })
     .catch(next)

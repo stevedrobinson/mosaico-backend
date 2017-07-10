@@ -171,7 +171,7 @@ images: {
 
 - [NodeJS 6](https://nodejs.org/en/)
 - [MongoDB v3.2.7](https://www.mongodb.com/) (if installed locally `mongod` to start) (`brew install mongod` on mac)
-- a SMTP server. [mailcatcher can help for local dev ](https://mailcatcher.me/) (`mailcatcher` to start) (`brew install ruby && gem install mailcatcher` on mac)
+- a SMTP server. [mailcatcher can help for local dev ](https://mailcatcher.me/) (`mailcatcher` to start) (`brew install ruby` relaunch terminal `gem install mailcatcher` on mac)
 - [sharp](http://sharp.dimens.io/en/stable/) should work out the box most of the time. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/). MacOs will need XCode in order to compile.
 
 You need to have:
@@ -266,7 +266,8 @@ npm run local-db
 
 Run all backoffice's tests:
 
-- Open a working dev server `npm run dev`
+- all the dev prerequisite
+- having the application being build `npm run build`
 - run the test with `npm run tape`
 
 Run a specific test:

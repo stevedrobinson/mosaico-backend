@@ -13,17 +13,26 @@ const favicon         = require('serve-favicon')
 const cookieParser    = require('cookie-parser')
 const i18n            = require('i18n')
 const moment          = require('moment')
-const { duration }    = moment
 const util            = require('util')
-const { merge, omit, floor } = require('lodash')
 const createError     = require('http-errors')
 const helmet          = require('helmet')
+const httpShutdown    = require('http-shutdown')
+const mongoose        = require('mongoose')
+const {
+  merge,
+  omit,
+  floor }             = require('lodash')
+const { duration }    = moment
+
+const session         = require( './session' )
+const defer           = require( './helpers/create-promise' )
 
 module.exports = function () {
 
-  var config        = require('./config')
-  var session       = require('./session')
-  require('./models').connectDB(config.database)
+  const config  = require( './config' )
+  const db      = require( './models' )
+
+  db.connectDB( config.database )
 
   //////
   // SERVER CONFIG
@@ -49,14 +58,14 @@ module.exports = function () {
     extended: true,
   }))
   // enable other methods from request (PUT, DELETE…)
-  app.use(methodOverride('_method', {methods: ['GET', 'POST']}))
-  app.use(compression())
-  app.use(favicon(path.join(__dirname, '../res/favicon.png')))
-  app.use(cookieParser())
+  app.use( methodOverride('_method', {methods: ['GET', 'POST']}) )
+  app.use( compression() )
+  app.use( favicon(path.join(__dirname, '../res/favicon.png')) )
+  app.use( cookieParser() )
 
   //----- SESSION & I18N
 
-  session.init(app)
+  session.init( app )
   i18n.configure({
     locales:        ['fr', 'en',],
     defaultLocale:  'fr',
@@ -171,16 +180,16 @@ module.exports = function () {
   // ROUTING
   //////
 
-  var download          = require('./download')
-  var images            = require('./images')
-  var render            = require('./render')
-  var users             = require('./users')
-  var groups            = require('./groups')
-  var templates         = require('./templates')
-  var mailings          = require('./mailings')
-  var mailingTransfer   = require('./mailing-transfer')
-  var filemanager       = require('./filemanager')
-  var guard             = session.guard
+  const download        = require( './download' )
+  const images          = require( './images' )
+  const render          = require( './render' )
+  const users           = require( './users' )
+  const groups          = require( './groups' )
+  const templates       = require( './templates' )
+  const mailings        = require( './mailings' )
+  const mailingTransfer = require( './mailing-transfer' )
+  const filemanager     = require( './filemanager' )
+  const guard           = session.guard
 
   //----- EXPOSE DATAS TO VIEWS
 
@@ -268,8 +277,6 @@ module.exports = function () {
     next( createError(404) )
   })
 
-  //----- ADMIN
-
   // connection
   app.post('/admin/login', session.authenticate('local', {
     successRedirect: '/admin',
@@ -307,11 +314,7 @@ module.exports = function () {
   app.post('/templates/:templateId?',                 templates.update)
   app.get('/templates',                               templates.list)
 
-  app.all('/transfer/:mailingId',                     guard('admin'))
-  app.get('/transfer/:mailingId',                     mailingTransfer.get)
-  app.post('/transfer/:mailingId',                    mailingTransfer.post)
-
-  //----- PUBLIC
+  //----- CONNECTION
 
   app.post('/login', session.authenticate('local', {
     successRedirect: '/',
@@ -323,8 +326,10 @@ module.exports = function () {
   app.post('/forgot',                       guard('no-session'), users.userResetPassword)
   app.get('/password/:token',               guard('no-session'), users.showSetPassword)
   app.post('/password/:token',              guard('no-session'), users.setPassword)
-
   app.get('/logout',                        guard('user'), session.logout )
+
+  //----- IMAGES
+
   app.get('/img/:imageName',                images.read)
   app.delete('/img/:imageName',             guard('user'), images.destroy )
   app.get('/placeholder/:placeholderSize',  images.checkImageCache, images.placeholder )
@@ -332,13 +337,18 @@ module.exports = function () {
   app.get('/cover/:sizes/:imageName',       images.checkImageCache, images.checkSizes, images.cover )
   app.get('/img/',                          images.handleOldImageUrl )
 
-  //----- USER
+  //----- UPLOADS
 
   app.all('/upload*',                       guard('user'))
   app.get('/upload/:mongoId',               images.listImages )
   app.post('/upload/:mongoId',              images.upload )
 
-  app.all('/mailing*',                       guard('user'))
+  //----- MAILINGS
+
+  app.all('/mailings/:mailingId/transfer',    guard('admin'))
+  app.get('/mailings/:mailingId/transfer',    mailingTransfer.get )
+  app.post('/mailings/:mailingId/transfer',   mailingTransfer.post )
+  app.all('/mailings*',                       guard('user'))
   app.get('/mailings/:mailingId/duplicate',   mailings.duplicate )
   app.post('/mailings/:mailingId/send',       download.send )
   app.post('/mailings/:mailingId/zip',        download.zip )
@@ -382,12 +392,37 @@ module.exports = function () {
   // LAUNCHING
   //////
 
+  const application = defer()
+
   config.setup.then(function endSetup() {
-    var server = app.listen(config.PORT, function endInit() {
+    // use httpShutdown for being sure that every connection are removed
+    // https://github.com/thedillonb/http-shutdown
+    // It's important for testing as we need to be sure every process are done…
+    // …in order for tape to end properly
+    const server = httpShutdown( app.listen(config.PORT, err => {
+      if (err) {
+        console.log('errror')
+        application.reject( err )
+        throw err
+      }
       console.log(
         chalk.green('Server is listening on port'), chalk.cyan(server.address().port),
         chalk.green('on mode'), chalk.cyan(config.NODE_ENV)
       )
+      application.resolve( server )
+    }) )
+    server.on('close', () => {
+      // again for being sure that while testing with tape…
+      // …every process generated by the app are killed
+      templates
+      .nightmareInstance
+      .end()
+      .then( () => {
+        server.emit( 'shutdown' )
+      })
+      mongoose.disconnect()
     })
   })
+
+  return application
 }

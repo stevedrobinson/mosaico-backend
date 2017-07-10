@@ -2,7 +2,7 @@ extends _layout-user.pug
 include _table-reorder.pug
 
 block vars
-  - var pageClass = 'user-home';
+  - var pageClass = 'mailing-list';
 
 block content
   - const { isAdmin }     = _user
@@ -139,9 +139,9 @@ block content
     //- MAILINGS
     form.js-action-form.be-table__actions(action="/mailings" method="post")
       //- appearing menu when selecting something
-      include user-home_selection-actions.pug
+      include mailing-list_actions.pug
       //- mailings listing
-      include user-home_mailing-table.pug
+      include mailing-list_table.pug
 
     .be-table__footer
       span.be-table-footer__rows= __('pagination.row')

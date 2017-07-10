@@ -8,7 +8,8 @@ const config                  = require('../config')
 const filemanager             = require('../filemanager')
 const {
   renderMarkup,
-  generatePreviews }          = require('./generatePreviews.js')
+  generatePreviews,
+  nightmareInstance }         = require('./generatePreviews.js')
 const getTemplateImagePrefix  = require('../helpers/get-template-image-prefix.js')
 const { formatErrors,
   isFromGroup, Groups,
@@ -177,4 +178,5 @@ module.exports = {
   getMarkup,
   generatePreviews,
   renderMarkup,
+  nightmareInstance,
 }

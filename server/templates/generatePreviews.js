@@ -214,4 +214,5 @@ function generatePreviews(req, res, next) {
 module.exports = {
   renderMarkup,
   generatePreviews,
+  nightmareInstance: nightmare,
 }

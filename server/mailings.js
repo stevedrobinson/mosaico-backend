@@ -223,7 +223,7 @@ function userList(req, res, next) {
     })
 
     // FINALLY RENDER \o/
-    res.render('user-home', {
+    res.render('mailing-list', {
       data: {
         mailings:  paginated,
         tagsList:  tags.map( t => t._id ),

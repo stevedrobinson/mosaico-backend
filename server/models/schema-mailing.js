@@ -73,7 +73,7 @@ function mailingUrls(mailingId, templateId) {
     delete:     `/mailings/${mailingId}?_method=DELETE`,
     send:       `/mailings/${mailingId}/send`,
     zip:        `/mailings/${mailingId}/zip`,
-    transfer:   `/transfer/${mailingId}`,
+    transfer:   `/mailings/${mailingId}/transfer`,
     template:   `/templates/${templateId}`,
   }
 }

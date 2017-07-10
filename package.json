@@ -52,6 +52,7 @@
     "he": "^1.1.1",
     "helmet": "^3.6.0",
     "http-errors": "^1.6.1",
+    "http-shutdown": "^1.2.0",
     "i18n": "^0.8.3",
     "lodash": "^4.17.4",
     "material-design-icons-iconfont": "^3.0.3",
@@ -190,7 +191,6 @@
     "sync-s3": "node ./bin/s3-sync.js",
     "tape": "tape './tests/functional/*.js' | faucet",
     "test-back": "npm run tape",
-    "consolidate-creations": "node ./bin/db-consolidate-creations.js",
     "toc": "gulp toc"
   },
   "engines": {

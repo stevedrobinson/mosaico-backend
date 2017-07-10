@@ -64,7 +64,9 @@ function formatErrors(err, req, res, next) {
 }
 
 function connectDB(dbConfig) {
-  connection    = mongoose.connect(dbConfig)
+  // remove depreciation warning
+  // http://mongoosejs.com/docs/connections.html#use-mongo-client
+  connection    = mongoose.connect(dbConfig, { useMongoClient: true, })
   return connection
 }
 

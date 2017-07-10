@@ -43,15 +43,31 @@ const config  = rc('backend', {
       folder: 'mosaico-backend',
     },
   },
+  TEST:           false,
 })
 
 config.NODE_ENV       = config.NODE_ENV || process.env.NODE_ENV || 'development'
 config.PORT           = process.env.PORT || 3000
+config.TEST           = process.env.TEST ? true : false
 
 config.isDev      = config.NODE_ENV === 'development'
 config.isProd     = config.NODE_ENV === 'production'
 config.isPreProd  = !config.isDev && !config.isProd
 config.isAws      = config.storage.type === 'aws'
+
+if (config.TEST) {
+  config.NODE_ENV         = 'development'
+  config.host             = 'localhost:8000'
+  config.PORT             = 8000
+  config.storage.type     = 'local'
+  config.images.uploadDir = 'uploads-test'
+  config.dbConfigs        = {
+    local: {
+      host:   'localhost:27017',
+      folder: 'mosaico-backend-test',
+    },
+  }
+}
 
 // if ( config.isDev ) console.log( inspect(config) )
 // http://stackoverflow.com/questions/12416738/how-to-use-herokus-ephemeral-filesystem

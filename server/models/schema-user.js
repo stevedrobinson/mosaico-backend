@@ -33,7 +33,10 @@ const UserSchema    = Schema({
     // violating the constraint returns an E11000 error from MongoDB when saving, not a Mongoose validation error.
     unique:   true,
     validate: [{
-      validator: validator.isEmail,
+      // Don't pass directly validator.isEmail
+      // 2 arguments validators are now considered as `async` and raise a warning
+      // http://mongoosejs.com/docs/validation.html#async-custom-validators
+      validator: value => validator.isEmail(value),
       message:  '{VALUE} is not a valid email address',
     }],
     set:      normalizeString,
@@ -124,7 +127,7 @@ UserSchema.virtual('url').get(function () {
     show:     `/users/${this._id}`,
     delete:   `/users/${this._id}?_method=DELETE`,
     restore:  `/users/${this._id}/restore`,
-    group:  `/groups/${groupId}`,
+    group:    `/groups/${groupId}`,
   }
 })
 
