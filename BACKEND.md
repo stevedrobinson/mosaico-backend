@@ -27,6 +27,10 @@
     - [backup-db](#backup-db)
     - [local-db](#local-db)
   - [Tests](#tests)
+  - [S3 notes](#s3-notes)
+    - [requirements](#requirements)
+    - [backing up to a local folder](#backing-up-to-a-local-folder)
+    - [syncing a bucket from a local folder](#syncing-a-bucket-from-a-local-folder)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
