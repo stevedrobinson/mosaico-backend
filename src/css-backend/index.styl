@@ -1,10 +1,28 @@
+:root {
+  --default-color-primary: rgb(63,81,181);
+  --default-color-primary-contrast: #FFF;
+  --default-color-accent: rgb(255,64,129);
+  --default-color-accent-contrast: #FFF;
+}
+
 @import "../../node_modules/material-design-lite/dist/material.orange-blue.min.css";
 @import "../../node_modules/dialog-polyfill/dialog-polyfill.css";
 
-$primary    =  #ff9f00;
-$accent     = rgb(68,138,255);
-$c-grey-700 = #616161;
-$c-grey-100 = rgba(0,0,0,.12);
+$c-primary          = var(--color-primary, var(--default-color-primary));
+$c-primary-contrast = var(--color-primary-contrast, var(--default-color-primary-contrast));
+$c-accent           = var(--color-accent, var(--default-color-accent));
+$c-accent-contrast  = var(--color-accent-contrast, var(--default-color-accent-contrast));
+
+$c-grey-50    = rgb(250, 250, 250);
+$c-grey-100   = rgb(245, 245, 245);
+$c-grey-200   = rgb(238, 238, 238);
+$c-grey-300   = rgb(224, 224, 224);
+$c-grey-400   = rgb(189, 189, 189);
+$c-grey-500   = rgb(158, 158, 158);
+$c-grey-600   = rgb(117, 117, 117);
+$c-grey-700   = rgb(97, 97, 97);
+$c-grey-800   = rgb(66, 66, 66);
+$c-grey-900   = rgb(33, 33, 33);
 
 panel-shadow() {
   box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14), 0 1px 18px 0 rgba(0, 0, 0, 0.12), 0 3px 5px -1px rgba(0, 0, 0, 0.2);
@@ -75,7 +93,7 @@ togglable($height = auto) {
   }
   input:checked + label::after {
     content: 'check_box';
-    color: $accent;
+    color: $c-accent;
   }
 }
 
@@ -115,7 +133,7 @@ togglable($height = auto) {
 // user menu underline
 .mailing-list .navigation--mailings,
 .user-template .navigation--templates  {
-  box-shadow: inset 0 -3px 0 0 $accent;
+  box-shadow: inset 0 -3px 0 0 $c-accent;
 }
 
 ////////
@@ -141,12 +159,18 @@ togglable($height = auto) {
 // MATERIAL OVERRIDES
 ////////
 
+.mdl-layout__header,
+.mdl-layout__header-row .mdl-navigation__link,
+.mdl-layout__header .mdl-layout__drawer-button {
+  color: $c-accent-contrast;
+}
+
 .mdl-list__item-primary-content button {
   font-size: inherit;
   background: none;
   border: 0;
   padding: 0;
-  color: $accent;
+  color: $c-accent;
   font-weight: 500;
 }
 
@@ -201,7 +225,7 @@ select.mdl-textfield__input {
   // border-radius: 0;
 }
 .mdl-textfield__label--fixed {
-  color: rgb(255,152,0);
+  color: $c-primary;
   font-size: 12px;
   top: 4px;
   visibility: visible;

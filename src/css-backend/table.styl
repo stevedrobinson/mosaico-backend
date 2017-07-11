@@ -144,7 +144,7 @@ $header-height = 64px;
     cursor: pointer;
     flex: 0 0 auto;
     &:hover {
-      color: $accent;
+      color: $c-accent;
     }
 
     ~ .be-table-header__filter {
@@ -155,7 +155,7 @@ $header-height = 64px;
 }
 
 .be-table__header--selection {
-  background: lighten($accent, 25);
+  background: white;
   padding-top: 0;
   align-items: center;
   position: absolute;
@@ -164,6 +164,21 @@ $header-height = 64px;
   right: 0;
   togglable($header-height);
 
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: $c-accent;
+    opacity: .25;
+  }
+
+  > * {
+    z-index: 2;
+  }
+
   // &.is-visible {
   //   height: $header-height;
   // }
@@ -171,9 +186,10 @@ $header-height = 64px;
   .be-table-header {
 
     &__title {
-      color: $accent;
+      color: $c-accent;
       font-size: 13px;
       font-weight: 400;
+      position: relative;
     }
   }
 }
@@ -197,6 +213,7 @@ $panel-gutter = 20px
 
 .beTagsPanel {
   position: absolute;
+  z-index: 2;
   right: 0;
   top: 0;
   margin: 0;

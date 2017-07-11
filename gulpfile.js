@@ -87,7 +87,8 @@ function cssApp() {
   .pipe( $.postcss( [
     autoprefixer({ browsers: ['ie 10', 'last 2 versions'], }),
   ]) )
-  .pipe( $.replace('rgb(255,152,0)', '#ff9f00') )
+  .pipe( $.replace('rgb(255,152,0)', 'var(--color-primary, var(--default-color-primary))') )
+  .pipe( $.replace('rgb(68,138,255)', 'var(--color-accent, var(--default-color-accent))') )
   .pipe( $.rename('app.css') )
   .pipe( $.if(isDev, cssDev(), cssProd()) )
   .pipe( $.if(!isDev, $.cleanCss()) )
