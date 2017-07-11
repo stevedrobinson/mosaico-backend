@@ -38,7 +38,7 @@
   }
   &:hover, &.pressed, &.selected /*, &.active*/ {
     text-decoration: none;
-    background-color: @button-hover-background-color;
+    filter: brightness(125%);
   }
   &.disabled {
     color: @button-text-color-disabled;
@@ -62,8 +62,7 @@
     background-color: @button-primary-background-color;
     border-color: @button-primary-border-color;
     &:hover {
-      background-color: darken(@button-primary-background-color, 10%);
-      border-color: darken(@button-primary-border-color, 10%);
+      filter: brightness(90%);
     }
   }
   &.big {
@@ -203,7 +202,7 @@
   // IE8 border
   border: 0px solid @shadow-color;
   border-width: 1px@ie8hackprop;
-  border-color: fade(@shadow-color, 0%);
+  border-color: rgba(0, 0, 0, 0);
   box-shadow: 0 2px 20px @shadow-color;
   color: @helpwin-text-color;
   background-color: @helpwin-background-color;
@@ -270,7 +269,7 @@
     }
     // add a small border on cell_links inside rows for popup_links in dropdown
     .cell_links > li > a {
-      border-color: mix(@popup-background-color, @text-color, 50%);
+      border-color: @input-placeholder-color;
     }
     &.separator {
       border-top: 1px solid @button-background-color;
@@ -310,7 +309,7 @@
   border: 0px solid @shadow-color;
   border-width: 1px@ie8hackprop;
   // trasparented border for supporting browsers
-  border-color: fade(@shadow-color, 0%);
+  border-color: rgba(0, 0, 0, 0);
   box-shadow: 0 4px 10px @shadow-color;
   background-color: @popup-background-color;
 //  border: 0;
@@ -329,7 +328,7 @@
   }
   hr {
     margin: .5em -@dropdown-padding-h;
-    border-top: 1px solid lighten(@button-background-color, 40%); // Like button.active
+    border-top: 1px solid #fefefe; // Like button.active
     box-shadow: none;
   }
   .container-inline & {
