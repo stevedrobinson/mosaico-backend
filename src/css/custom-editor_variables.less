@@ -81,9 +81,6 @@
 @button-border-radius: @standard-border-radius;
 @large-balloon-border-radius: @standard-border-radius;
 
-@admin-menu-background-color: #000066;
-@admin-menu-dev-background-color: #660066;
-
 // Vertical margin for standard elements (to preserve alignment when in columns)
 @element-margin-vertical: 1.5em;
 
@@ -91,28 +88,28 @@
  * COMPUTED VARIABLES
  *************************************************************************************************************************/
 
-@text-color: #303030;
+@text-color: @palette-grey-900;
 
 @error-color: @red;
 @warning-color: lighten(@yellow, 5%);
 @status-color: @green;
 
 @link-active-color: @link-color;
-@link-disabled-color: #222222;
-@text-greyed-color: #969696;
+@link-disabled-color: @palette-grey-900;
+@text-greyed-color: @palette-grey-700;
 @shadow-color: rgba(0, 0, 0, .5);
 @img-border-style: 3px solid @background-color;
 
 @input-text-color: @text-color;
 @input-background-color: @highlight-background-color;
-@input-placeholder-color: #7d7d7d;
+@input-placeholder-color: @palette-grey-600;
 @input-error-border-style: 2px solid @red;
 
-@table-border-color: #d5d5d5;
+@table-border-color: @palette-grey-300;
 @table-border-style: 2px solid @table-border-color;
 @table-rows-separator-style: 1px solid @table-border-color;
 @table-odd-row-background-color: @background-color;
-@table-even-row-background-color: #DDDDDD;
+@table-even-row-background-color: @palette-grey-300;
 @table-header-color: @accent-color;
 @table-row-selected-background-color: @yellow;
 
@@ -132,7 +129,7 @@
 @large-button-border-radius: @button-border-radius * 1.4;
 @tabs-border-width: 1px;
 
-// TODO make a var for hover color
-@button-hover-background-color: #ee3900;
+// // TODO make a var for hover color
+// @button-hover-background-color: #ee3900;
 
 @ui-tabs-panel-padding: 4px;

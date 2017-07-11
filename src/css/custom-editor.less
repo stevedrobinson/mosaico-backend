@@ -13,8 +13,6 @@
 @mainarea-minwidth: 600px;
 @topbar-height: 40px;
 
-@screen-sm-max: 480px; // TODO Remove me, not used by mosaico (see style_page and style_admin)
-@screen-md-max: 1020px; // TODO Remove me, not used by mosaico (see style_page and style_admin)
 @screen-lg-max: 1460px; // Mosaico live preview will show beyond this
 
 @mosaico-text-color: @text-color;
@@ -23,7 +21,6 @@
 @mosaico-input-border-color: @input-border-color;
 @mosaico-button-text-color: @button-text-color;
 @mosaico-button-background-color: @button-background-color;
-@mosaico-button-background-color-hover: @button-hover-background-color;
 @mosaico-button-border-color: @button-border-color;
 @mosaico-button-shadow-color: @shadow-color;
 @mosaico-object-background-color: @object-background-color;
@@ -33,7 +30,7 @@
 @mosaico-helpwin-text-color: @helpwin-text-color;
 @mosaico-accent-color: @accent-color;
 @mosaico-outline-color: currentcolor;
-@mosaico-shadow-color: #808080;
+@mosaico-shadow-color: @shadow-color;
 @mosaico-selection-color: @link-color;
 
 
@@ -737,7 +734,11 @@ i.mce-i-newsletter-profile:before {
       box-shadow: 1px 1px 3px @shadow-color;
     }
     &:checked + .checkbox-replacer:after {
-      filter: brightness(120%);
+      // don't use filter => make the background appear on top of the button
+      // filter: brightness(120%);
+      background-color: @accent-color;
+      opacity: .4;
+
     }
     & + .checkbox-replacer:after {
       content: " ";
@@ -882,6 +883,7 @@ i.mce-i-newsletter-profile:before {
   .mo .propInput .ui-spinner .ui-spinner-input {
     border-width: 0 0 2px 0;
     background-color: transparent;
+    border-color: lighten(@text-color, 30%);
     &:hover, &:focus {
       border-color: @link-color;
     }
