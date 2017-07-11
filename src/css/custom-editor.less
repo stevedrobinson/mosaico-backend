@@ -683,11 +683,9 @@ i.mce-i-newsletter-profile:before {
   }
 }
 
-
 ////////
 // OTHER THINGS
 ////////
-
 
 #main-toolbox {
   .blockCheck input[type=checkbox] {
@@ -701,8 +699,9 @@ i.mce-i-newsletter-profile:before {
     & + .checkbox-replacer:after,
     &:checked + .checkbox-replacer:before {
       border-radius: 30px;
-      filter: brightness(110%);
+      background: @accent-color;
       color: @button-text-color;
+      opacity: .5;
       // margin: 0 -2px;
     }
     & + .checkbox-replacer:after {
@@ -891,7 +890,9 @@ i.mce-i-newsletter-profile:before {
 
   .mo .propInput .data-color input[type=text] {
     margin-left: 35px;
+
     &:hover, &:focus {
+      border-color: @palette-grey-700;
       margin-left: 35px;
     }
   }
@@ -997,8 +998,28 @@ i.mce-i-newsletter-profile:before {
   flex: 1 1 auto;
   display: flex;
   margin-right: 7px;
-  border: solid rgba(255, 255, 255, 0.3);
+  border: solid rgba(0, 0, 0, 0);
   border-width: 0 1px;
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: @primary-color-contrast;
+    opacity: .2;
+  }
+
+  &::before {
+    left: 0;
+  }
+  &::after {
+    right: 0;
+  }
 
   .ui-button {
     margin-right: 0;
