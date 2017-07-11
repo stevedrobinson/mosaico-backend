@@ -1,9 +1,8 @@
 :root {
-  --color-primary: rgb(63,81,181);
-  --color-primary-contrast: #FFF;
-
-  --color-accent: rgb(255,64,129);
-  --color-accent-contrast: #FFF;
+  --default-color-primary: rgb(63,81,181);
+  --default-color-primary-contrast: #FFF;
+  --default-color-accent: rgb(255,64,129);
+  --default-color-accent-contrast: #FFF;
 }
 
 // The purpose of this file is is to make less compilable with CSS custom properties
@@ -16,13 +15,13 @@
 
 @base-font-size: 13.6px; /* 20140929: Previously 0.85em, but we don't want user selected sizes because it breaks around */
 
-@primary-color: var(--color-primary);
-@primary-color-contrast: var(--color-primary-contrast);
-@accent-color: var(--color-accent);
-@accent-color-contrast: var(--color-accent-contrast);
-@background-color: var(--color-primary);
-@link-color: var(--color-accent);
-@tab-text-color: var(--color-primary-contrast);
+@primary-color: var(--color-primary, var(--default-color-primary));
+@primary-color-contrast: var(--color-primary-contrast, var(--default-color-primary-contrast));
+@accent-color: var(--color-accent, var(--default-color-accent));
+@accent-color-contrast: var(--color-accent-contrast, var(--default-color-accent-contrast));
+@background-color: var(--color-primary, var(--default-color-primary));
+@link-color: var(--color-accent, var(--default-color-accent));
+@tab-text-color: var(--color-primary-contrast, var(--default-color-primary-contrast));
 
 @red: #9C010F;
 @green: #94AF4B;
