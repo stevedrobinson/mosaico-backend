@@ -35,7 +35,9 @@ const config  = rc('backend', {
     username:     'backend-admin',
     password:     'admin',
   },
-  brand: { },
+  brand: {
+    name:         'mosaico-backend',
+  },
   // this is really optional.
   // It's just to be able to backup/restore DB with scripts
   dbConfigs: {

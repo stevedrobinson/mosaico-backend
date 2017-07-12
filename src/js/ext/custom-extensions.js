@@ -10,24 +10,26 @@ var slugFilename  = require('../../../shared/slug-filename.js')
 // VIEW-MODEL PLUGINS
 //////
 
-var serverStorage = require('./custom-server-storage')
-var editTitle     = require('./custom-edit-title')
-var textEditor    = require('./custom-text-editor')
-var gallery       = require('./custom-gallery')
-var removeImage   = require('./custom-remove-gallery-image')
+const serverStorage = require('./custom-server-storage')
+const editTitle     = require('./custom-edit-title')
+let   textEditor    = require('./custom-text-editor')
+const gallery       = require('./custom-gallery')
+const removeImage   = require('./custom-remove-gallery-image')
 // widgets
 // https://github.com/voidlabs/mosaico/wiki/Mosaico-Plugins#widget-plugins
-var widgetBgimage = require('./custom-widget-bgimage')
+const widgetBgimage = require('./custom-widget-bgimage')
 
-function setEditorIcon(viewModel) {
-  viewModel.logoPath  = '/media/editor-icon.png'
-  viewModel.logoUrl   = '/'
-  viewModel.logoAlt   = 'Mosaico backend'
+
+const setEditorIcon = opts => viewModel => {
+  viewModel.logoPath  = false
+  viewModel.logoUrl   = false
+  viewModel.logoAlt   = false
+  viewModel.brandName = opts.brandName
 }
 
 function extendViewModel(opts, customExtensions) {
   customExtensions.push( serverStorage )
-  customExtensions.push( setEditorIcon )
+  customExtensions.push( setEditorIcon(opts) )
   customExtensions.push( editTitle )
   customExtensions.push( gallery(opts) )
   customExtensions.push( removeImage )
@@ -152,6 +154,6 @@ function extendKnockout(opts) {
 }
 
 module.exports = {
-  extendViewModel:  extendViewModel,
-  extendKnockout:   extendKnockout,
+  extendViewModel,
+  extendKnockout,
 }

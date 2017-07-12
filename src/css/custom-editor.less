@@ -439,10 +439,34 @@ i.mce-i-newsletter-profile:before {
    95% { opacity: 0 }
   100% { opacity: 1 }
 }
-#loading.loading div {
-  animation: broken 10s linear forwards;
-  padding: 1em;
-  opacity: 1;
+
+#loading {
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  z-index: 150;
+
+  a {
+    color: @primary-color-contrast;
+  }
+
+  &.loading {
+    display: block;
+    text-align: center;
+    width: 300px;
+    height: 32px;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+
+    div {
+      animation: broken 10s linear forwards;
+      padding: 1em;
+      opacity: 1;
+    }
+  }
 }
 
 #carousel-dialog {
