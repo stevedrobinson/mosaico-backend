@@ -35,6 +35,7 @@ const config  = rc('backend', {
     username:     'backend-admin',
     password:     'admin',
   },
+  brand: { },
   // this is really optional.
   // It's just to be able to backup/restore DB with scripts
   dbConfigs: {

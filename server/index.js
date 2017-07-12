@@ -230,6 +230,17 @@ module.exports = function () {
     return sorting
   }
 
+  function brandColorsToCSS() {
+    const { brand }   = config
+    const properties  = Object.keys( brand ).filter( k => /^color/.test(k) )
+    if (!properties.length) return false
+    return properties.map( k => `--${ k }: ${ brand[k] };`).join('\n')
+  }
+
+  app.locals._brand = {
+    colors: brandColorsToCSS(),
+  }
+
   // those datas need to be refreshed on every request
   // and also not exposed to `app` but to `res` ^^
   app.use(function exposeDataToViews(req, res, next) {
