@@ -51,7 +51,16 @@
 	},
 	"layout": {
 		"title": "Email template editor by “drag & drop”",
-		"description": "The Email Builder is an emailing responsive design solution for building an email graphically by drag & drop."
+		"description": "The Email Builder is an emailing responsive design solution for building an email graphically by drag & drop.",
+		"users": {
+			"list": "Users list"
+		},
+		"groups": {
+			"list": "Groups list"
+		},
+		"templates": {
+			"list": "Templates list"
+		}
 	},
 	"password": {
 		"title": {

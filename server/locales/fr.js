@@ -53,7 +53,16 @@
 	},
 	"layout": {
 		"title": "Éditeur de groups email responsive par \"glissé/déposé\"",
-		"description": "L'Email Builder est une solution de conception d'emailing responsive permettant de construire un email graphiquement par glissé/déposé."
+		"description": "L'Email Builder est une solution de conception d'emailing responsive permettant de construire un email graphiquement par glissé/déposé.",
+		"users": {
+			"list": "Liste des utilisateurs"
+		},
+		"groups": {
+			"list": "Liste des groupes"
+		},
+		"templates": {
+			"list": "Liste des templates"
+		}
 	},
 	"password": {
 		"field": {

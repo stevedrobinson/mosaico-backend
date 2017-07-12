@@ -1,13 +1,12 @@
-title= __('layout.title')
+title #{_config.brand.name} – #{ title ? title : __('layout.title')}
 meta(http-equiv="Content-Type", content="text/html; charset=UTF-8")
 meta(name="viewport" content="width=device-width, initial-scale=1.0")
-meta(name="Title", content=__('layout.title'))
+meta(name="Title", content= title ? title : __('layout.title'))
 meta(name="description", content=__('layout.description'))
 meta(name="application-name", content="Email Builder")
 
 link(rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css")
 link(rel="stylesheet" href="/material-design-icons.css")
-//- link(rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.orange-light_blue.min.css")
 link(rel="stylesheet" href=md5Url('/app.css'))
 include _brand-colors
 
