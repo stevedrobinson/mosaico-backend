@@ -281,8 +281,8 @@ function create(req, res, next) {
     }
     // admin doesn't have valid user id & group
     if (!req.user.isAdmin) {
-      initParameters._user    = req.user.id
-      initParameters.author   = req.user.name
+      initParameters._user  = req.user.id
+      initParameters.author = req.user.name
       initParameters._group = req.user._group
     }
     new Mailings( initParameters )

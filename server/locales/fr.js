@@ -32,7 +32,7 @@
 			"mailing": "pas de mailings trouvés",
 			"templates": "home.no.templates"
 		},
-		"welcome": "bienvenue",
+		"welcome": "bienvenue %s",
 		"delete": {
 			"dialog-title": "Suppression de mailings",
 			"dialog-content": "Cela supprimera définitivement :",
@@ -55,13 +55,29 @@
 		"title": "Éditeur de groups email responsive par \"glissé/déposé\"",
 		"description": "L'Email Builder est une solution de conception d'emailing responsive permettant de construire un email graphiquement par glissé/déposé.",
 		"users": {
-			"list": "Liste des utilisateurs"
+			"list": "Liste des utilisateurs",
+			"edit": "Utilisateur : %s",
+			"new": "Nouvel utilisateur"
 		},
 		"groups": {
-			"list": "Liste des groupes"
+			"list": "Liste des groupes",
+			"new": "Nouveau groupe",
+			"edit": "Groupe : %s"
 		},
 		"templates": {
-			"list": "Liste des templates"
+			"list": "Liste des templates",
+			"new": "Nouveau template",
+			"edit": "Template : %s"
+		},
+		"connect": {
+			"admin": "Connection administrateur",
+			"user": "Connection utilisateur",
+			"forgot": "Mot de passe oublié",
+			"reset": "Changement de mot de passe"
+		},
+		"mailings": {
+			"new": "Nouveau mailing",
+			"transfer": "Transfert du mailing : %s"
 		}
 	},
 	"password": {

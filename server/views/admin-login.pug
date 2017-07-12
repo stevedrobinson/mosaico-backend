@@ -1,5 +1,8 @@
 extends _layout-login.pug
 
+block vars
+  - var pageTitle = __('layout.connect.admin')
+
 block content
   form(action="/admin/login" method="post").mdl-card.mdl-shadow--2dp
     .mdl-card__title: .mdl-card__title-text connection admin

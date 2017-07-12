@@ -1,5 +1,8 @@
 extends _layout-login.pug
 
+block vars
+  - var pageTitle = err.status
+
 block content
   h1 ERROR #{err.status}
   if err.message

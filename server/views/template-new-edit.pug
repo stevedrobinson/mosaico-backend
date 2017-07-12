@@ -3,7 +3,7 @@ extends _layout-admin.pug
 block vars
   - var isEdit    = data.template != null;
   - var template  = data.template || {};
-  - var pageTitle = isEdit ? 'template: ' + template.name : 'new template'
+  - var pageTitle = isEdit ? __('layout.templates.edit', template.name) : __('layout.templates.new')
   - var pageClass = 'full-width-layout'
 
 block content

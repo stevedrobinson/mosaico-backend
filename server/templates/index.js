@@ -49,7 +49,7 @@ function userList(req, res, next) {
         return 0;
       })
     }
-    res.render('user-template', {
+    res.render('mailing-new', {
       data: {
         templates,
       }

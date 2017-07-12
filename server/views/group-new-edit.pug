@@ -4,7 +4,7 @@ include _user-list.pug
 block vars
   - var group   = data && data.group ? data.group : {};
   - var isEdit    = group._id;
-  - var pageTitle = isEdit ? 'group: ' + group.name : 'new group';
+  - var pageTitle = isEdit ? __('layout.groups.edit', group.name) : __('layout.groups.new');
   - var pageClass = 'full-width-layout';
 
 block content

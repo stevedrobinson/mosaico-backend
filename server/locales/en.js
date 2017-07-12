@@ -30,7 +30,7 @@
 			"groups": "No accessible groups yet",
 			"mailing": "no mailings founded"
 		},
-		"welcome": "Welcome",
+		"welcome": "Welcome %s",
 		"delete": {
 			"dialog-title": "Delete mailings",
 			"dialog-confirm": "Confirm deletion",
@@ -53,13 +53,29 @@
 		"title": "Email template editor by “drag & drop”",
 		"description": "The Email Builder is an emailing responsive design solution for building an email graphically by drag & drop.",
 		"users": {
-			"list": "Users list"
+			"list": "Users list",
+			"new": "New user",
+			"edit": "User: %s"
 		},
 		"groups": {
-			"list": "Groups list"
+			"list": "Groups list",
+			"edit": "Group: %s",
+			"new": "New group"
 		},
 		"templates": {
-			"list": "Templates list"
+			"list": "Templates list",
+			"new": "New template",
+			"edit": "Template: %s"
+		},
+		"connect": {
+			"admin": "Admin connection",
+			"user": "User connection",
+			"forgot": "Password forgotten",
+			"reset": "Reset password"
+		},
+		"mailings": {
+			"new": "New mailing",
+			"transfer": "Transfer mailing: %s"
 		}
 	},
 	"password": {

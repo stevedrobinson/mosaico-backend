@@ -3,7 +3,7 @@ extends _layout-admin.pug
 block vars
   - var user      = data && data.user ? data.user : {};
   - var isEdit    = user._id
-  - var pageTitle = isEdit ? 'user: ' + user.name : 'new user'
+  - var pageTitle = isEdit ? __('layout.users.edit', user.name) : __('layout.users.new')
   - var pageClass = 'full-width-layout'
 
 block content

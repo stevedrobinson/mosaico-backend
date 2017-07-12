@@ -2,7 +2,7 @@ extends _layout-admin.pug
 
 block vars
   - var pageClass = 'mailing-transfer'
-  - var pageTitle = `transfer mailing`
+  - var pageTitle = __('layout.mailings.transfer', data.mailing.name)
 
 block content
   - const { users, mailing } = data
