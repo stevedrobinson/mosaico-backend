@@ -244,6 +244,10 @@
 		"no-templates": "no templates yet",
 		"english": "english",
 		"french": "french",
-		"activate": "activate"
+		"activate": "activate",
+		"group": "group",
+		"template-name": "template name",
+		"of-group": "of group",
+		"create-mailing": "create mailing"
 	}
 }

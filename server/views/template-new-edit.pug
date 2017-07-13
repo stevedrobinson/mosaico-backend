@@ -20,9 +20,10 @@ block content
         li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.backTo)
           .material-icons.mdl-list__item-icon group
           | #{template._group.name}
-        li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.create)
-          .material-icons.mdl-list__item-icon library_add
-          | #{__('general.create-mailing')}
+        if template.hasMarkup
+          li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.create)
+            .material-icons.mdl-list__item-icon library_add
+            | #{__('general.create-mailing')}
         if !template.hasMarkup
           li.mdl-list__item: span.mdl-list__item-primary-content(style="color: #d50000")
             .material-icons.mdl-list__item-icon report_problem

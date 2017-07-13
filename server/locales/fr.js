@@ -245,6 +245,10 @@
 		"no-templates": "pas de templates créés",
 		"english": "anglais",
 		"french": "français",
-		"activate": "activer"
+		"activate": "activer",
+		"group": "groupe",
+		"create-mailing": "créer un mailing",
+		"template-name": "nom du template",
+		"of-group": "du groupe"
 	}
 }
