@@ -13,6 +13,7 @@
   - [Admin password](#admin-password)
   - [Hostname](#hostname)
   - [AWS S3](#aws-s3)
+  - [Branding](#branding)
   - [Other config](#other-config)
 - [Dev prerequisite](#dev-prerequisite)
 - [Updating the code](#updating-the-code)
@@ -153,6 +154,26 @@ and copy and paste this:
 ```
 
 then replace `YOURBUCKETNAME` by your real bucket name
+
+
+### Branding 
+
+You can define here the main colors of the application:
+
+- **contrast** colors are for the text laying upon the associated background-color
+- **primary** is for the top navigation
+- **accent** is for the buttons and links
+
+```js
+"brand": {
+    "color-primary": "rgb(233,30,99)",
+    "color-primary-contrast": "white",
+    "color-accent": "#3f51b5",
+    "color-accent-contrast": "white",
+    "brandName": "My brand name"
+},
+
+```
 
 ### Other config
 
