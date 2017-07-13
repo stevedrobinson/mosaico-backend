@@ -1,5 +1,8 @@
 import dialogPolyfill from 'dialog-polyfill'
 
+const lang      = document.querySelector('html').getAttribute('lang')
+const isEnglish = lang === 'en'
+
 //////
 // DIALOG
 //////
@@ -77,8 +80,8 @@ function askUserReset(e) {
     form.submit()
   })
   openDialog( {
-    title:        'Reset',
-    description:  `are you sure you want to reset ${userName} password?`,
+    title:        isEnglish ? 'Reset' : 'Réinitialiser',
+    description:  isEnglish ? `are you sure you want to reset ${userName} password?` : `êtes vous sûr de vouloir réinitialiser le mot de passe de  ${userName} ?`,
   } )
 }
 
@@ -92,8 +95,8 @@ function askUserActivation(e) {
   const userName  = link.dataset.name
   confirmLink.setAttribute( 'href', link.getAttribute('href') )
   openDialog( {
-    title:        'Activate',
-    description:  `are you sure you want to activate ${userName}?`,
+    title:        isEnglish ? 'Activate' : 'Activer',
+    description:  isEnglish ? `are you sure you want to activate ${userName}?` : `êtes vous sûr de vouloir activer ${userName} ?`,
   } )
 }
 
@@ -107,8 +110,8 @@ function askUserDeactivation(e) {
   const userName  = link.dataset.name
   confirmLink.setAttribute( 'href', link.getAttribute('href') )
   openDialog( {
-    title:        'Deactivate',
-    description:  `are you sure you want to deactivate ${userName}?`,
+    title:        isEnglish ? 'Deactivate' : 'Désactiver',
+    description:  isEnglish ? `are you sure you want to deactivate ${userName}?` : `êtes vous sûr de vouloir désactiver ${userName} ?`,
   } )
 }
 

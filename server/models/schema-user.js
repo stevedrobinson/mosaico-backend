@@ -75,28 +75,36 @@ UserSchema.virtual('status').get(function () {
   const status = this.isDeactivated ? '-2' : this.password ? 1 : this.token ? 0 : -1
   const values = {
     '-2': {
-      value:          'deactivated',
+      value:          'admin.users.status.value.deactivated',
       icon:           'airline_seat_individual_suite',
-      actionMsg:      'activate',
-      actionMsgShort: 'activate',
+      actionMsg:      'admin.users.status.action-long.activate',
+      actionMsgShort: 'admin.users.status.action-short.activate',
     },
     '-1': {
-      value:          'to be initialized',
+      // value:          'to be initialized',
+      value:          'admin.users.status.value.to-be-initialized',
       icon:           'report_problem',
-      actionMsg:      'send password mail',
-      actionMsgShort: 'send',
+      // actionMsg:      'send password mail',
+      // actionMsgShort: 'send',
+      actionMsg:      'admin.users.status.action-long.send',
+      actionMsgShort: 'admin.users.status.action-short.send',
     },
     '0': {
-      value:          'password mail sent',
+      // value:          'password mail sent',
+      value:          'admin.users.status.value.password-mail-sent',
       icon:           'schedule',
-      actionMsg:      'resend password mail',
-      actionMsgShort: 'resend',
+      // actionMsg:      'resend password mail',
+      // actionMsgShort: 'resend',
+      actionMsg:      'admin.users.status.action-long.resend',
+      actionMsgShort: 'admin.users.status.action-short.resend',
     },
     '1': {
-      value:          'confirmed',
+      value:          'admin.users.status.value.confirmed',
       icon:           'check',
-      actionMsg:      'reset password',
-      actionMsgShort: 'reset',
+      // actionMsg:      'reset password',
+      // actionMsgShort: 'reset',
+      actionMsg:      'admin.users.status.action-long.reset',
+      actionMsgShort: 'admin.users.status.action-short.reset',
     },
   }
   return values[ status ]

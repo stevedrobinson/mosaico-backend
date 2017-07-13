@@ -25,7 +25,7 @@ mixin user-list(opts = {})
             td.mdl-data-table__cell--non-numeric
               a(href=user.url.group) #{user._group.name}
           td.mdl-data-table__cell--non-numeric: i.material-icons= user.status.icon
-          td.mdl-data-table__cell--non-numeric= user.status.value
+          td.mdl-data-table__cell--non-numeric=__(user.status.value)
           td.mdl-data-table__cell--action= user.lang
           td.mdl-data-table__cell--non-numeric= formatDate(user.createdAt)
           td.mdl-data-table__cell--action
@@ -33,7 +33,7 @@ mixin user-list(opts = {})
               form.js-reset-user(action='/users/reset' method="post" data-name=user.safename)
                 input(type="hidden" name="redirect" value="/users")
                 input(type="hidden" name="id" value=user._id)
-                button.mdl-button.mdl-js-button.mdl-button--accent(type="submit")= user.status.actionMsgShort
+                button.mdl-button.mdl-js-button.mdl-button--accent(type="submit")=__(user.status.actionMsgShort)
           td.mdl-data-table__cell--action
             if !user.isDeactivated
               a.js-user-deactivate(

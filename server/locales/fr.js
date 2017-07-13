@@ -184,7 +184,25 @@
 			"new": "nouvel utilisateur",
 			"associated": "utilisateurs associés",
 			"no-user": "pas d'utilisateurs créés",
-			"default-language": "language par défaut"
+			"default-language": "language par défaut",
+			"status": {
+				"action-long": {
+					"send": "envoyer le mailing d'initialisation",
+					"resend": "renvoyer le mail d'initialisation",
+					"reset": "réinitialisater le mot de passe"
+				},
+				"value": {
+					"to-be-initialized": "en attente d'activation",
+					"password-mail-sent": "email envoyé",
+					"deactivated": "désactivé",
+					"confirmed": "actif"
+				},
+				"action-short": {
+					"send": "envoyer",
+					"resend": "renvoyer",
+					"reset": "réinitialiser"
+				}
+			}
 		},
 		"groups": {
 			"no-groups": "pas de groupes créés",
@@ -226,6 +244,7 @@
 		"deactivate": "désactiver",
 		"no-templates": "pas de templates créés",
 		"english": "anglais",
-		"french": "français"
+		"french": "français",
+		"activate": "activer"
 	}
 }

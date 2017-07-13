@@ -31,7 +31,7 @@ block content
               input(type="hidden" name="redirect" value=user.url.show)
               input(type="hidden" name="id" value=user._id)
               button(type="submit")
-                | #{user.status.actionMsg}
+                | #{__(user.status.actionMsg)}
 
           li.mdl-list__item
             a.mdl-list__item-primary-content.js-user-deactivate(
@@ -54,7 +54,7 @@ block content
 
         li.mdl-list__item: span.mdl-list__item-primary-content
           i.material-icons.mdl-list__item-icon= user.status.icon
-          | #{user.status.value}
+          | #{__(user.status.value)}
 
       else
         li.mdl-list__item: a.mdl-list__item-primary-content(href=data.group.url.show)

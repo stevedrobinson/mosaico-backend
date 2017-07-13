@@ -183,7 +183,25 @@
 			"new": "new user",
 			"associated": "associated users",
 			"no-user": "no users yet",
-			"default-language": "default language"
+			"default-language": "default language",
+			"status": {
+				"action-long": {
+					"send": "send password mail",
+					"resend": "resend password mail",
+					"reset": "reset password"
+				},
+				"value": {
+					"to-be-initialized": "to be initialized",
+					"password-mail-sent": "password mail sent",
+					"deactivated": "deactivated",
+					"confirmed": "confirmed"
+				},
+				"action-short": {
+					"send": "send",
+					"resend": "resend",
+					"reset": "reset"
+				}
+			}
 		},
 		"groups": {
 			"no-groups": "no groups yet",
@@ -225,6 +243,7 @@
 		"deactivate": "deactivate",
 		"no-templates": "no templates yet",
 		"english": "english",
-		"french": "french"
+		"french": "french",
+		"activate": "activate"
 	}
 }
