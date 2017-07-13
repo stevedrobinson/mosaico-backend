@@ -165,5 +165,67 @@
 			"singular": "élément selectionné",
 			"plural": "éléments selectionnés"
 		}
+	},
+	"admin": {
+		"mailings": {
+			"create": "Créer un mailing",
+			"associated": "mailings associés"
+		},
+		"templates": {
+			"no-markup": "HTML MANQUANT",
+			"deletion-notice": "supprimer un template supprimera aussi tout les mailing l'utilisant",
+			"download-markup": "télécharger l'HTML",
+			"generate-previews": "générer les miniatures",
+			"files": "fichiers",
+			"new": "nouveau template",
+			"associated": "pas de templates associés"
+		},
+		"users": {
+			"new": "nouvel utilisateur",
+			"associated": "utilisateurs associés",
+			"no-user": "pas d'utilisateurs créés",
+			"default-language": "language par défaut"
+		},
+		"groups": {
+			"no-groups": "pas de groupes créés",
+			"notice": "Les groupes sont un moyen de partager des templates identiques à plusieurs utilisateurs"
+		}
+	},
+	"general": {
+		"mailings": "mailings",
+		"templates": "templates",
+		"groups": "groupes",
+		"users": "utilisateurs",
+		"templates-list": "liste de templates",
+		"logout": "déconnexion",
+		"ok": "ok",
+		"cancel": "annuler",
+		"delete": "supprimer",
+		"name": "nom",
+		"description": "description",
+		"markup": "HTML",
+		"images": "images",
+		"show": "voir",
+		"password": "mot de passe",
+		"submit": "envoyer",
+		"connect": "se connecter",
+		"connect-admin-title": "Connection administrateur",
+		"group-name": "nom du groupe",
+		"created-at": "créée à",
+		"informations": "informations",
+		"save": "enregistrer",
+		"markup?": "HTML?",
+		"edit": "éditer",
+		"no-mailings": "pas de mailings trouvés",
+		"email": "email",
+		"user-name": "nom d'utilisateur",
+		"from-group": "du groupe",
+		"status": "statut",
+		"language": "langue",
+		"password-mail": "mail de connection",
+		"deactivate": "désactiver",
+		"no-templates": "pas de templates créés",
+		"english": "anglais",
+		"french": "français"
 	}
 }

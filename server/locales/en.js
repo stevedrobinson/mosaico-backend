@@ -28,7 +28,8 @@
 		"no-content": "No saved content",
 		"no": {
 			"groups": "No accessible groups yet",
-			"mailing": "no mailings founded"
+			"mailing": "no mailings founded",
+			"templates": "home.no.templates"
 		},
 		"welcome": "Welcome %s",
 		"delete": {
@@ -163,5 +164,67 @@
 			"singular": "item selected",
 			"plural": "items selected"
 		}
+	},
+	"admin": {
+		"mailings": {
+			"create": "Create mailing",
+			"associated": "associated mailings"
+		},
+		"templates": {
+			"no-markup": "NO MARKUP",
+			"deletion-notice": "deleting a template will also remove every mailings using this one",
+			"download-markup": "download markup",
+			"generate-previews": "generate previews",
+			"files": "files",
+			"new": "new template",
+			"associated": "no associated templates"
+		},
+		"users": {
+			"new": "new user",
+			"associated": "associated users",
+			"no-user": "no users yet",
+			"default-language": "default language"
+		},
+		"groups": {
+			"no-groups": "no groups yet",
+			"notice": "Groups are a way to share a single templates among many users"
+		}
+	},
+	"general": {
+		"mailings": "mailings",
+		"templates": "templates",
+		"groups": "groups",
+		"users": "users",
+		"templates-list": "templates list",
+		"logout": "logout",
+		"ok": "ok",
+		"cancel": "cancel",
+		"delete": "delete",
+		"name": "name",
+		"description": "description",
+		"markup": "markup",
+		"images": "images",
+		"show": "show",
+		"password": "password",
+		"submit": "submit",
+		"group-name": "group name",
+		"created-at": "created at",
+		"connect": "connect",
+		"connect-admin-title": "Admin connection",
+		"informations": "informations",
+		"save": "save",
+		"markup?": "markup?",
+		"edit": "edit",
+		"no-mailings": "no mailings yet",
+		"email": "email",
+		"user-name": "user name",
+		"from-group": "from group",
+		"status": "status",
+		"language": "language",
+		"password-mail": "password mail",
+		"deactivate": "deactivate",
+		"no-templates": "no templates yet",
+		"english": "english",
+		"french": "french"
 	}
 }

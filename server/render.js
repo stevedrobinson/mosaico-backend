@@ -1,7 +1,7 @@
 'use strict'
 
 function adminLogin(req, res, next) {
-  res.render('admin-login')
+  res.render('password-admin-login')
 }
 
 function login(req, res, next) {

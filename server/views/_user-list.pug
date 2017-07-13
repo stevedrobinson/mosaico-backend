@@ -1,17 +1,19 @@
-mixin user-list()
+mixin user-list(opts = {})
+  - const {hideGroup} = opts
   table.mdl-data-table.mdl-js-data-table&attributes(attributes)
     thead
       tr
         if _config.debug
           th.mdl-data-table__cell--non-numeric id
-        th.mdl-data-table__cell--non-numeric email
-        th.mdl-data-table__cell--non-numeric user name
-        th.mdl-data-table__cell--non-numeric from group
-        th.mdl-data-table__cell--non-numeric(colspan="2") status
-        th.mdl-data-table__cell--action language
-        th.mdl-data-table__cell--non-numeric created at
-        th.mdl-data-table__cell--action password mail
-        th.mdl-data-table__cell--action deactivate
+        th.mdl-data-table__cell--non-numeric=__('general.email')
+        th.mdl-data-table__cell--non-numeric=__('general.user-name')
+        if (!hideGroup)
+          th.mdl-data-table__cell--non-numeric=__('general.from-group')
+        th.mdl-data-table__cell--non-numeric(colspan="2")=__('general.status')
+        th.mdl-data-table__cell--action=__('general.language')
+        th.mdl-data-table__cell--non-numeric=__('general.created-at')
+        th.mdl-data-table__cell--action=__('general.password-mail')
+        th.mdl-data-table__cell--action=__('general.deactivate')
     tbody
       each user in data.users
         tr
@@ -19,8 +21,9 @@ mixin user-list()
             td.mdl-data-table__cell--non-numeric= user._id
           td.mdl-data-table__cell--non-numeric: a(href=user.url.show)= user.email
           td.mdl-data-table__cell--non-numeric= user.safename
-          td.mdl-data-table__cell--non-numeric
-            a(href=user.url.group) #{user._group.name}
+          if (!hideGroup)
+            td.mdl-data-table__cell--non-numeric
+              a(href=user.url.group) #{user._group.name}
           td.mdl-data-table__cell--non-numeric: i.material-icons= user.status.icon
           td.mdl-data-table__cell--non-numeric= user.status.value
           td.mdl-data-table__cell--action= user.lang

@@ -7,7 +7,7 @@ block content
   .page-content
 
     if !data.templates.length
-      h4.home-subtitle no templates yet
+      h4.home-subtitle=__('general.no-templates')
     else
 
       table.mdl-data-table.mdl-js-data-table.mdl-shadow--2dp
@@ -15,11 +15,11 @@ block content
           tr
             if _config.debug
               th.mdl-data-table__cell--non-numeric id
-            th.mdl-data-table__cell--non-numeric template name
-            th.mdl-data-table__cell--non-numeric of group
-            th.mdl-data-table__cell--action markup?
-            th.mdl-data-table__cell--action create new mailing
-            th.mdl-data-table__cell--action delete
+            th.mdl-data-table__cell--non-numeric=__('general.template-name')
+            th.mdl-data-table__cell--non-numeric=__('general.of-group')
+            th.mdl-data-table__cell--action=__('general.markup?')
+            th.mdl-data-table__cell--action=__('general.new-mailing')
+            th.mdl-data-table__cell--action=__('general.delete')
         tbody
           each template in data.templates
             tr

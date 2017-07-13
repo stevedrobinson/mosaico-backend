@@ -7,7 +7,7 @@ block vars
 block content
   .page-content
     if !data.users.length
-      h4.home-subtitle no user yet
+      h4.home-subtitle=__('admin.users.no-user')
     else
       +user-list().mdl-shadow--2dp
 

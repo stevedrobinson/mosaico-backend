@@ -20,37 +20,38 @@ block content
       ul.mdl-list
         li.mdl-list__item: a.mdl-list__item-primary-content(href=group.url.newTemplate)
           .material-icons.mdl-list__item-icon web
-          | New Template
+          | #{__('admin.templates.new')}
         li.mdl-list__item: a.mdl-list__item-primary-content(href=group.url.newUser)
           .material-icons.mdl-list__item-icon person_add
-          | New User
+          | #{__('admin.users.new')}
 
   //- MAIN CONTENT
   .mdl-cell(class= isEdit ? 'mdl-cell--10-col' : 'mdl-cell--6-col mdl-cell--3-offset')
     .mdl-tabs.mdl-js-tabs.mdl-js-ripple-effect
       if isEdit
         .mdl-tabs__tab-bar
-          a.mdl-tabs__tab(href="#info-panel" class= isEdit ? '' : 'is-active') Informations
-          a.mdl-tabs__tab.is-active(href="#template-panel") Templates
-          a.mdl-tabs__tab(href="#mailing-panel") Mailings
-          a.mdl-tabs__tab(href="#user-panel") Users
+          a.mdl-tabs__tab(href="#info-panel" class= isEdit ? '' : 'is-active')=__('general.informations')
+          a.mdl-tabs__tab.is-active(href="#template-panel")=__('general.templates')
+          a.mdl-tabs__tab(href="#mailing-panel")=__('general.mailings')
+          a.mdl-tabs__tab(href="#user-panel")=__('general.users')
 
       #info-panel.mdl-tabs__panel(class= isEdit ? '' : 'is-active'): .mdl-grid
         form.mdl-cell.mdl-cell--12-col.mdl-card.mdl-shadow--2dp(action=action method="post")
           if group._id
             input(type="hidden" name="id" value=group._id)
           .mdl-card__title
-            .mdl-card__title-text informations
+            .mdl-card__title-text=__('general.informations')
           if !group._id
-            .mdl-card__supporting-text Groups are a way to share a single templates among many users
+            //- Groups are a way to share a single templates among many users
+            .mdl-card__supporting-text=__('admin.groups.notice')
           fieldset.mdl-card__supporting-text
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label(class= errors.name ? 'is-invalid' : '')
               input.mdl-textfield__input#name-field(type="text" name="name" value=group.name)
-              label.mdl-textfield__label(for="name-field") name
+              label.mdl-textfield__label(for="name-field")=__('general.name')
               if errors.name
                 span.mdl-textfield__error= errors.name.message
           .mdl-card__actions.mdl-card--border
-            button(type="submit").mdl-button.mdl-button--accent.mdl-js-button.mdl-js-ripple-effect save
+            button(type="submit").mdl-button.mdl-button--accent.mdl-js-button.mdl-js-ripple-effect=__('general.save')
 
       if isEdit
 
@@ -61,22 +62,22 @@ block content
         section#template-panel.mdl-tabs__panel.is-active: .mdl-grid
           .mdl-cell.mdl-cell--12-col.mdl-cell--top.mdl-card.mdl-shadow--2dp
             .mdl-card__title
-              .mdl-card__title-text associated templates
+              .mdl-card__title-text=__('admin.templates.associated')
 
             if !data.templates.length
-              .mdl-card__supporting-text: p no templates yet
+              .mdl-card__supporting-text: p=__('general.no-templates')
             else
               table.mdl-data-table.mdl-js-data-table
                 thead
                   tr
                     if _config.debug
                       th.mdl-data-table__cell--non-numeric id
-                    th.mdl-data-table__cell--non-numeric name
-                    th.mdl-data-table__cell--action markup?
-                    th.mdl-data-table__cell--non-numeric created at
+                    th.mdl-data-table__cell--non-numeric=__('general.name')
+                    th.mdl-data-table__cell--action=__('general.markup?')
+                    th.mdl-data-table__cell--non-numeric=__('general.created-at')
                     //- th.mdl-data-table__cell--non-numeric updated at
-                    th.mdl-data-table__cell--action edit
-                    th.mdl-data-table__cell--action delete
+                    th.mdl-data-table__cell--action=__('general.edit')
+                    th.mdl-data-table__cell--action=__('general.delete')
                 tbody
                   each template in data.templates
                     - var deleteUrl = mergeQueries(template.url.delete, {redirect: template.url.backTo })
@@ -107,11 +108,11 @@ block content
         section#user-panel.mdl-tabs__panel: .mdl-grid
           .mdl-cell.mdl-cell--12-col.mdl-cell--top.mdl-card.mdl-shadow--2dp
             .mdl-card__title
-              .mdl-card__title-text associated users
+              .mdl-card__title-text=__('admin.users.associated')
             if !data.users.length
-              .mdl-card__supporting-text: p no users yet
+              .mdl-card__supporting-text: p=__('admin.users.no-user')
             else
-              +user-list()
+              +user-list({hideGroup: true})
 
         //- /////////
         //- MAILINGS
@@ -120,19 +121,19 @@ block content
         section#mailing-panel.mdl-tabs__panel: .mdl-grid
           .mdl-cell.mdl-cell--12-col.mdl-cell--top.mdl-card.mdl-shadow--2dp
             .mdl-card__title
-              .mdl-card__title-text Mailings
+              .mdl-card__title-text=__('general.mailings')
             if !data.mailings.length
-              .mdl-card__supporting-text: p no mailings yet
+              .mdl-card__supporting-text: p=__('general.no-mailings')
             else
               table.mdl-data-table.mdl-js-data-table
                 thead: tr
                   if _config.debug
                     th.mdl-data-table__cell--non-numeric Id
-                  th.mdl-data-table__cell--non-numeric= __('home.saved.name')
-                  th.mdl-data-table__cell--non-numeric= __('home.saved.created-by')
-                  th.mdl-data-table__cell--non-numeric= __('home.saved.template-name')
-                  th.mdl-data-table__cell--non-numeric= __('home.saved.created')
-                  th.mdl-data-table__cell--non-numeric= __('home.saved.last-change')
+                  th.mdl-data-table__cell--non-numeric= __('general.name')
+                  th.mdl-data-table__cell--non-numeric= __('general.created-by')
+                  th.mdl-data-table__cell--non-numeric= __('general.template-name')
+                  th.mdl-data-table__cell--non-numeric= __('general.created')
+                  th.mdl-data-table__cell--non-numeric= __('general.last-change')
                 tbody
                   each mailing in data.mailings
                     tr
@@ -142,7 +143,7 @@ block content
                       td.mdl-data-table__cell--non-numeric
                         //- keep alternative __('home.saved.noname')
                         //- Should consolidate DB to always have a name before removing this
-                        a(href=mailing.url.update).js-name= mailing.name || __('home.saved.noname')
+                        a(href=mailing.url.update).js-name= mailing.name || __('general.noname')
                       td.mdl-data-table__cell--non-numeric
                         a(href=mailing._user.url.show).js-name= mailing._user.fullname
                       td.mdl-data-table__cell--non-numeric: a(href=mailing._template.url.show)= mailing._template.name

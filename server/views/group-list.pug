@@ -7,15 +7,15 @@ block vars
 block content
   .page-content
     if !data.groups.length
-      h4.home-subtitle no groups yet
+      h4.home-subtitle=__('admin.groups.no-groups')
     else
       table.mdl-data-table.mdl-js-data-table.mdl-shadow--2dp
         thead
           tr
             if _config.debug
               th.mdl-data-table__cell--non-numeric id
-            th.mdl-data-table__cell--non-numeric group name
-            th.mdl-data-table__cell--non-numeric created at
+            th.mdl-data-table__cell--non-numeric=__('general.group-name')
+            th.mdl-data-table__cell--non-numeric=__('general.created-at')
             //- th.mdl-data-table__cell--action delete
         tbody
           each group in data.groups

@@ -39,7 +39,7 @@ block content
               data-name=user.safename
             )
               .material-icons.mdl-list__item-icon airline_seat_individual_suite
-              | deactivate
+              | #{__('general.deactivate')}
 
         else
           li.mdl-list__item
@@ -48,9 +48,9 @@ block content
               data-name=user.safename
             )
               .material-icons.mdl-list__item-icon accessibility
-              | activate
+              | #{__('general.activate')}
 
-        li.mdl-list__item: span.mdl-list__item-primary-content: strong Status:
+        li.mdl-list__item: span.mdl-list__item-primary-content: strong #{__('general.status')}:
 
         li.mdl-list__item: span.mdl-list__item-primary-content
           i.material-icons.mdl-list__item-icon= user.status.icon
@@ -73,27 +73,27 @@ block content
         if !isEdit
           input(type="hidden" name="_group" value=data.group._id)
         .mdl-card__title
-          .mdl-card__title-text informations
+          .mdl-card__title-text=__('general.informations')
         .mdl-card__supporting-text: .mdl-grid
           .mdl-cell.mdl-cell--6-col
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label(class= errors.email ? 'is-invalid' : '')
               input.mdl-textfield__input#email-field(type="email" name="email" required value=user.email disabled=isAffecting)
-              label.mdl-textfield__label(for="email-field") email
+              label.mdl-textfield__label(for="email-field")=__('general.email')
               if errors.email
                 span.mdl-textfield__error= errors.email.message
           .mdl-cell.mdl-cell--6-col
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label(class= errors.name ? 'is-invalid' : '')
               input.mdl-textfield__input#name-field(type="text" name="name" value=user.name disabled=isAffecting)
-              label.mdl-textfield__label(for="name-field") name
+              label.mdl-textfield__label(for="name-field")=__('general.name')
               if errors.name
                 span.mdl-textfield__error= errors.name.message
 
           .mdl-cell.mdl-cell--6-col
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
               select.mdl-textfield__input#lang-field(name="lang" disabled=isAffecting)
-                option(value="en" selected=user.lang==='en') english
-                option(value="fr" selected=user.lang==='fr') french
-              label.mdl-textfield__label.mdl-textfield__label--fixed(for="lang-field") default language
+                option(value="en" selected=user.lang==='en')=__('general.english')
+                option(value="fr" selected=user.lang==='fr')=__('general.french')
+              label.mdl-textfield__label.mdl-textfield__label--fixed(for="lang-field")=__('admin.users.default-language')
 
       button(type="submit").mdl-button.mdl-js-button.mdl-button--fab.mdl-js-ripple-effect.mdl-button--colored
         i.material-icons save
@@ -105,10 +105,10 @@ block content
       if isEdit
         .mdl-cell.mdl-cell--12-col.mdl-cell--top.mdl-card.mdl-shadow--2dp
           .mdl-card__title
-            .mdl-card__title-text own mailings
+            .mdl-card__title-text=__('admin.mailings.associated')
 
           if !data.mailings.length
-            .mdl-card__supporting-text: p no mailings yet
+            .mdl-card__supporting-text: p=__('general.no-mailings')
           else
             table.mdl-data-table.mdl-js-data-table
               thead: tr

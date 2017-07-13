@@ -22,20 +22,21 @@ block content
           | #{template._group.name}
         li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.create)
           .material-icons.mdl-list__item-icon library_add
-          | create mailing
+          | #{__('general.create-mailing')}
         if !template.hasMarkup
           li.mdl-list__item: span.mdl-list__item-primary-content(style="color: #d50000")
             .material-icons.mdl-list__item-icon report_problem
-            | NO MARKUP
-        li.mdl-list__item: span.mdl-list__item-primary-content deleting a template will also remove every mailings using this one
+            | #{__('admin.templates.no-markup')}
+        //- li.mdl-list__item: span.mdl-list__item-primary-content deleting a template will also remove every mailings using this one
+        li.mdl-list__item: span.mdl-list__item-primary-content= __('admin.templates.deletion-notice')
         - var deleteUrl = mergeQueries(template.url.delete, {redirect: template.url.backTo })
         li.mdl-list__item: a.mdl-list__item-primary-content.js-delete-template(data-name=template.name href=deleteUrl )
           .material-icons.mdl-list__item-icon delete_forever
-          | delete
+          | #{__('general.delete')}
         if template.hasMarkup
           li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.generatePreviews )
             .material-icons.mdl-list__item-icon camera_alt
-            | generate previews
+            | #{__('admin.templates.generate-previews')}
         if template.url.imgCover
           li.mdl-list__item: span.mdl-list__item-primary-content Preview:
       if template.url.imgCover
@@ -50,50 +51,50 @@ block content
         .mdl-card__supporting-text
           .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
             input.mdl-textfield__input#name-field(type="text" name="name" required value=template.name)
-            label.mdl-textfield__label(for="name-field") name
+            label.mdl-textfield__label(for="name-field")=__('general.name')
             if errors.name
               span.mdl-textfield__error= errors.name.message
           .mdl-textfield.mdl-js-textfield
             textarea.mdl-textfield__input#description-field(type="text" rows="1" name="description")=template.description
-            label.mdl-textfield__label(for="description-field") Description
+            label.mdl-textfield__label(for="description-field")=__('general.description')
 
           if !isEdit
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
               input(type="hidden" name="_group" value=data.group._id)
               .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
                 p.mdl-textfield__input= data.group.name
-                label.mdl-textfield__label.mdl-textfield__label--fixed group
+                label.mdl-textfield__label.mdl-textfield__label--fixed=__('general.group')
 
       if isEdit
         fieldset.mdl-cell.mdl-cell--6-col.mdl-card.mdl-shadow--2dp
-          .mdl-card__title: .mdl-card__title-text files
+          .mdl-card__title: .mdl-card__title-text=__('admin.templates.files')
           .mdl-card__supporting-text
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
               input.mdl-textfield__input#markup-field(type="file" accept=".html" name="markup")
-              label.mdl-textfield__label.mdl-textfield__label--fixed(for="markup-field") Markup
+              label.mdl-textfield__label.mdl-textfield__label--fixed(for="markup-field")=__('general.markup')
               if errors.markup
                 span.mdl-textfield__error= errors.markup.message
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
               input.mdl-textfield__input#images-field(type="file" accept=".png,.gif,.jpg" multiple name="images")
-              label.mdl-textfield__label.mdl-textfield__label--fixed(for="images-field") Images
+              label.mdl-textfield__label.mdl-textfield__label--fixed(for="images-field")=__('general.images')
         //- HTML preview block
         if template.hasMarkup
           .mdl-cell.mdl-cell--12-col.mdl-card.mdl-shadow--2dp
-            .mdl-card__title: .mdl-card__title-text Markup
+            .mdl-card__title: .mdl-card__title-text=__('general.markup')
             details.mdl-card__supporting-text
-              summary show
+              summary=__('general.show')
               pre= template.markup
 
             .mdl-card__actions.mdl-card--border
               a(href=template.url.markup).mdl-button.mdl-button--accent.mdl-js-button.mdl-js-ripple-effect
-                | download markup
+                | #{__('admin.templates.download-markup')}
 
         //- Image listing
         if template.imagesList.length
           .mdl-cell.mdl-cell--12-col.mdl-card.mdl-shadow--2dp
             .mdl-card__title: .mdl-card__title-text Images (#{template.imagesList.length})
             details.mdl-card__supporting-text
-              summary show
+              summary=__('general.show')
               ul
                 for image in template.imagesList
                   li: a(href=image.url)= image.name
