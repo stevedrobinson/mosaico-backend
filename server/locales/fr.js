@@ -229,7 +229,8 @@
 		"connect": "se connecter",
 		"connect-admin-title": "Connection administrateur",
 		"group-name": "nom du groupe",
-		"created-at": "créée à",
+		"created-at": "créé le",
+		"modified-at": "modifié le",
 		"informations": "informations",
 		"save": "enregistrer",
 		"markup?": "HTML?",
@@ -249,6 +250,9 @@
 		"group": "groupe",
 		"create-mailing": "créer un mailing",
 		"template-name": "nom du template",
-		"of-group": "du groupe"
+		"of-group": "du groupe",
+		"created-by": "auteur",
+		"created": "créé",
+		"last-change": "dernière édition"
 	}
 }

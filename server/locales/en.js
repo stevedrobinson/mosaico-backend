@@ -227,6 +227,7 @@
 		"submit": "submit",
 		"group-name": "group name",
 		"created-at": "created at",
+		"modified-at": "modified at",
 		"connect": "connect",
 		"connect-admin-title": "Admin connection",
 		"informations": "informations",
@@ -248,6 +249,9 @@
 		"group": "group",
 		"template-name": "template name",
 		"of-group": "of group",
-		"create-mailing": "create mailing"
+		"create-mailing": "create mailing",
+		"created-by": "author",
+		"created": "created",
+		"last-change": "last change"
 	}
 }
