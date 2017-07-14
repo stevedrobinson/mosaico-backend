@@ -1,6 +1,5 @@
 'use strict'
 
-const chalk                 = require('chalk')
 const createError           = require('http-errors')
 const { merge }             = require('lodash')
 

@@ -1,11 +1,12 @@
 'use strict';
 
-const os          = require('os')
-const path        = require('path')
-const rc          = require('rc')
-const _           = require('lodash')
-const { inspect } = require('util')
-const { mkdirp }  = require('fs-extra')
+const os          = require( 'os' )
+const chalk       = require( 'chalk' )
+const path        = require( 'path' )
+const rc          = require( 'rc' )
+const _           = require( 'lodash' )
+const { inspect } = require( 'util' )
+const { mkdirp }  = require( 'fs-extra' )
 
 // default config is made for an easy use on local dev
 const config  = rc('backend', {
@@ -70,6 +71,7 @@ if (config.TEST) {
       folder: 'mosaico-backend-test',
     },
   }
+  console.log( chalk.green('[SERVER] running in TEST mode') )
 }
 
 // if ( config.isDev ) console.log( inspect(config) )

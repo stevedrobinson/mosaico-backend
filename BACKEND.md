@@ -297,7 +297,7 @@ Run all backoffice's tests:
 
 Run a specific test:
 
-`./node_modules/.bin/tape tests/functional/user-deactivation.js | ./node_modules/.bin/faucet`
+`./node_modules/.bin/tape tests/functional/authentification.js | ./node_modules/.bin/faucet`
 
 ### S3 notes
 

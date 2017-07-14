@@ -1,7 +1,6 @@
 'use strict'
 
 const _                       = require('lodash')
-const chalk                   = require('chalk')
 const createError             = require('http-errors')
 
 const config                  = require('../config')

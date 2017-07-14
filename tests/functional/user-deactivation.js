@@ -133,7 +133,7 @@ test('admin – deactivate & reactivate a user', t => {
         const userLinkEl = document.querySelector(`#user-panel a[href="/users/${_id}`)
         if (!userLinkEl) return { status: false }
         const line       = userLinkEl.parentNode.parentNode
-        const status     = line.querySelector(`td:nth-child(5)`).textContent
+        const status     = line.querySelector(`td:nth-child(4)`).textContent
         return {
           status,
         }

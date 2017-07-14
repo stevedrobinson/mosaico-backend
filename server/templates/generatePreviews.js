@@ -4,6 +4,7 @@ const Nightmare               = require( 'nightmare' )
 const createError             = require( 'http-errors' )
 const crypto                  = require( 'crypto' )
 const path                    = require( 'path' )
+const chalk                   = require( 'chalk' )
 const sharp                   = require( 'sharp' )
 const fs                      = require( 'fs-extra' )
 

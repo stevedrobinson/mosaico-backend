@@ -65,6 +65,7 @@ function setupDB() {
   const copyCmd = `mongorestore --drop ${u.setDbParams(dbLocal)} ${testDatas}`
   exec( copyCmd, (error, stdout, stderr) => {
     if (error !== null) return dfd.reject( error )
+    console.log(`[DB] setup has been done`)
     dfd.resolve()
   })
 

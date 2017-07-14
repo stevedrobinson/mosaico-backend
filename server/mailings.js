@@ -2,7 +2,6 @@
 
 const _           = require('lodash')
 const qs          = require('qs')
-const chalk       = require('chalk')
 const util        = require('util')
 const createError = require('http-errors')
 const moment      = require('moment')
