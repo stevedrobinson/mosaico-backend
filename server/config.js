@@ -8,7 +8,9 @@ const _           = require( 'lodash' )
 const { inspect } = require( 'util' )
 const { mkdirp }  = require( 'fs-extra' )
 
-// default config is made for an easy use on local dev
+
+//----- DEFAULT CONFIG
+// made for an easy use on local dev
 const config  = rc('backend', {
   debug:          false,
   forcessl:       false,
@@ -20,8 +22,7 @@ const config  = rc('backend', {
   },
   emailOptions: {
     from:               'Mosaico-backend test <info@mosaico-backend-test.name>',
-    // last space is needed
-    testSubjectPrefix:  '[mosaico-backend email builder] ',
+    testSubjectPrefix:  '[mosaico-backend email builder]',
   },
   storage: {
     type:         'local',
@@ -59,6 +60,11 @@ config.isProd     = config.NODE_ENV === 'production'
 config.isPreProd  = !config.isDev && !config.isProd
 config.isAws      = config.storage.type === 'aws'
 
+// last space is needed
+config.emailOptions.testSubjectPrefix = `${config.emailOptions.testSubjectPrefix.trim()} `
+
+//----- TEST SPECIFICS
+
 if (config.TEST) {
   config.NODE_ENV         = 'development'
   config.host             = 'localhost:8000'
@@ -72,6 +78,24 @@ if (config.TEST) {
     },
   }
   console.log( chalk.green('[SERVER] running in TEST mode') )
+}
+
+//----- HEROKU ADDONS OVERRIDES
+
+if ( config.SENDGRID_USERNAME && config.SENDGRID_PASSWORD ) {
+  config.emailTransport.service = 'SendGrid'
+  config.emailTransport.auth    = {
+    user: config.SENDGRID_USERNAME,
+    pass: config.SENDGRID_PASSWORD,
+  }
+}
+
+if (config.MONGODB_URI) {
+  config.database = config.MONGODB_URI
+}
+
+if (config.HEROKU_APP_NAME) {
+  config.host = `${config.HEROKU_APP_NAME}.herokuapp.com`
 }
 
 // if ( config.isDev ) console.log( inspect(config) )
