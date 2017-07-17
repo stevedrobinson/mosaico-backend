@@ -18,6 +18,22 @@
       "description": "Subject prefix for testing mails",
       "value": "[mosaico-backend email builder] "
     },
+    "storage__aws__accessKeyId": {
+      "description": "20 characters key",
+      "required": true
+    },
+    "storage__aws__secretAccessKey": {
+      "description": "40 characters secret key",
+      "required": true
+    },
+    "storage__aws__bucketName": {
+      "description": "your bucket name",
+      "required": true
+    },
+    "storage__aws__region": {
+      "description": "region of your bucket (ex: ap-southeast-1)",
+      "required": true
+    },
     "HEROKU_APP_NAME": {
         "required": true
     }
