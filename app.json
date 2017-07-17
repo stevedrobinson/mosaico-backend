@@ -12,11 +12,18 @@
     },
     "emailOptions__from": {
       "description": "The email adress from whom user connection mails will be received. Should be written in this format: Mosaico-backend test <info@mosaico-backend-test.name>",
-      "value": "Mosaico-backend test <info@mosaico-backend-test.name>"
+      "value": "Mosaico-backend test <info@mosaico-backend-test.name>",
+      "required": true
     },
     "emailOptions__testSubjectPrefix": {
       "description": "Subject prefix for testing mails",
-      "value": "[mosaico-backend email builder] "
+      "value": "[mosaico-backend email builder] ",
+      "required": true
+    },
+    "storage__type": {
+      "description": "please don't change this value",
+      "required": true,
+      "value": "aws"
     },
     "storage__aws__accessKeyId": {
       "description": "20 characters key",
@@ -35,6 +42,7 @@
       "required": true
     },
     "HEROKU_APP_NAME": {
+        "description": "copy and paste the name you've given to you application",
         "required": true
     }
   },
