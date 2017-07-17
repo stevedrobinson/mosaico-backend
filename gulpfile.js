@@ -32,7 +32,7 @@ $.util.log(
 )
 
 function bump() {
-  return gulp.src('./*.json')
+  return gulp.src(['package.json', 'bower.json'])
   .pipe($.bump({
     version: args.pkg
   }))
