@@ -1,73 +1,324 @@
-# Mosaico - Responsive Email Template Editor
+# Mosaico Backend email builder
 
-Mosaico is a JavaScript library (or maybe a single page application) supporting the editing of email templates.
-The great thing is that Mosaico itself does not define what you can edit or what styles you can change: this is defined by the template. This makes Mosaico very flexible.
-
-
-![Mosaico Screenshot](res/img/screenshot.png)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
-At this time we provide a single template to illustrate some best practice examples: more templates will come soon! Please get in touch with us if you want to make your email html template "Mosaico ready".
+- [Heroku server configuration](#heroku-server-configuration)
+  - [buildpack](#buildpack)
+  - [configuring environments variables](#configuring-environments-variables)
+  - [Mail sending](#mail-sending)
+  - [from email adress](#from-email-adress)
+  - [MongoDB database](#mongodb-database)
+  - [Admin password](#admin-password)
+  - [Hostname](#hostname)
+  - [AWS S3](#aws-s3)
+  - [Branding](#branding)
+  - [Other config](#other-config)
+- [Dev prerequisite](#dev-prerequisite)
+- [Updating the code](#updating-the-code)
+  - [Build the project for *production*](#build-the-project-for-production)
+  - [Start a server configured for *production*](#start-a-server-configured-for-production)
+  - [Build and start a *production* server](#build-and-start-a-production-server)
+  - [Build and start a *development* server](#build-and-start-a-development-server)
+  - [Make a release](#make-a-release)
+  - [Generating templates preview images](#generating-templates-preview-images)
+  - [Databases scripts](#databases-scripts)
+    - [sync-db](#sync-db)
+    - [backup-db](#backup-db)
+    - [local-db](#local-db)
+  - [Tests](#tests)
+  - [S3 notes](#s3-notes)
+    - [requirements](#requirements)
+    - [backing up to a local folder](#backing-up-to-a-local-folder)
+    - [syncing a bucket from a local folder](#syncing-a-bucket-from-a-local-folder)
 
-### Live demo
-On https://mosaico.io you can see a live demo of Mosaico: the live deploy has a custom backend (you don't see it) and some customization (custom Moxiemanager integration, customized onboarding slideshow, contextual menu, and some other small bits), but 95% of what you see is provided by this library. You will also see a second working template there: we are still working to open source it. Stay tuned!
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-#### News
+## Heroku server configuration
 
-Subscribe to our newsletter to get updates: http://mosaico.voxmail.it/user/register
+### buildpack
 
-### More Docs from the Wiki
+In order for the image resize & the templates' preview generation to work you will need those build packs IN THAT ORDER:
 
-[Mosaico Basics](https://github.com/voidlabs/mosaico/wiki)
+- https://github.com/alex88/heroku-buildpack-vips.git
+- https://github.com/heroku/heroku-buildpack-apt
+- https://github.com/captain401/heroku-buildpack-xvfb.git
+- https://github.com/benschwarz/heroku-electron-buildpack.git
+- heroku/nodejs
 
-[Developer Notes](https://github.com/voidlabs/mosaico/wiki/Developers)
+Copy and paste those urls in the `Buildpacks` section of `Settings`
 
-### Build/Run  [![Build Status](https://travis-ci.org/voidlabs/mosaico.svg)](https://travis-ci.org/voidlabs/mosaico)
+This has to be done BEFORE any deploy
 
-You need NodeJS v6.0 or higher + ImageMagick
+### configuring environments variables
 
-this may raise warnings about Knockout, ignore them. It will probably fail on some colorpicker dependency, just run it again and will work:
+- go in the settings of your application
+- click on `settings`
+- click on `Reveal Config Vars`
+- variables name should follow this pattern :
+
 ```
-  npm install
-```
-if you don't have it, install grunt-cli globally
-```
-  npm install -g grunt-cli
-```
-compile and run a local webserver (http://127.0.0.1:9006) with incremental build and livereload
-```
-  grunt
-```
-*IMPORTANT* in order to use image uploading/processing feature in Node you need imageMagick installed in your environment.
-e.g. running "convert" and "identify" on the command line should output imageMagick command line help (if you are on Windows and install imageMagick 7.x then make sure to install ["legacy utilities"](https://github.com/aheckmann/gm/issues/559)).
-
-If you create your own template you can generate the needed "thumbnails"/"block thumbnails" by running:
-```
-grunt makeThumbs:main:yourtemplatename
+backend_emailOptions__from
 ```
 
-*NOTE* we have reports that default Ubuntu node package have issues with building Mosaico via Grunt. If you see a ```Fatal error: watch ENOSPC``` then have a look at https://github.com/voidlabs/mosaico/issues/82
+- always put `backend_` first
+- then each level of config should be seperate with a double underscore: `__`
+- see `.backendrc-example` on the master branch for the config requirements
 
-### Docker
+below are the common environments variables you should want to set:
 
-We bundle a small Dockerfile based on centos7 to test mosaico with no need to install dependencies.
+
+### Mail sending
+
 ```
-docker build -t mosaico/mosaico .
-docker run -p 9006:9006 mosaico/mosaico
+backend_emailTransport__service         Mailjet
+backend_emailTransport__auth__user      your Username (or API key)
+backend_emailTransport__auth__pass      your password (or Secret Key)
 ```
-then open a browser to point to the port 9006 of your docker machine IP.
 
-### Serving via Apache PHP or Django?
-First you have to build it using grunt, then you can read (https://github.com/voidlabs/mosaico/wiki/Serving-Mosaico).
 
-*Access Interpreting* wrote a sample [PHP backend](https://github.com/ainterpreting/mosaico-php-backend) so you can start from there if you want to use Mosaico with an Apache/PHP backend.
+backend_emailTransport__service is for [nodemailer-wellknown](https://www.npmjs.com/package/nodemailer-wellknown) configuration  
 
-*Ryan Nowakowski* wrote a [Python/Django backend](https://github.com/tubaman/django-mosaic) and also wrote a [test-suite in Python](https://github.com/tubaman/mosaico-server-tests) to help testing Mosaico backends
 
-### Are you having issues with Mosaico?
+### from email adress
 
-See the [CONTRIBUTING file](https://github.com/voidlabs/mosaico/blob/master/CONTRIBUTING.md)
 
-### Contact Us
+```
+backend_emailOptions__from              Email Builder <emailbuilder@backend.com>
+```
 
-Please contact us if you have ideas, suggestions or, even better, you want to collaborate on this project or you need COMMERCIAL support: info@mosaico.io . Please DON'T write to this email to get free support: use Git issues for that.
+### MongoDB database
+
+the path to your mongoDB instance
+
+```
+backend_database                        mongodb://localhost/backend
+```
+
+### Admin password
+
+```
+backend_admin__password                 a password of your choice
+```
+
+### Hostname
+
+The domain name of your app
+
+```
+backend_host                            backend-test.herokuapp.com
+```
+
+### AWS S3
+
+Those are the keys you should set for aws
+
+```
+backend_storage__type                   aws
+backend_storage__aws__accessKeyId       20 characters key
+backend_storage__aws__secretAccessKey   40 characters secret key
+backend_storage__aws__bucketName        your bucket name
+backend_storage__aws__region            region of your bucket (ex: ap-southeast-1)
+```
+
+###### getting AWS id
+
+[console.aws.amazon.com/iam](https://console.aws.amazon.com/iam) -> **create new access key**
+
+###### creating the bucket
+
+[console.aws.amazon.com/s3](https://console.aws.amazon.com/s3) -> **create bucket**
+
+you have also to set the good policy for the bucket:
+
+**Properties** -> **Permissions** -> **Add bucket policy**
+
+and copy and paste this:
+
+```json
+{
+	"Version": "2008-10-17",
+	"Statement": [
+		{
+			"Sid": "AllowPublicRead",
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": "*"
+			},
+			"Action": "s3:GetObject",
+			"Resource": "arn:aws:s3:::YOURBUCKETNAME/*"
+		}
+	]
+}
+```
+
+then replace `YOURBUCKETNAME` by your real bucket name
+
+
+### Branding 
+
+You can define here the main colors of the application:
+
+- **contrast** colors are for the text laying upon the associated background-color
+- **primary** is for the top navigation
+- **accent** is for the buttons and links
+
+```js
+"brand": {
+    "color-primary": "rgb(233,30,99)",
+    "color-primary-contrast": "white",
+    "color-accent": "#3f51b5",
+    "color-accent-contrast": "white",
+    "brandName": "My brand name"
+},
+
+```
+
+### Other config
+
+```js
+// will print on the front some debug infos
+debug:          false,
+// redirect any http request to https
+forcessl:       false,
+images: {
+  // needed only if not using S3 image storage
+  uploadDir:    'uploads',
+  // tmp directory name for image upload
+  tmpDir:       'tmp',
+  // cache resized images & add cache-control to image request
+  cache:        false,
+},
+```
+
+## Dev prerequisite
+
+- [NodeJS 6](https://nodejs.org/en/)
+- [MongoDB v3.2.7](https://www.mongodb.com/) (if installed locally `mongod` to start) (`brew install mongod` on mac)
+- a SMTP server. [mailcatcher can help for local dev ](https://mailcatcher.me/) (`mailcatcher` to start) (`brew install ruby` relaunch terminal `gem install mailcatcher` on mac)
+- [sharp](http://sharp.dimens.io/en/stable/) should work out the box most of the time. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/). MacOs will need XCode in order to compile.
+
+You need to have:
+
+- clone/fork the project
+- in your terminal, go in the folder
+- run `npm run deps` in the root folder
+
+## Updating the code
+
+It should have a default config for dev already setup.  
+If you want to change some, create `.backendrc` at the root of the project then fill with the values you want to overrride as described in the `.backendrc-example`
+
+those are the main developper commands:
+
+### Build the project for *production*
+
+```
+npm run build
+```
+
+### Start a server configured for *production*
+
+```
+npm start
+```
+
+server will be running on `localhost:3000`
+
+### Build and start a *production* server
+
+```
+npm run prod
+```
+
+### Build and start a *development* server
+
+```
+npm run dev
+```
+
+- server will be running on `localhost:7000`
+- server will be restarted on files changes
+- build will be updated on files changes also
+
+### Make a release
+
+on your current branch
+
+```
+npm run release
+```
+
+The release will be pushed in the branch you have chosen (dev/stage)  
+Automatic deploy is configured in heroku. So **pushing to any branch will automatically been deployed to heroku**
+
+### Generating templates preview images
+
+see README.md
+
+### Databases scripts
+
+`.backendrc` should be provided with *dbConfigs* infos. See `.backendrc-example` for more informations
+
+#### sync-db
+
+- can copy one DB into another
+- can also copy a snapshot saved in `images.tmpDir` (see below) into another
+
+```
+npm run sync-db
+```
+
+#### backup-db
+
+- will save a snapshot of the specified DB in the folder defined by `images.tmpDir` config
+
+```
+npm run backup-db
+```
+
+#### local-db
+
+- save a *local db* snapshot
+- restore it later
+
+```
+npm run local-db
+```
+
+### Tests
+
+Run all backoffice's tests:
+
+- all the dev prerequisite
+- having the application being build `npm run build`
+- run the test with `npm run tape`
+
+Run a specific test:
+
+`./node_modules/.bin/tape tests/functional/authentification.js | ./node_modules/.bin/faucet`
+
+### S3 notes
+
+This is some script to backup a bucket or sync a bucket from a backup.  
+This is mostly use for developement purpose.
+
+#### requirements
+
+- [aws cli](http://docs.aws.amazon.com/cli/latest/reference/) – `brew install awscli` on a mac
+- `.backendc` filled with s3Configs parameters. See `.backendrc-example`
+
+[more details about why we use the aws cli](http://stackoverflow.com/questions/17832860/backup-strategies-for-aws-s3-bucket#answer-32927276)
+
+#### backing up to a local folder
+
+```
+npm run backup-s3
+```
+
+#### syncing a bucket from a local folder
+
+```
+npm run sync-s3
+```
