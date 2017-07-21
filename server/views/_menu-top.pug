@@ -1,0 +1,19 @@
+nav.mdl-navigation.mdl-layout--large-screen-only
+  a.mdl-navigation__link(href="/")=__('general.mailings')
+  a.mdl-navigation__link(href="/templates/select")=__('general.templates')
+  if _user.isAdmin
+    a.mdl-navigation__link(href="/admin")
+      i#nav-groups.material-icons group
+      .mdl-tooltip(data-mdl-for="nav-groups")=__('general.groups')
+    a.mdl-navigation__link(href="/users")
+      i#nav-users.material-icons person
+      .mdl-tooltip(data-mdl-for="nav-users")=__('general.users')
+    a.mdl-navigation__link(href="/templates")
+      i#nav-templates.material-icons web
+      .mdl-tooltip(data-mdl-for="nav-templates")=__('general.templates-list')
+  if getLocale() === 'en'
+    a.mdl-navigation__link(href=mergeQueries(_path, _query, { lang: 'fr' })) version française
+  else
+    a.mdl-navigation__link(href=mergeQueries(_path, _query, { lang: 'en' })) english version
+  a.mdl-navigation__link(href="/logout")
+    i.material-icons power_settings_new
