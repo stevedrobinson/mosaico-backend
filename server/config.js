@@ -90,7 +90,7 @@ if ( process.env.SENDGRID_USERNAME && process.env.SENDGRID_PASSWORD ) {
 }
 
 if (process.env.MONGODB_URI) {
-  config.database = config.MONGODB_URI
+  config.database = process.env.MONGODB_URI
 }
 
 if (process.env.HEROKU_APP_NAME) {
