@@ -29,7 +29,7 @@ const config  = rc('backend', {
   images: {
     uploadDir:    'uploads',
     tmpDir:       'tmp',
-    cache:        false,
+    cache:        true,
   },
   admin: {
     id:           '576b90a441ceadc005124896',
