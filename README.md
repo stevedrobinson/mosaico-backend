@@ -1,4 +1,4 @@
-Deploy your own copy on heroku: [![herokubtn](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/goodenough/mosaico-backend/tree/stage)
+[![herokubtn](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/goodenough/mosaico-backend/tree/stage)
 
 # Mosaico Backend email builder
 
