@@ -37,6 +37,24 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+# Mosaico backend
+
+Ready to go backend for [Mosaico](http://mosaico.io) editor.
+
+## INSTALL
+
+Pre-requisites:
+ - Node.js
+ - MongoDB
+ - SMTP server
+
+```sh
+npm run deps
+npm run dev
+```
+
+Then go to: [http://localhost:7000](http://localhost:7000)
+
 ## Heroku server configuration
 
 ### buildpack
