@@ -1,6 +1,22 @@
 [![herokubtn](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/goodenough/mosaico-backend/tree/stage)
 
-# Mosaico Backend email builder
+# Mosaico backend
+
+Ready to go backend for [Mosaico](http://mosaico.io) editor.
+
+## INSTALL
+
+Pre-requisites:
+ - Node.js
+ - MongoDB
+ - SMTP server
+
+```sh
+npm run deps
+npm run dev
+```
+
+Then go to: [http://localhost:7000](http://localhost:7000)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -36,24 +52,6 @@
     - [syncing a bucket from a local folder](#syncing-a-bucket-from-a-local-folder)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Mosaico backend
-
-Ready to go backend for [Mosaico](http://mosaico.io) editor.
-
-## INSTALL
-
-Pre-requisites:
- - Node.js
- - MongoDB
- - SMTP server
-
-```sh
-npm run deps
-npm run dev
-```
-
-Then go to: [http://localhost:7000](http://localhost:7000)
 
 ## Heroku server configuration
 
