@@ -7,9 +7,11 @@ Ready to go backend for [Mosaico](http://mosaico.io) editor.
 ## INSTALL
 
 Pre-requisites:
- - Node.js
- - MongoDB
+ - Node.js (>=6)
+ - MongoDB (~3.2.7)
  - SMTP server
+
+NB: [sharp](http://sharp.dimens.io/en/stable/) should work out the box most of the time. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/). MacOs will need XCode in order to compile.
 
 ```sh
 npm run deps
@@ -17,41 +19,6 @@ npm run dev
 ```
 
 Then go to: [http://localhost:7000](http://localhost:7000)
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-
-- [Heroku server configuration](#heroku-server-configuration)
-  - [buildpack](#buildpack)
-  - [configuring environments variables](#configuring-environments-variables)
-  - [Mail sending](#mail-sending)
-  - [from email adress](#from-email-adress)
-  - [MongoDB database](#mongodb-database)
-  - [Admin password](#admin-password)
-  - [Hostname](#hostname)
-  - [AWS S3](#aws-s3)
-  - [Branding](#branding)
-  - [Other config](#other-config)
-- [Dev prerequisite](#dev-prerequisite)
-- [Updating the code](#updating-the-code)
-  - [Build the project for *production*](#build-the-project-for-production)
-  - [Start a server configured for *production*](#start-a-server-configured-for-production)
-  - [Build and start a *production* server](#build-and-start-a-production-server)
-  - [Build and start a *development* server](#build-and-start-a-development-server)
-  - [Make a release](#make-a-release)
-  - [Generating templates preview images](#generating-templates-preview-images)
-  - [Databases scripts](#databases-scripts)
-    - [sync-db](#sync-db)
-    - [backup-db](#backup-db)
-    - [local-db](#local-db)
-  - [Tests](#tests)
-  - [S3 notes](#s3-notes)
-    - [requirements](#requirements)
-    - [backing up to a local folder](#backing-up-to-a-local-folder)
-    - [syncing a bucket from a local folder](#syncing-a-bucket-from-a-local-folder)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Heroku server configuration
 
@@ -209,19 +176,6 @@ images: {
   cache:        false,
 },
 ```
-
-## Dev prerequisite
-
-- [NodeJS 6](https://nodejs.org/en/)
-- [MongoDB v3.2.7](https://www.mongodb.com/) (if installed locally `mongod` to start) (`brew install mongod` on mac)
-- a SMTP server. [mailcatcher can help for local dev ](https://mailcatcher.me/) (`mailcatcher` to start) (`brew install ruby` relaunch terminal `gem install mailcatcher` on mac)
-- [sharp](http://sharp.dimens.io/en/stable/) should work out the box most of the time. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/). MacOs will need XCode in order to compile.
-
-You need to have:
-
-- clone/fork the project
-- in your terminal, go in the folder
-- run `npm run deps` in the root folder
 
 ## Updating the code
 
