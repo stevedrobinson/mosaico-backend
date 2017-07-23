@@ -4,9 +4,10 @@
   "repository": "https://github.com/goodenough/mosaico-backend",
   "keywords": [
   ],
+  "stack": "cedar-14",
   "success_url": "/admin/login",
   "env": {
-    "backend_HEROKU_APP_NAME": {
+    "HEROKU_APP_NAME": {
         "description": "copy and paste the name you've given to you application",
         "required": true
     },

@@ -18,33 +18,16 @@ html(lang=getLocale())
           //- Add spacer, to align navigation to the right
           .mdl-layout-spacer
           //- Navigation. We hide it in small screens
-          nav.mdl-navigation.mdl-layout--large-screen-only
-            a.mdl-navigation__link(href="/")=__('general.mailings')
-            a.mdl-navigation__link(href="/templates/select")=__('general.templates')
-            a.mdl-navigation__link(href="/admin")
-              i#nav-groups.material-icons group
-              .mdl-tooltip(data-mdl-for="nav-groups")=__('general.groups')
-            a.mdl-navigation__link(href="/users")
-              i#nav-users.material-icons person
-              .mdl-tooltip(data-mdl-for="nav-users")=__('general.users')
-            a.mdl-navigation__link(href="/templates")
-              i#nav-templates.material-icons web
-              .mdl-tooltip(data-mdl-for="nav-templates")=__('general.templates-list')
-            if getLocale() === 'en'
-              a.mdl-navigation__link(href=mergeQueries(_path, _query, { lang: 'fr' })) fr
-            else
-              a.mdl-navigation__link(href=mergeQueries(_path, _query, { lang: 'en' })) en
-            a.mdl-navigation__link(href="/logout")
-              i.material-icons power_settings_new
+          include _menu-top
 
       .mdl-layout__drawer
         span.mdl-layout-title= title
         nav.mdl-navigation
           a.mdl-navigation__link(href="/")=__('general.mailings')
-          a.mdl-navigation__link(href="/new-mailing")=__('general.groups')
+          a.mdl-navigation__link(href="/new-mailing")=__('general.templates')
           a.mdl-navigation__link(href="/admin")=__('general.groups')
           a.mdl-navigation__link(href="/users")=__('general.users')
-          a.mdl-navigation__link(href="/groups")=__('general.groups')
+          a.mdl-navigation__link(href="/templates")=__('general.templates-list')
           a.mdl-navigation__link(href="/logout")=__('general.logout')
 
       main.mdl-layout__content(class=page === 'full-width-layout' ? 'mdl-grid mdl-grid--no-spacing' : '' )

@@ -8,7 +8,6 @@ const _           = require( 'lodash' )
 const { inspect } = require( 'util' )
 const { mkdirp }  = require( 'fs-extra' )
 
-
 //----- DEFAULT CONFIG
 // made for an easy use on local dev
 const config  = rc('backend', {
@@ -30,7 +29,7 @@ const config  = rc('backend', {
   images: {
     uploadDir:    'uploads',
     tmpDir:       'tmp',
-    cache:        false,
+    cache:        true,
   },
   admin: {
     id:           '576b90a441ceadc005124896',
@@ -52,7 +51,7 @@ const config  = rc('backend', {
 })
 
 config.NODE_ENV       = config.NODE_ENV || process.env.NODE_ENV || 'development'
-config.PORT           = process.env.PORT || 3000
+config.PORT           = config.PORT || process.env.PORT || 3000
 config.TEST           = process.env.TEST ? true : false
 
 config.isDev      = config.NODE_ENV === 'development'
@@ -82,20 +81,20 @@ if (config.TEST) {
 
 //----- HEROKU ADDONS OVERRIDES
 
-if ( config.SENDGRID_USERNAME && config.SENDGRID_PASSWORD ) {
+if ( process.env.SENDGRID_USERNAME && process.env.SENDGRID_PASSWORD ) {
   config.emailTransport.service = 'SendGrid'
   config.emailTransport.auth    = {
-    user: config.SENDGRID_USERNAME,
-    pass: config.SENDGRID_PASSWORD,
+    user: process.env.SENDGRID_USERNAME,
+    pass: process.env.SENDGRID_PASSWORD,
   }
 }
 
-if (config.MONGODB_URI) {
-  config.database = config.MONGODB_URI
+if (process.env.MONGODB_URI) {
+  config.database = process.env.MONGODB_URI
 }
 
-if (config.HEROKU_APP_NAME) {
-  config.host = `${config.HEROKU_APP_NAME}.herokuapp.com`
+if (process.env.HEROKU_APP_NAME) {
+  config.host = `${process.env.HEROKU_APP_NAME}.herokuapp.com`
 }
 
 // if ( config.isDev ) console.log( inspect(config) )
