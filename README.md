@@ -4,12 +4,14 @@
 
 Ready to go backend for [Mosaico](http://mosaico.io) editor.
 
+SCREENCAST
+
 ## INSTALL
 
 Pre-requisites:
  - Node.js (>=6)
  - MongoDB (~3.2.7)
- - SMTP server
+ - SMTP server (like [MockSMTP](http://mocksmtpapp.com/) or )
 
 NB: [sharp](http://sharp.dimens.io/en/stable/) should work out the box most of the time. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/). MacOs will need XCode in order to compile.
 
@@ -18,164 +20,31 @@ npm run deps
 npm run dev
 ```
 
-Then go to: [http://localhost:7000](http://localhost:7000)
+Then go to: [http://localhost:3000](http://localhost:3000)
 
-## Heroku server configuration
+## Quick start
 
-### buildpack
+TODO
 
-In order for the image resize & the templates' preview generation to work you will need those build packs IN THAT ORDER:
+## Configuration
 
-- https://github.com/alex88/heroku-buildpack-vips.git
-- https://github.com/heroku/heroku-buildpack-apt
-- https://github.com/captain401/heroku-buildpack-xvfb.git
-- https://github.com/benschwarz/heroku-electron-buildpack.git
-- heroku/nodejs
+Mosaico backend has a decent localhost-first [default configuration](https://github.com/goodenough/mosaico-backend/blob/master/server/config.js#L13-L53).
 
-Copy and paste those urls in the `Buildpacks` section of `Settings`
+You can override any of these values, in sereval ways (thanks to [rc](https://www.npmjs.com/package/rc)):
 
-This has to be done BEFORE any deploy
+1.  command line arguments: `node server --host=localhost:4000`
+2.  environment `backend_*` variables: `export backend_host="localhost:4000"`
+3.  config file (INI or JSON):
+    1.  passed from command line: `node server --config /path/to/config.json`
+    2.  a `.backendrc` file found somewhere at (in order):
+        1.  local: `.` but also `../`, `../../`, `../../../`, …
+        2.  home: `$HOME/.backendrc` or `$HOME/.backend/config` or `$HOME/.config/backend` or `$HOME/.config/backend/config`
+        3.  etc: `/etc/backendrc` or `/etc/backend/config`
 
-### configuring environments variables
+NB: In case of 3., just have a copy of the `.backendrc-example` file.
 
-- go in the settings of your application
-- click on `settings`
-- click on `Reveal Config Vars`
-- variables name should follow this pattern :
-
-```
-backend_emailOptions__from
-```
-
-- always put `backend_` first
-- then each level of config should be seperate with a double underscore: `__`
-- see `.backendrc-example` on the master branch for the config requirements
-
-below are the common environments variables you should want to set:
-
-
-### Mail sending
-
-```
-backend_emailTransport__service         Mailjet
-backend_emailTransport__auth__user      your Username (or API key)
-backend_emailTransport__auth__pass      your password (or Secret Key)
-```
-
-
-backend_emailTransport__service is for [nodemailer-wellknown](https://www.npmjs.com/package/nodemailer-wellknown) configuration  
-
-
-### from email adress
-
-
-```
-backend_emailOptions__from              Email Builder <emailbuilder@backend.com>
-```
-
-### MongoDB database
-
-the path to your mongoDB instance
-
-```
-backend_database                        mongodb://localhost/backend
-```
-
-### Admin password
-
-```
-backend_admin__password                 a password of your choice
-```
-
-### Hostname
-
-The domain name of your app
-
-```
-backend_host                            backend-test.herokuapp.com
-```
-
-### AWS S3
-
-Those are the keys you should set for aws
-
-```
-backend_storage__type                   aws
-backend_storage__aws__accessKeyId       20 characters key
-backend_storage__aws__secretAccessKey   40 characters secret key
-backend_storage__aws__bucketName        your bucket name
-backend_storage__aws__region            region of your bucket (ex: ap-southeast-1)
-```
-
-###### getting AWS id
-
-[console.aws.amazon.com/iam](https://console.aws.amazon.com/iam) -> **create new access key**
-
-###### creating the bucket
-
-[console.aws.amazon.com/s3](https://console.aws.amazon.com/s3) -> **create bucket**
-
-you have also to set the good policy for the bucket:
-
-**Properties** -> **Permissions** -> **Add bucket policy**
-
-and copy and paste this:
-
-```json
-{
-	"Version": "2008-10-17",
-	"Statement": [
-		{
-			"Sid": "AllowPublicRead",
-			"Effect": "Allow",
-			"Principal": {
-				"AWS": "*"
-			},
-			"Action": "s3:GetObject",
-			"Resource": "arn:aws:s3:::YOURBUCKETNAME/*"
-		}
-	]
-}
-```
-
-then replace `YOURBUCKETNAME` by your real bucket name
-
-
-### Branding 
-
-You can define here the main colors of the application:
-
-- **contrast** colors are for the text laying upon the associated background-color
-- **primary** is for the top navigation
-- **accent** is for the buttons and links
-
-```js
-"brand": {
-    "color-primary": "rgb(233,30,99)",
-    "color-primary-contrast": "white",
-    "color-accent": "#3f51b5",
-    "color-accent-contrast": "white",
-    "brandName": "My brand name"
-},
-
-```
-
-### Other config
-
-```js
-// will print on the front some debug infos
-debug:          false,
-// redirect any http request to https
-forcessl:       false,
-images: {
-  // needed only if not using S3 image storage
-  uploadDir:    'uploads',
-  // tmp directory name for image upload
-  tmpDir:       'tmp',
-  // cache resized images & add cache-control to image request
-  cache:        false,
-},
-```
+NB: Heroku uses 2. environment [config vars](https://devcenter.heroku.com/articles/config-vars#setting-up-config-vars-for-a-deployed-application) that will take precedence over our defaults:
+![heroku-config-vars](http://i.imgur.com/7d8sXGM.png)
 
 ## Updating the code
 
