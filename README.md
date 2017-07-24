@@ -39,6 +39,7 @@ You can override any of these values, in sereval ways (thanks to [rc](https://ww
 2. environment `backend_*` variables:
    ```sh
    export backend_admin__password="shhhhht"
+   node server/worker.js
    ```
 3. config file (INI or JSON):
     1. passed from command line: `node server --config /path/to/config.json`
