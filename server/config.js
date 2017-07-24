@@ -24,7 +24,6 @@ const config  = rc('backend', {
     testSubjectPrefix:  '[mosaico-backend email builder]',
   },
   storage: {
-    type:         'local',
   },
   images: {
     uploadDir:    'uploads',
@@ -60,10 +59,26 @@ config.TEST           = process.env.TEST ? true : false
 config.isDev      = config.NODE_ENV === 'development'
 config.isProd     = config.NODE_ENV === 'production'
 config.isPreProd  = !config.isDev && !config.isProd
-config.isAws      = config.storage.type === 'aws'
 
 // last space is needed
 config.emailOptions.testSubjectPrefix = `${config.emailOptions.testSubjectPrefix.trim()} `
+
+//----- STORAGE
+
+if (config.storage.aws) {
+  const { aws }       = config.storage
+  const isValidKey    = /^[A-Z\d]{20}$/.test( aws.accessKeyId )
+  const isValidSecret = /^[a-zA-Z0-9+/]{40}$/.test( aws.secretAccessKey )
+  const isValidregion = /^[a-z]{2}-[a-z]+-\d$/.test( aws.region )
+  if (!isValidKey || !isValidSecret || !isValidregion) {
+    throw new Error('AWS setttings are incorrect')
+  }
+  config.storage.type = 'aws'
+} else {
+  config.storage.type = 'local'
+}
+
+config.isAws   = config.storage.type === 'aws'
 
 //----- TEST SPECIFICS
 

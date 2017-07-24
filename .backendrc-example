@@ -28,16 +28,9 @@
   // STORAGE
   //////
 
-  //----- local
+  //----- if using Amazon S3:
 
   "storage": {
-    "type": "local"
-  },
-
-  //----- OR for using Amazon S3:
-
-  "storage": {
-    "type": "aws",
     "aws": {
       "accessKeyId": "20 characters key",
       "secretAccessKey": "40 characters secret key",

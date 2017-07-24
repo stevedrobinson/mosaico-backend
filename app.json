@@ -8,7 +8,7 @@
   "success_url": "/admin/login",
   "env": {
     "HEROKU_APP_NAME": {
-        "description": "copy and paste the name you've given to you application",
+        "description": "copy and paste the name you've given to your application",
         "required": true
     },
     "backend_admin__password": {
@@ -24,11 +24,6 @@
       "description": "Subject prefix for testing mails",
       "value": "[mosaico-backend email builder] ",
       "required": true
-    },
-    "backend_storage__type": {
-      "description": "please don't change this value",
-      "required": true,
-      "value": "aws"
     },
     "backend_storage__aws__accessKeyId": {
       "description": "20 characters key",
