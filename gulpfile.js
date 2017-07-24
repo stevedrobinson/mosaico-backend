@@ -47,13 +47,12 @@ bump.description = `Bump versions on package.json and bower.json. Used only in r
 const autoprefixer  = require('autoprefixer')
 const csswring      = require('csswring')
 
-const cssDev        = lazypipe()
-  .pipe($.sourcemaps.write)
-
 const cssProd       = lazypipe()
-  .pipe($.postcss, [
+  .pipe( $.rename, filePath => filePath.basename = filePath.basename.replace('-dev', '') )
+  .pipe( $.purgeSourcemaps )
+  .pipe( $.postcss, [
     csswring({ removeAllComments: true })
-  ])
+  ] )
 
 function cleanCss(cb) {
   if (isDev) return cb()
@@ -63,23 +62,24 @@ function cleanCss(cb) {
 function cssEditor() {
   return gulp
   .src( 'src/css/custom-editor.less' )
-  .pipe( $.if(isDev, $.plumber(onError)) )
-  .pipe( $.if(isDev, $.sourcemaps.init()) )
+  .pipe( $.plumber(onError) )
+  .pipe( $.sourcemaps.init() )
   .pipe( $.less() )
   .pipe( $.postcss([
     autoprefixer({ browsers: ['ie 10', 'last 2 versions'], }),
   ]) )
-  .pipe( $.if(isDev, cssDev(), cssProd()) )
-  .pipe( $.rename('editor.css') )
-  .pipe( $.if(!isDev, $.cleanCss()) )
+  .pipe( $.sourcemaps.write() )
+  .pipe( $.rename('editor-dev.css') )
   .pipe( gulp.dest(buildDir) )
-  .pipe( $.if(isDev, reload({stream: true})) )
+  .pipe( reload({stream: true}) )
+  .pipe( $.if(!isWatch, cssProd()) )
+  .pipe( $.if(!isWatch, gulp.dest(buildDir)) )
 }
 
 function cssApp() {
   return gulp
   .src( 'src/css-backend/index.styl' )
-  .pipe( $.if(isDev, $.plumber(onError)) )
+  .pipe( $.plumber(onError) )
   .pipe( $.sourcemaps.init() )
   .pipe( $.stylus({
     'include css': true,
@@ -89,11 +89,12 @@ function cssApp() {
   ]) )
   .pipe( $.replace('rgb(255,152,0)', 'var(--color-primary, var(--default-color-primary))') )
   .pipe( $.replace('rgb(68,138,255)', 'var(--color-accent, var(--default-color-accent))') )
-  .pipe( $.rename('app.css') )
-  .pipe( $.if(isDev, cssDev(), cssProd()) )
-  .pipe( $.if(!isDev, $.cleanCss()) )
+  .pipe( $.sourcemaps.write() )
+  .pipe( $.rename('app-dev.css') )
   .pipe( gulp.dest(buildDir) )
-  .pipe( $.if(isDev, reload({stream: true})) )
+  .pipe( reload({stream: true}) )
+  .pipe( $.if(!isWatch, cssProd()) )
+  .pipe( $.if(!isWatch, gulp.dest(buildDir)) )
 }
 
 const css       = gulp.series( cleanCss, gulp.parallel(cssEditor, cssApp) )
@@ -529,8 +530,11 @@ function watchProdLike() {
   gulp.watch(['server/views/*.jade', 'dist/*.js']).on('change', reload)
   gulp.watch('src/css/**/*.less', cssApp )
 }
-gulp.task( 'css',  css)
-gulp.task( 'js', js)
+
+gulp.task( 'css',  css )
+gulp.task( 'css:editor', cssEditor )
+gulp.task( 'css:app', cssApp )
+gulp.task( 'js', js )
 gulp.task( 'assets',  assets )
 gulp.task( 'rev',  rev )
 gulp.task( 'templates',  templates )

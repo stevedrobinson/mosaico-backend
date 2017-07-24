@@ -128,6 +128,7 @@
     "gulp-plumber": "^1.0.1",
     "gulp-postcss": "^7.0.0",
     "gulp-pug": "^3.2.0",
+    "gulp-purge-sourcemaps": "^1.0.0",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.6.1",
     "gulp-sourcemaps": "^2.6.0",
