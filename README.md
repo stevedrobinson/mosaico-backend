@@ -32,14 +32,20 @@ Mosaico backend has a decent localhost-first [default configuration](https://git
 
 You can override any of these values, in sereval ways (thanks to [rc](https://www.npmjs.com/package/rc)):
 
-1.  command line arguments: `node server/worker.js --admin__password=shhhhht`
-2.  environment `backend_*` variables: `export backend_admin__password="shhhhht"`
-3.  config file (INI or JSON):
-    1.  passed from command line: `node server --config /path/to/config.json`
-    2.  a `.backendrc` file found somewhere at (in order):
-        1.  local: `.` but also `../`, `../../`, `../../../`, …
-        2.  home: `$HOME/.backendrc` or `$HOME/.backend/config` or `$HOME/.config/backend` or `$HOME/.config/backend/config`
-        3.  etc: `/etc/backendrc` or `/etc/backend/config`
+1. command line arguments:
+   ```sh
+   node server/worker.js --admin__password=shhhhht
+   ```
+2. environment `backend_*` variables:
+   ```sh
+   export backend_admin__password="shhhhht"
+   ```
+3. config file (INI or JSON):
+    1. passed from command line: `node server --config /path/to/config.json`
+    2. a `.backendrc` file found somewhere at (in order):
+        1. local: `.` but also `../`, `../../`, `../../../`, …
+        2. home: `$HOME/.backendrc` or `$HOME/.backend/config` or `$HOME/.config/backend` or `$HOME/.config/backend/config`
+        3. etc: `/etc/backendrc` or `/etc/backend/config`
 
 NB: In case of 3., just have a copy of the [`.backendrc-example`](https://github.com/goodenough/mosaico-backend/blob/master/.backendrc-example) file.
 
