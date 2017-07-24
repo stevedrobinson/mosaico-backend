@@ -6,11 +6,16 @@ meta(name="description", content=__('layout.description'))
 meta(name="application-name", content="Email Builder")
 
 link(rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css")
-link(rel="stylesheet" href="/material-design-icons.css")
-link(rel="stylesheet" href=md5Url('/app.css'))
+link(rel="stylesheet" href=md5Url('/material-design-icons.css'))
+
+if (_config.isDev)
+  link(rel="stylesheet" href="/app-dev.css")
+else
+  link(rel="stylesheet" href=md5Url('/app.css'))
+
 include _brand-colors
 
 if (_config.isDev)
   script(defer src="/material.js")
 else
-  script(defer src="/material.min.js")
+  script(defer src=md5Url('/material.min.js'))

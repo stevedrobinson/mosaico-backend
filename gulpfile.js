@@ -11,11 +11,12 @@ const merge           = require('merge-stream')
 const args            = require('yargs').argv
 const mainBowerFiles  = require('main-bower-files')
 const _               = require('lodash')
+const { cyan }        = require('chalk')
 
 const isWatch         = args.watch  === true
 const isDev           = args.prod   !== true
 const env             = isDev ? 'development' : 'production'
-const { cyan }        = require('chalk')
+
 const buildDir        = 'dist'
 
 function onError(err) {
@@ -38,7 +39,10 @@ function bump() {
   }))
   .pipe(gulp.dest('./'))
 }
-bump.description = `Bump versions on package.json and bower.json. Used only in release script`
+bump.description  = `Bump versions on package.json and bower.json. Used only in release script`
+
+const unDevName   = lazypipe()
+  .pipe( $.rename, filePath => filePath.basename = filePath.basename.replace('-dev', '') )
 
 ////////
 // CSS
@@ -48,15 +52,14 @@ const autoprefixer  = require('autoprefixer')
 const csswring      = require('csswring')
 
 const cssProd       = lazypipe()
-  .pipe( $.rename, filePath => filePath.basename = filePath.basename.replace('-dev', '') )
+  .pipe( unDevName )
   .pipe( $.purgeSourcemaps )
   .pipe( $.postcss, [
     csswring({ removeAllComments: true })
   ] )
 
-function cleanCss(cb) {
-  if (isDev) return cb()
-  return del([buildDir + '/*.css', buildDir + '/*.css.map'], cb)
+function cleanCss() {
+  return del([buildDir + '/*.css', buildDir + '/*.css.map'])
 }
 
 function cssEditor() {
@@ -106,8 +109,7 @@ css.description = `Build CSS for the mosaico editor and the app`
 
 //----- LIBRARIES
 
-function cleanLib(cb) {
-  if (isDev) return cb()
+function cleanLib() {
   return del(buildDir, '/**/*.js')
 }
 
@@ -148,22 +150,32 @@ function mosaicoLib() {
     'jquery.fileupload-validate.js',
     '*.js',
   ]) )
-  .pipe( $.concat('lib-editor.js') )
+  .pipe( $.concat('lib-editor-dev.js') )
+  .pipe( gulp.dest(buildDir + '/lib') )
+  .pipe( unDevName() )
+  .pipe( $.uglify() )
 
   // only copy necessary tinymce plugins
   const tinymce = gulp.src( [
     'bower_components/tinymce/themes/modern/theme.js',
+    'bower_components/tinymce/themes/modern/theme.min.js',
     'bower_components/tinymce/plugins/paste/plugin.js',
+    'bower_components/tinymce/plugins/paste/plugin.min.js',
     'bower_components/tinymce/plugins/link/plugin.js',
+    'bower_components/tinymce/plugins/link/plugin.min.js',
     'bower_components/tinymce/plugins/hr/plugin.js',
+    'bower_components/tinymce/plugins/hr/plugin.min.js',
     'bower_components/tinymce/plugins/lists/plugin.js',
+    'bower_components/tinymce/plugins/lists/plugin.min.js',
     'bower_components/tinymce/plugins/textcolor/plugin.js',
+    'bower_components/tinymce/plugins/textcolor/plugin.min.js',
     'bower_components/tinymce/plugins/colorpicker/plugin.js',
+    'bower_components/tinymce/plugins/colorpicker/plugin.min.js',
     'bower_components/tinymce/plugins/code/plugin.js',
+    'bower_components/tinymce/plugins/code/plugin.min.js',
   ], { base: 'bower_components/tinymce' } )
 
   return merge(editorLibs, tinymce)
-  .pipe( $.if(!isDev, $.uglify()) )
   .pipe( gulp.dest(buildDir + '/lib') )
 }
 
@@ -173,72 +185,83 @@ editorLib.description = `build JS for the mosaico editor and the app`
 
 //----- MOSAICO APPLICATION
 
-const browserify  = require('browserify')
-const source      = require('vinyl-source-stream')
-const vinylBuffer = require('vinyl-buffer')
-const aliasify    = require('aliasify')
-const shim        = require('browserify-shim')
-const debowerify  = require('debowerify')
-const babelify    = require('babelify')
-const envify      = require('envify/custom')
-const watchify    = require('watchify')
+const browserify  = require( 'browserify' )
+const source      = require( 'vinyl-source-stream' )
+const vinylBuffer = require( 'vinyl-buffer' )
+const aliasify    = require( 'aliasify' )
+const shim        = require( 'browserify-shim' )
+const debowerify  = require( 'debowerify' )
+const babelify    = require( 'babelify' )
+const envify      = require( 'envify/custom' )
+const watchify    = require( 'watchify' )
 
-function jsMosaico() {
-  let b = browserify({
+function jsMosaico(debug = false) {
+  return browserify({
     cache:        {},
     packageCache: {},
-    debug:        true,
+    debug:        debug,
     entries:      ['./src/js/app.js', './build/templates.js'],
     standalone:   'Mosaico',
   })
-
-  b.transform(aliasify, {
-    "aliases": {
-      "console": "console-browserify/index.js",
-      "jsep": "jsep/src/jsep.js",
-      "knockoutjs-reactor": "knockoutjs-reactor/src/knockout.reactor.js"
+  .transform(aliasify, {
+    aliases: {
+      console:              `console-browserify/index.js`,
+      jsep:                 `jsep/src/jsep.js`,
+      'knockoutjs-reactor': `knockoutjs-reactor/src/knockout.reactor.js`
     }
   })
-  b.transform( shim )
-  b.transform( debowerify )
-  // b.transform(babelify, {
-  //   presets:      ['es2015'],
-  // })
-  b.transform( babelify.configure({
+  .transform( shim )
+  .transform( debowerify )
+  .transform( babelify.configure({
     presets:    ['es2015'],
     // Optional only regex - if any filenames **don't** match this regex
     // then they aren't compiled
     only:       /custom-/,
   }) )
-  b.transform(envify({
+  .transform(envify({
     _:          'purge',
-    NODE_ENV:   env,
+    NODE_ENV:   debug,
     CUSTOM:     true,
     MOSAICO:    false,
   }))
+}
+
+function jsMosaicoDev() {
+  let b = jsMosaico( true )
 
   if (isWatch) {
     b = watchify( b )
     b.on('update', function () {
       $.util.log('bundle front app')
-      bundleShare( b )
+      bundleShareDev( b )
     })
   }
 
-  return bundleShare(b)
+  return bundleShareDev(b)
+
 }
 
-function bundleShare(b) {
+function bundleShareDev( b ) {
   return b.bundle()
+  .on( 'error', onError )
+  .pipe( source('editor-dev.js') )
+  .pipe( vinylBuffer() )
+  .pipe( gulp.dest(buildDir) )
+}
+
+function jsMosaicoProd() {
+  return jsMosaico()
+  .bundle()
   .on( 'error', onError )
   .pipe( source('editor.js') )
   .pipe( vinylBuffer() )
-  .pipe( $.if(!isDev, $.stripDebug()) )
-  .pipe( $.if(!isDev, $.uglify()) )
-  .pipe(gulp.dest(buildDir))
+  .pipe( $.stripDebug() )
+  .pipe( $.uglify() )
+  .pipe( gulp.dest(buildDir) )
+
 }
 
-const jsEditor        = gulp.series( templates, jsMosaico)
+const jsEditor        = gulp.series( templates, gulp.parallel(jsMosaicoDev, jsMosaicoProd) )
 jsEditor.description  = `Bundle mosaico app, without libraries`
 
 //----- MOSAICO'S KNOCKOUT TEMPLATES: see -> combineKOTemplates.js
@@ -290,53 +313,67 @@ function templates() {
 
 const pugify = require('pugify')
 
-function jsHome() {
-  let b = browserify({
+function jsUser(debug = false) {
+  return browserify({
     cache:        {},
     packageCache: {},
-    debug:        true,
+    debug:        debug,
     entries:      ['./src/js-user-backend/index.js']
   })
   .transform(babelify, {
     presets:      ['es2015'],
   })
   .transform(pugify.pug({
-    pretty:       isDev,
-    compileDebug: isDev,
+    pretty:       debug,
+    compileDebug: debug,
   }))
   .transform(envify({
     _:            'purge',
-    NODE_ENV:     env,
-    LOG:          isDev,
+    NODE_ENV:     debug ? 'development' : 'production',
+    LOG:          debug,
   }))
-
-  if (isWatch) {
-    b = watchify(b)
-    b.on('update', function () {
-      $.util.log('bundle home app')
-      bundleHome(b)
-    })
-  }
-  return bundleHome(b)
-
 }
 
-function bundleHome( b ) {
+function jsUserDev() {
+  let b = jsUser( true )
+
+  if (isWatch) {
+    b = watchify( b )
+    b.on('update', function () {
+      $.util.log('bundle home app')
+      bundleUserDev( b )
+    })
+  }
+  return bundleUserDev( b )
+}
+
+function bundleUserDev( b ) {
   return b.bundle()
   .on( 'error', onError )
-  .pipe( source('user.js') )
+  .pipe( source('user-dev.js') )
   .pipe( vinylBuffer() )
-  .pipe( $.if(!isDev, $.uglify()) )
   .pipe( gulp.dest(buildDir) )
 }
 
+function jsUserProd() {
+  return jsUser()
+  .bundle()
+  .on( 'error', onError )
+  .pipe( source('user.js') )
+  .pipe( vinylBuffer() )
+  .pipe( $.uglify() )
+  .pipe( gulp.dest(buildDir) )
+}
+
+gulp.task( 'js:user', gulp.parallel(jsUserDev, jsUserProd) )
+
 //----- ADMIN JS
 
-function jsAdmin() {
-  let b = browserify({
+function jsAdmin( debug = false ) {
+  return browserify({
     cache:        {},
     packageCache: {},
-    debug:        true,
+    debug:        debug,
     entries:      ['./src/js-admin-backend/index.js']
   })
   .transform(babelify, {
@@ -344,31 +381,45 @@ function jsAdmin() {
   })
   .transform(envify({
     _:            'purge',
-    NODE_ENV:     env,
-    LOG:          isDev,
+    NODE_ENV:     debug ? 'development' : 'production',
+    LOG:          debug,
   }))
-
-  if (isWatch) {
-    b = watchify(b)
-    b.on('update', function () {
-      $.util.log('bundle admin app')
-      bundleAdmin(b)
-    })
-  }
-  return bundleAdmin(b)
-
 }
 
-function bundleAdmin(b) {
+function jsAdminDev() {
+  let b = jsAdmin( true )
+
+  if (isWatch) {
+    b = watchify( b )
+    b.on('update', function () {
+      $.util.log('bundle admin app')
+      bundleAdminDev(b)
+    })
+  }
+  return bundleAdminDev( b )
+}
+
+function bundleAdminDev(b) {
   return b.bundle()
   .on( 'error', onError )
-  .pipe( source('admin.js') )
+  .pipe( source('admin-dev.js') )
   .pipe( vinylBuffer() )
-  .pipe( $.if(!isDev, $.uglify()) )
   .pipe( gulp.dest(buildDir) )
 }
 
-const js        = gulp.parallel( mosaicoLib, jsEditor, jsHome, jsAdmin )
+function jsAdminProd() {
+  return jsAdmin()
+  .bundle()
+  .on( 'error', onError )
+  .pipe( source('admin.js') )
+  .pipe( vinylBuffer() )
+  .pipe( $.uglify() )
+  .pipe( gulp.dest(buildDir) )
+}
+
+gulp.task( 'js:admin', gulp.parallel(jsAdminDev, jsAdminProd) )
+
+const js        = gulp.parallel( mosaicoLib, jsEditor, 'js:user', 'js:admin' )
 js.description  = `build js for mosaico app and the for the rests of the application`
 
 ////////
@@ -437,10 +488,12 @@ function rev() {
   return gulp
   .src( [
     'dist/**/*.*',
+    '!dist/**/*-dev.*',
     'res/**/*.*',
     '!res/lang/*.*',
     'node_modules/material-design-lite/*.js',
     'node_modules/material-design-icons-iconfont/dist/**/*.*',
+    '!node_modules/material-design-icons-iconfont/dist/**/*.scss',
   ] )
   .pipe( through.obj(passThrough, flush) )
   .pipe( gulp.dest('server') )
@@ -501,16 +554,14 @@ function nodemon(cb) {
 
 function bsAndWatch() {
   browserSync.init({
-    proxy: 'http://localhost:3000',
-    open: false,
-    port: 7000,
-    ghostMode: false,
+    proxy:      'http://localhost:3000',
+    open:       false,
+    port:       7000,
+    ghostMode:  false,
   })
-
-  gulp.watch(['server/views/*.jade', 'dist/*.js']).on('change', reload)
-  gulp.watch([
-    'src/css/**/*.less',
-    'src/css-backend/**/*.styl'],     css )
+  gulp.watch( ['server/views/*.jade', 'dist/*.js']).on('change', reload )
+  gulp.watch( 'src/css/**/*.less', cssEditor )
+  gulp.watch( 'src/css-backend/**/*.styl', cssApp )
   gulp.watch( ['src/tmpl/*.html', 'src/tmpl-custom/*.html'], templates )
 }
 
@@ -528,13 +579,17 @@ function nodemonProd(cb) {
 
 function watchProdLike() {
   gulp.watch(['server/views/*.jade', 'dist/*.js']).on('change', reload)
-  gulp.watch('src/css/**/*.less', cssApp )
+  gulp.watch('src/css/**/*.less', cssEditor )
+  gulp.watch( 'src/css-backend/**/*.styl', cssApp )
+  gulp.watch( ['src/tmpl/*.html', 'src/tmpl-custom/*.html'], templates )
 }
 
 gulp.task( 'css',  css )
 gulp.task( 'css:editor', cssEditor )
 gulp.task( 'css:app', cssApp )
 gulp.task( 'js', js )
+gulp.task( 'js:editor', jsEditor )
+gulp.task( 'js:editor-libs', mosaicoLib )
 gulp.task( 'assets',  assets )
 gulp.task( 'rev',  rev )
 gulp.task( 'templates',  templates )

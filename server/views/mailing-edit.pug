@@ -15,18 +15,26 @@ html(lang=getLocale())
     link(href='https://fonts.googleapis.com/css?family=PT+Sans:400,700', rel='stylesheet', type='text/css')
 
     meta(name="viewport", content="width=1024, initial-scale=1")
-    script(src=md5Url('/lib/lib-editor.js') )
-    link(rel="stylesheet", href=md5Url('/editor.css') )
+
     include _brand-colors
-    script(src=md5Url('/editor.js'))
+
+    if (_config.isDev)
+      script(src="/lib/lib-editor-dev.js" )
+      script(src="/editor-dev.js" )
+      link(rel="stylesheet", href="/editor-dev.css" )
+    else
+      script(src=md5Url('/lib/lib-editor.js') )
+      script(src=md5Url('/editor.js'))
+      link(rel="stylesheet", href=md5Url('/editor.css') )
+
     script.
       $(function() {
         if (!Mosaico.isCompatible()) {
           alert('Update your browser!');
           return;
         }
-        var basePath  = window.location.protocol + '//#{_config.host}';
-        var plugins   = [];
+        var basePath  = window.location.protocol + '//#{_config.host}'
+        var plugins   = []
         var ok = Mosaico.init({
           lang:                   '#{getLocale()}',
           strings:                !{ data.translations },
@@ -51,16 +59,16 @@ html(lang=getLocale())
           tinymce: {
             //- https://www.tinymce.com/docs/configure/integration-and-setup/#external_plugins
             external_plugins: {
-              paste:        "#{ md5Url('/lib/plugins/paste/plugin.js') }",
-              link:         "#{ md5Url('/lib/plugins/link/plugin.js') }",
-              hr:           "#{ md5Url('/lib/plugins/hr/plugin.js') }",
-              lists:        "#{ md5Url('/lib/plugins/lists/plugin.js') }",
-              textcolor:    "#{ md5Url('/lib/plugins/textcolor/plugin.js') }",
-              colorpicker:  "#{ md5Url('/lib/plugins/colorpicker/plugin.js') }",
-              code:         "#{ md5Url('/lib/plugins/code/plugin.js') }",
+              paste:        "#{ md5Url('/lib/plugins/paste/plugin.min.js') }",
+              link:         "#{ md5Url('/lib/plugins/link/plugin.min.js') }",
+              hr:           "#{ md5Url('/lib/plugins/hr/plugin.min.js') }",
+              lists:        "#{ md5Url('/lib/plugins/lists/plugin.min.js') }",
+              textcolor:    "#{ md5Url('/lib/plugins/textcolor/plugin.min.js') }",
+              colorpicker:  "#{ md5Url('/lib/plugins/colorpicker/plugin.min.js') }",
+              code:         "#{ md5Url('/lib/plugins/code/plugin.min.js') }",
             },
             //- https://www.tinymce.com/docs/configure/editor-appearance/#theme_url
-            theme_url:      "#{ md5Url('/lib/themes/modern/theme.js') }",
+            theme_url:      "#{ md5Url('/lib/themes/modern/theme.min.js') }",
             //- https://www.tinymce.com/docs/configure/editor-appearance/#skin_url
             skin_url:       "/lib/skins/gray-flat",
           },

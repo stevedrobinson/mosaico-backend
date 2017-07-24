@@ -57,4 +57,7 @@ html(lang=getLocale())
           },
         },
       };
-    script(defer src=md5Url('/user.js') )
+    if (_config.isDev)
+      script(defer src="/user-dev.js" )
+    else
+      script(defer src=md5Url('/user.js') )

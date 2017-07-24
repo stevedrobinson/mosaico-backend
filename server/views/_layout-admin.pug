@@ -44,4 +44,8 @@ html(lang=getLocale())
       .mdl-dialog__actions
         a(href="#").js-dialog-confirm.mdl-button.mdl-button--accent.mdl-js-button=__('general.ok')
         button(type="button").js-dialog-cancel.js-close-rename-dialog.mdl-button=__('general.cancel')
-    script(defer src=md5Url('/admin.js'))
+
+    if (_config.isDev)
+      script(defer src="/admin-dev.js")
+    else
+      script(defer src=md5Url('/admin.js'))
