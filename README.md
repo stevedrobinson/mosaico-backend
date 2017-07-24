@@ -13,7 +13,7 @@ Pre-requisites:
  - MongoDB (~3.2.7)
  - SMTP server (like [MockSMTP](http://mocksmtpapp.com/) or )
 
-NB: [sharp](http://sharp.dimens.io/en/stable/) should work out the box most of the time. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/). MacOs will need XCode in order to compile.
+NB: A compiled version of [sharp](http://sharp.dimens.io/en/stable/) — which is used to resize images and declared as a dependency — should be fetched automatically by npm for your system environment. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/).
 
 ```sh
 npm run deps
