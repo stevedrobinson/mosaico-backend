@@ -51,11 +51,7 @@ You can override any of these values, in sereval ways, in order of precedence:
    }
    EOF
    ```
-   or you could also make a copy of [`.backendrc-example`](https://github.com/goodenough/mosaico-backend/blob/master/.backendrc-example):
-   ```sh
-   cp .backendrc-example .backendrc
-   EOF
-   ```
+   or you could also make a copy of [`.backendrc-example`](https://github.com/goodenough/mosaico-backend/blob/master/.backendrc-example)
 
 NB: Internally, we use [rc](https://www.npmjs.com/package/rc).
 
