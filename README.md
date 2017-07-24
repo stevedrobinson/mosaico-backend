@@ -41,7 +41,16 @@ You can override any of these values, in sereval ways, in order of precedence:
    export backend_admin__password="shhhhht"
    node server/worker.js
    ```
-3. creating a `.backendrc` JSON file from [`.backendrc-example`](https://github.com/goodenough/mosaico-backend/blob/master/.backendrc-example) placed at project's root folder.
+3. creating a `.backendrc` JSON file placed at project's root folder:
+   ```sh
+   cat <<EOF > .backendrc
+   {
+     "admin": {
+       "password": "shhhhht"
+     }
+   }
+   EOF
+   ```
 
 NB: Internally, we use [rc](https://www.npmjs.com/package/rc).
 
