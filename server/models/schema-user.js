@@ -11,10 +11,14 @@ const validator     = require('validator')
 const randtoken     = require('rand-token')
 const moment        = require('moment')
 
-const config              = require('../config')
-const { normalizeString } = require('./utils')
-const mail                = require('../mail')
-const { GroupModel }      = require('./names')
+const config              = require( '../config' )
+const mail                = require( '../mail' )
+const defer               = require( '../helpers/create-promise' )
+const { normalizeString } = require( './utils' )
+const { GroupModel }      = require( './names' )
+
+
+const { brand }           = config
 
 //////
 // USER
@@ -155,63 +159,75 @@ UserSchema.methods.deactivate = function deactivate() {
 }
 
 UserSchema.methods.resetPassword = function resetPassword(lang, type) {
-  var user          = this
+  const deferred    = defer()
+  const user        = this
   user.password     = void(0)
   user.token        = randtoken.generate(30)
   user.tokenExpire  = moment().add(1, 'weeks')
   lang              = lang ? lang : 'en'
+  const isEn        = lang === 'en'
 
-  return new Promise(function (resolve, reject) {
-    user
-    .save()
-    .then(onSave)
-    .catch(reject)
+  user
+  .save()
+  .then( onSave )
+  .catch( deferred.reject )
 
-    function onSave(updatedUser) {
-      return mail
-      .send({
-        to:       updatedUser.email,
-        subject:  `Email builder – password reset`,
-        text:     `here is the link to enter your new password http://${config.host}/password/${user.token}`,
-        html:     tmpReset(getTemplateData('reset-password', lang, {
-          type: type,
-          url:  `http://${config.host}/password/${user.token}?lang=${lang}`,
-        })),
-      })
-      .then( _ => resolve(updatedUser) )
-      .catch(reject)
-    }
-  })
+  function onSave(updatedUser) {
+    const subject = isEn ? 'password reset' : 'réinitialisation de mot de passe'
+    const text    = isEn ? `here is the link to enter your new password` :
+      `voici le lien pour réinitialiser votre mot de passe`
+
+    return mail
+    .send({
+      to:       updatedUser.email,
+      subject:  `${ brand.name } – ${ subject }`,
+      text:     `${ text } http://${ config.host }/password/${ user.token }`,
+      html:     tmpReset(getTemplateData('reset-password', lang, {
+        type: type,
+        url:  `http://${config.host}/password/${user.token}?lang=${lang}`,
+      })),
+    })
+    .then( _ => deferred.resolve(updatedUser) )
+    .catch( deferred.reject )
+  }
+
+  return deferred
 }
 
 UserSchema.methods.setPassword = function setPassword(password, lang) {
-  var user          = this
+  const deferred    = defer()
+  const user        = this
   user.token        = void(0)
   user.tokenExpire  = void(0)
   user.password     = password
   lang              = lang ? lang : 'en'
+  const isEn        = lang === 'en'
 
-  return new Promise(function (resolve, reject) {
-    user
-    .save()
-    .then(onSave)
-    .catch(reject)
+  user
+  .save()
+  .then(onSave)
+  .catch(deferred.reject)
 
-    function onSave(updatedUser) {
-      return mail
-      .send({
-        to:       updatedUser.email,
-        subject:  `Email builder – password reset`,
-        text:     `your password has been succesfully been reseted. connect at http://${config.host}/login`,
-        html:     tmpReset(getTemplateData('reset-success', lang, {
-          type: 'admin',
-          url:  `http://${config.host}/login?lang=${lang}`,
-        })),
-      })
-      .then( _ => resolve(updatedUser) )
-      .catch(reject)
-    }
-  })
+  function onSave(updatedUser) {
+    const subject = isEn ? 'password reset' : 'réinitialisation de mot de passe'
+    const text    = isEn ? `your password has been succesfully been reseted. connect at` :
+      `Votre mot de passe à bien été réinitialisé. Connectez-vous à l'adresse suivante :`
+
+    return mail
+    .send({
+      to:       updatedUser.email,
+      subject:  `${ brand.name } – ${ subject }`,
+      text:     `${ text } http://${config.host}/login`,
+      html:     tmpReset(getTemplateData('reset-success', lang, {
+        type: 'admin',
+        url:  `http://${config.host}/login?lang=${lang}`,
+      })),
+    })
+    .then( _ => deferred.resolve(updatedUser) )
+    .catch(deferred.reject)
+  }
+
+  return deferred
 }
 
 UserSchema.methods.comparePassword = function comparePassword(password) {
@@ -228,32 +244,19 @@ tmpl.load = function (id) {
 }
 
 // put in cache
-var tmpReset = tmpl('reset-password')
+const tmpReset = tmpl( 'reset-password' )
 
 function getTemplateData(templateName, lang, additionalDatas) {
-  var i18n = {
-    common: {
-      fr: {
-        contact: `Contacter Badsender : `,
-        or: `ou`,
-        // social: `Badsender sur les réseaux sociaux :`,
-        social: `Badsender sur les r&eacute;seaux sociaux :`,
-      },
-      en: {
-        contact: `contact Badsender: `,
-        or: `or`,
-        social: `Badsender on social networks:`,
-      }
-    },
+  const i18n = {
     'reset-password': {
       fr: {
-        title: `Bienvenue sur l'email builder de Badsender`,
+        title: `Bienvenue sur l'email builder de ${ brand.name }`,
         desc: `Cliquez sur le bouton ci-dessous pour initialiser votre mot de passe, ou copiez l'url suivante dans votre navigateur:`,
         reset: `INITIALISER MON MOT DE PASSE`,
 
       },
       en: {
-        title: `Welcome to the Badsender's email builder`,
+        title: `Welcome to the  ${ brand.name }'s email builder`,
         desc: `Click the button below to reset your password, or copy the following URL into your browser:`,
         reset: `RESET MY PASSWORD`,
       }
@@ -273,8 +276,14 @@ function getTemplateData(templateName, lang, additionalDatas) {
     }
   }
 
-  const traductions = assign({}, i18n.common[lang],  i18n[templateName][lang])
-  return assign({}, {t: traductions}, additionalDatas)
+  const t         = i18n[templateName][lang]
+  const branding  = {
+    name: brand.name,
+    primary: brand['color-primary'],
+    primaryContrast: brand['color-primary-contrast'],
+  }
+
+  return assign( {}, { t, branding }, additionalDatas )
 }
 
 //////

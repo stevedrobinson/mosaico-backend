@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 const os          = require( 'os' )
 const chalk       = require( 'chalk' )
@@ -37,7 +37,11 @@ const config  = rc('backend', {
     password:     'admin',
   },
   brand: {
-    name:         'mosaico-backend',
+    name:                     'mosaico-backend',
+    'color-primary':          'rgb(233,30,99)',
+    'color-primary-contrast': 'white',
+    'color-accent':           '#3f51b5',
+    'color-accent-contrast':  'white',
   },
   // this is really optional.
   // It's just to be able to backup/restore DB with scripts
@@ -47,7 +51,6 @@ const config  = rc('backend', {
       folder: 'mosaico-backend',
     },
   },
-  TEST:           false,
 })
 
 config.NODE_ENV       = config.NODE_ENV || process.env.NODE_ENV || 'development'
