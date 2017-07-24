@@ -30,7 +30,7 @@ TODO
 
 Mosaico backend has a decent localhost-first [default configuration](https://github.com/goodenough/mosaico-backend/blob/master/server/config.js#L13-L53).
 
-You can override any of these values, in sereval ways (thanks to [rc](https://www.npmjs.com/package/rc)):
+You can override any of these values, in sereval ways, in order of precedence:
 
 1. command line arguments:
    ```sh
@@ -42,6 +42,8 @@ You can override any of these values, in sereval ways (thanks to [rc](https://ww
    node server/worker.js
    ```
 3. creating a `.backendrc` JSON file from [`.backendrc-example`](https://github.com/goodenough/mosaico-backend/blob/master/.backendrc-example) placed at root.
+
+NB: Internally, we use [rc](https://www.npmjs.com/package/rc).
 
 ### Heroku
 
