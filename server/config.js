@@ -119,8 +119,8 @@ if (process.env.MONGODB_URI) {
   config.database = process.env.MONGODB_URI
 }
 
-if (process.env.HEROKU_APP_NAME) {
-  config.host = `${process.env.HEROKU_APP_NAME}.herokuapp.com`
+if (process.env.APP_NAME) {
+  config.host = `${process.env.APP_NAME}.herokuapp.com`
 }
 
 // if ( config.isDev ) console.log( inspect(config) )

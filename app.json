@@ -7,7 +7,7 @@
   "stack": "cedar-14",
   "success_url": "/admin/login",
   "env": {
-    "HEROKU_APP_NAME": {
+    "APP_NAME": {
         "description": "copy and paste the name you've given to your application",
         "required": true
     },
