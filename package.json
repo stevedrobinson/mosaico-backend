@@ -192,6 +192,6 @@
     "toc": "gulp toc"
   },
   "engines": {
-    "node": "6.11.1"
+    "node": "8.2.1"
   }
 }
