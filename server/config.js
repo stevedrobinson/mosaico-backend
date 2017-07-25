@@ -84,8 +84,6 @@ if (config.storage.aws) {
   config.storage.type = 'local'
 }
 
-console.log( chalk.green(`[STORAGE] storage is ${config.storage.type}`) )
-
 config.isAws   = config.storage.type === 'aws'
 
 //----- TEST SPECIFICS
