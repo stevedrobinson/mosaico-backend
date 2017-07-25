@@ -37,9 +37,9 @@ const config  = rc('backend', {
   },
   brand: {
     name:                     'mosaico-backend',
-    'color-primary':          'rgb(233,30,99)',
+    'color-primary':          'rgb(63,81,181)',
     'color-primary-contrast': 'white',
-    'color-accent':           '#3f51b5',
+    'color-accent':           'rgb(255,64,129)',
     'color-accent-contrast':  'white',
   },
   // this is really optional.
