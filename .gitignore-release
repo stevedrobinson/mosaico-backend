@@ -2,10 +2,12 @@
 /bin
 /bower_components
 /build
+/doc
 /spec
 /src
 /tasks
 /uploads
+/tests
 /tmp
 /.*
 !.gitignore
