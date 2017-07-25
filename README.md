@@ -9,7 +9,7 @@ SCREENCAST
 ## INSTALL
 
 Pre-requisites:
- - Node.js (>=6)
+ - Node.js (>=8.2.1)
  - MongoDB (~3.2.7)
  - SMTP server (like [MockSMTP](http://mocksmtpapp.com/) or )
 
