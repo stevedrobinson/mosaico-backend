@@ -1,6 +1,6 @@
 'use strict'
 
-if (!/^6\./.test(process.versions.node)) {
+if (!/^8\./.test(process.versions.node)) {
   throw new Error('wrong node version. Should run on nodejs 6. See package.json#engines')
 }
 
