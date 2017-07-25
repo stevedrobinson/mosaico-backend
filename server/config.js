@@ -8,6 +8,8 @@ const _           = require( 'lodash' )
 const { inspect } = require( 'util' )
 const { mkdirp }  = require( 'fs-extra' )
 
+const pkg         = require( '../package.json' )
+
 //----- DEFAULT CONFIG
 // made for an easy use on local dev
 const config  = rc('backend', {
@@ -50,6 +52,10 @@ const config  = rc('backend', {
       folder: 'mosaico-backend',
     },
   },
+  about: {
+    version: pkg.version,
+    engines: pkg.engines,
+  }
 })
 
 config.NODE_ENV       = config.NODE_ENV || process.env.NODE_ENV || 'development'

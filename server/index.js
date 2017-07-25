@@ -370,6 +370,8 @@ module.exports = function () {
   app.patch('/mailings',                      mailings.updateLabels )
   app.get('/mailings',                        mailings.userList )
 
+  app.get('/about',                           render.about )
+
   app.get('/',                                guard('user'), mailings.userList )
 
   //////
