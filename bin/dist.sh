@@ -49,11 +49,7 @@ echo "…copy end!"
 cd $copydir
 
 # build and clean directory
-if [ $env = "dev" ]; then
-  npm run build-release-dev -- --pkg=$version
-else
-  npm run build-release -- --pkg=$version
-fi
+npm run build-release -- --pkg=$version
 
 rm .gitignore
 mv .gitignore-release .gitignore

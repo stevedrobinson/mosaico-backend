@@ -11,11 +11,13 @@ const merge           = require('merge-stream')
 const args            = require('yargs').argv
 const mainBowerFiles  = require('main-bower-files')
 const _               = require('lodash')
-const { cyan }        = require('chalk')
+const {
+  cyan,
+  magenta }           = require('chalk')
 
-const isWatch         = args.watch  === true
-const isDev           = args.prod   !== true
-const env             = isDev ? 'development' : 'production'
+const isDev           = args.dev === true
+const isBuild         = !isDev
+const env             = isDev ? 'development' : 'build'
 
 const buildDir        = 'dist'
 
@@ -28,8 +30,7 @@ function onError(err) {
 }
 
 $.util.log(
-  'environment is', $.util.colors.magenta(env),
-  'watch is', isWatch ? $.util.colors.magenta('enable') : 'disable'
+  'environment is', magenta(env)
 )
 
 function bump() {
@@ -75,8 +76,8 @@ function cssEditor() {
   .pipe( $.rename('editor-dev.css') )
   .pipe( gulp.dest(buildDir) )
   .pipe( reload({stream: true}) )
-  .pipe( $.if(!isWatch, cssProd()) )
-  .pipe( $.if(!isWatch, gulp.dest(buildDir)) )
+  .pipe( $.if(isBuild, cssProd()) )
+  .pipe( $.if(isBuild, gulp.dest(buildDir)) )
 }
 
 function cssApp() {
@@ -96,8 +97,8 @@ function cssApp() {
   .pipe( $.rename('app-dev.css') )
   .pipe( gulp.dest(buildDir) )
   .pipe( reload({stream: true}) )
-  .pipe( $.if(!isWatch, cssProd()) )
-  .pipe( $.if(!isWatch, gulp.dest(buildDir)) )
+  .pipe( $.if(isBuild, cssProd()) )
+  .pipe( $.if(isBuild, gulp.dest(buildDir)) )
 }
 
 const css       = gulp.series( cleanCss, gulp.parallel(cssEditor, cssApp) )
@@ -152,8 +153,8 @@ function mosaicoLib() {
   ]) )
   .pipe( $.concat('lib-editor-dev.js') )
   .pipe( gulp.dest(buildDir + '/lib') )
-  .pipe( unDevName() )
-  .pipe( $.uglify() )
+  .pipe( $.if(isBuild, unDevName()) )
+  .pipe( $.if(isBuild, $.uglify()) )
 
   // only copy necessary tinymce plugins
   const tinymce = gulp.src( [
@@ -203,13 +204,13 @@ function jsMosaico(debug = false) {
     entries:      ['./src/js/app.js', './build/templates.js'],
     standalone:   'Mosaico',
   })
-  .transform(aliasify, {
+  .transform( aliasify, {
     aliases: {
       console:              `console-browserify/index.js`,
       jsep:                 `jsep/src/jsep.js`,
       'knockoutjs-reactor': `knockoutjs-reactor/src/knockout.reactor.js`
     }
-  })
+  } )
   .transform( shim )
   .transform( debowerify )
   .transform( babelify.configure({
@@ -228,17 +229,14 @@ function jsMosaico(debug = false) {
 
 function jsMosaicoDev() {
   let b = jsMosaico( true )
-
-  if (isWatch) {
+  if (isDev) {
     b = watchify( b )
     b.on('update', function () {
-      $.util.log('bundle front app')
+      $.util.log( `bundle ${ magenta('editor') } app` )
       bundleShareDev( b )
     })
   }
-
   return bundleShareDev(b)
-
 }
 
 function bundleShareDev( b ) {
@@ -258,10 +256,9 @@ function jsMosaicoProd() {
   .pipe( $.stripDebug() )
   .pipe( $.uglify() )
   .pipe( gulp.dest(buildDir) )
-
 }
 
-const jsEditor        = gulp.series( templates, gulp.parallel(jsMosaicoDev, jsMosaicoProd) )
+const jsEditor        = gulp.series( templates, isBuild ? gulp.parallel(jsMosaicoDev, jsMosaicoProd) : jsMosaicoDev )
 jsEditor.description  = `Bundle mosaico app, without libraries`
 
 //----- MOSAICO'S KNOCKOUT TEMPLATES: see -> combineKOTemplates.js
@@ -336,11 +333,10 @@ function jsUser(debug = false) {
 
 function jsUserDev() {
   let b = jsUser( true )
-
-  if (isWatch) {
+  if (isDev) {
     b = watchify( b )
     b.on('update', function () {
-      $.util.log('bundle home app')
+      $.util.log( `bundle ${ magenta('user') } app` )
       bundleUserDev( b )
     })
   }
@@ -365,7 +361,7 @@ function jsUserProd() {
   .pipe( gulp.dest(buildDir) )
 }
 
-gulp.task( 'js:user', gulp.parallel(jsUserDev, jsUserProd) )
+gulp.task( 'js:user', isBuild ? gulp.parallel(jsUserDev, jsUserProd) : jsUserDev )
 
 //----- ADMIN JS
 
@@ -388,11 +384,10 @@ function jsAdmin( debug = false ) {
 
 function jsAdminDev() {
   let b = jsAdmin( true )
-
-  if (isWatch) {
+  if (isDev) {
     b = watchify( b )
     b.on('update', function () {
-      $.util.log('bundle admin app')
+      $.util.log( `bundle ${ magenta('admin') } app` )
       bundleAdminDev(b)
     })
   }
@@ -417,7 +412,7 @@ function jsAdminProd() {
   .pipe( gulp.dest(buildDir) )
 }
 
-gulp.task( 'js:admin', gulp.parallel(jsAdminDev, jsAdminProd) )
+gulp.task( 'js:admin', isBuild ? gulp.parallel(jsAdminDev, jsAdminProd) : jsAdminDev )
 
 const js        = gulp.parallel( mosaicoLib, jsEditor, 'js:user', 'js:admin' )
 js.description  = `build js for mosaico app and the for the rests of the application`
@@ -431,7 +426,7 @@ js.description  = `build js for mosaico app and the for the rests of the applica
 function fonts() {
   return gulp
   .src( 'bower_components/font-awesome/fonts/*' )
-  .pipe(gulp.dest('res/fa/fonts'))
+  .pipe( gulp.dest('res/fa/fonts') )
 }
 
 const assets        = fonts
@@ -445,14 +440,14 @@ const cleanMaintenance  = cb => del([`${maintenanceFolder}/*.html`], cb )
 
 function maintenance() {
   return gulp
-  .src([`${maintenanceFolder}/*.pug`, `!${maintenanceFolder}/_*.pug`])
-  .pipe($.pug())
-  .pipe(gulp.dest( maintenanceFolder ))
+  .src( [`${maintenanceFolder}/*.pug`, `!${maintenanceFolder}/_*.pug`] )
+  .pipe( $.pug() )
+  .pipe( gulp.dest( maintenanceFolder ) )
 }
 
 //----- REVS
 
-var crypto = require('crypto')
+const crypto = require('crypto')
 
 function rev() {
   let revs = []
@@ -464,10 +459,10 @@ function rev() {
     return 0
   }
   function passThrough(file, enc, callback) {
-    var key         = path.relative(file.base, file.path)
-    var md5         = crypto.createHash('md5')
+    const key   = path.relative(file.base, file.path)
+    const md5   = crypto.createHash('md5')
     if (!file.contents) return callback(null)
-    var hash        = md5.update( file.contents.toString() ).digest( 'hex' )
+    const hash  = md5.update( file.contents.toString() ).digest( 'hex' )
     revs.push({'name': '/' + key, hash})
     callback( null )
   }
@@ -507,11 +502,12 @@ function rev() {
 const cleanTmp = cb => del( ['tmp/upload_*'], cb )
 
 function toc() {
-  return gulp.src('./BACKEND.md')
-  .pipe($.doctoc({
-    mode: "github.com",
-  }))
-  .pipe(gulp.dest('./'))
+  return gulp
+  .src( './BACKEND.md' )
+  .pipe( $.doctoc({
+    mode: 'github.com',
+  }) )
+  .pipe( gulp.dest('./') )
 }
 toc.description   = `Regenerate TOC for BACKEND.md`
 
@@ -559,10 +555,7 @@ function bsAndWatch() {
     port:       7000,
     ghostMode:  false,
   })
-  gulp.watch( ['server/views/*.jade', 'dist/*.js']).on('change', reload )
-  gulp.watch( 'src/css/**/*.less', cssEditor )
-  gulp.watch( 'src/css-backend/**/*.styl', cssApp )
-  gulp.watch( ['src/tmpl/*.html', 'src/tmpl-custom/*.html'], templates )
+  watchFiles()
 }
 
 let initProd = true
@@ -577,9 +570,9 @@ function nodemonProd(cb) {
   })
 }
 
-function watchProdLike() {
-  gulp.watch(['server/views/*.jade', 'dist/*.js']).on('change', reload)
-  gulp.watch('src/css/**/*.less', cssEditor )
+function watchFiles() {
+  gulp.watch( ['server/views/*.jade', 'dist/*.js'] ).on( 'change', reload )
+  gulp.watch( 'src/css/**/*.less', cssEditor )
   gulp.watch( 'src/css-backend/**/*.styl', cssApp )
   gulp.watch( ['src/tmpl/*.html', 'src/tmpl-custom/*.html'], templates )
 }
@@ -602,7 +595,7 @@ gulp.task( 'dev', gulp.series(
 ) )
 gulp.task( 'prod',
   gulp.parallel( js, nodemonProd ),
-  watchProdLike
+  watchFiles
 )
 gulp.task( 'bump', bump )
 gulp.task( 'toc',  toc )
