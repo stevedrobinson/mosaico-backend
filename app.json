@@ -15,16 +15,6 @@
       "description": "The password to access the admin",
       "required": true
     },
-    "backend_emailOptions__from": {
-      "description": "The email adress from whom user connection mails will be received. Should be written in this format: Mosaico-backend test <info@mosaico-backend-test.name>",
-      "value": "Mosaico-backend test <info@mosaico-backend-test.name>",
-      "required": true
-    },
-    "backend_emailOptions__testSubjectPrefix": {
-      "description": "Subject prefix for testing mails",
-      "value": "[mosaico-backend email builder] ",
-      "required": true
-    },
     "backend_storage__aws__accessKeyId": {
       "description": "20 characters key",
       "required": true
