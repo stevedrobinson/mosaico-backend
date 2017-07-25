@@ -26,6 +26,7 @@ const { duration }    = moment
 
 const session         = require( './session' )
 const defer           = require( './helpers/create-promise' )
+const mail            = require( './mail' )
 
 module.exports = function () {
 
@@ -432,6 +433,17 @@ module.exports = function () {
         chalk.green('Server is listening on port'), chalk.cyan(server.address().port),
         chalk.green('on mode'), chalk.cyan(config.NODE_ENV)
       )
+      mail
+      .status
+      .then(function () {
+        console.log(chalk.green('[EMAIL] transport mailing – SUCCESS'))
+      })
+      .catch(function (err) {
+        console.log(chalk.red('[EMAIL] transport mailing – ERROR'))
+        console.trace(err)
+      })
+      console.log( chalk.green(`[STORAGE] storage is`), chalk.cyan(config.storage.type) )
+
       application.resolve( server )
     }) )
     server.on('close', () => {

@@ -47,7 +47,7 @@
     "express-flash": "0.0.2",
     "express-session": "^1.15.2",
     "formidable": "^1.0.17",
-    "fs-extra": "^3.0.1",
+    "fs-extra": "^4.0.0",
     "gifsicle-stream": "^0.3.1",
     "he": "^1.1.1",
     "helmet": "^3.6.0",
@@ -192,6 +192,6 @@
     "toc": "gulp toc"
   },
   "engines": {
-    "node": "6.11.1"
+    "node": "8.2.1"
   }
 }

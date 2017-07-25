@@ -1,23 +1,22 @@
 'use strict'
 
-const _           = require( 'lodash' )
-const fs          = require( 'fs-extra' )
-const url         = require( 'url' )
-const path        = require( 'path' )
-const mime        = require( 'mime-types' )
-const AWS         = require( 'aws-sdk' )
-const chalk       = require( 'chalk' )
-const formidable  = require( 'formidable' )
-const denodeify   = require( 'denodeify' )
-const createError = require( 'http-errors' )
-const util        = require( 'util' )
+const _             = require( 'lodash' )
+const { readFile }  = require( 'fs-extra' )
+const url           = require( 'url' )
+const path          = require( 'path' )
+const mime          = require( 'mime-types' )
+const AWS           = require( 'aws-sdk' )
+const chalk         = require( 'chalk' )
+const formidable    = require( 'formidable' )
+const denodeify     = require( 'denodeify' )
+const createError   = require( 'http-errors' )
+const util          = require( 'util' )
 
 const config        = require( '../config')
 const defer         = require( '../helpers/create-promise' )
 const formatName    = require( '../helpers/format-filename-for-jqueryfileupload.js' )
 const slugFilename  = require( '../../shared/slug-filename.js' )
 
-const { readFile }  = fs
 // we want those methods to be as close as possible
 const {
   streamImage,
