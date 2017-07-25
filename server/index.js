@@ -86,14 +86,12 @@ module.exports = function () {
   const md5public             = require( './md5public.json' )
   const maxAge                = config.isDev ? duration( 30, 'minutes') : duration( 1, 'years')
   const staticOptions         = { maxAge: maxAge.as( 'milliseconds' ) }
-  const compiledStatic        = express.static( path.join(__dirname, '../dist'), staticOptions )
-  const compiledStaticNoCache = express.static( path.join(__dirname, '../dist') )
 
   app.locals.md5Url    = url => {
     // disable md5 on dev
     // better for hot reload
     if ( config.isDev ) return url
-    if (url in md5public) url = `/${md5public[ url ]}${url}`
+    if ( url in md5public) url = `/${md5public[ url ]}${url}`
     return url
   }
 
@@ -106,7 +104,6 @@ module.exports = function () {
     // we don't want statics to be cached by the browser if the md5 is invalid
     // pass it to the next static handler which doens't set cache
     } else {
-      // console.log('[MD5] bad hash for', staticPath, md5)
       req._staticPath   = staticPath
     }
     next()
@@ -114,9 +111,8 @@ module.exports = function () {
 
   function restoreUrl (req, res, next) {
     // - get here if static middleware fail to find the file
-    // - even if the md5 is invalid we ca guess that the file exists
+    // - even if the md5 is invalid we can guess that the file exists
     if ( req._staticPath in md5public ) {
-      // console.log( '[MD5] RESTOREURL – found in md5Public with bad hash', req.url, req._staticPath )
       req.url = req._staticPath
     // - if not that mean we have an url for another ressource => restore the original url
     } else {
@@ -126,10 +122,24 @@ module.exports = function () {
     next()
   }
 
-  // compiled assets
-  app.get( '/:md5([a-zA-Z0-9]{32})*', removeHash, compiledStatic, restoreUrl )
-  app.use( compiledStaticNoCache )
+  const statics = [
+    // first parse the url
+    removeHash,
+    // then check all static locations
+    express.static( path.join(__dirname, '../dist'), staticOptions ),
+    express.static( path.join(__dirname, '../res'), staticOptions ),
+    express.static( path.join(__dirname, '../node_modules/material-design-lite'), staticOptions ),
+    express.static( path.join(__dirname, '../node_modules/material-design-icons-iconfont/dist'), staticOptions ),
+    // restore any url
+    restoreUrl,
+  ]
 
+  app.get( '/:md5([a-zA-Z0-9]{32})*', ...statics )
+
+  // no-cache static backup:
+
+  // compiled assets
+  app.use( express.static( path.join(__dirname, '../dist') ) )
   // commited assets
   app.use( express.static( path.join(__dirname, '../res') ) )
   // libs
@@ -414,7 +424,7 @@ module.exports = function () {
     // …in order for tape to end properly
     const server = httpShutdown( app.listen(config.PORT, err => {
       if (err) {
-        console.log('errror')
+        console.log('error')
         application.reject( err )
         throw err
       }

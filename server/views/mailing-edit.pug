@@ -59,16 +59,16 @@ html(lang=getLocale())
           tinymce: {
             //- https://www.tinymce.com/docs/configure/integration-and-setup/#external_plugins
             external_plugins: {
-              paste:        "#{ md5Url('/lib/plugins/paste/plugin.min.js') }",
-              link:         "#{ md5Url('/lib/plugins/link/plugin.min.js') }",
-              hr:           "#{ md5Url('/lib/plugins/hr/plugin.min.js') }",
-              lists:        "#{ md5Url('/lib/plugins/lists/plugin.min.js') }",
-              textcolor:    "#{ md5Url('/lib/plugins/textcolor/plugin.min.js') }",
-              colorpicker:  "#{ md5Url('/lib/plugins/colorpicker/plugin.min.js') }",
-              code:         "#{ md5Url('/lib/plugins/code/plugin.min.js') }",
+              paste:        "/lib/plugins/paste/plugin.min.js",
+              link:         "/lib/plugins/link/plugin.min.js",
+              hr:           "/lib/plugins/hr/plugin.min.js",
+              lists:        "/lib/plugins/lists/plugin.min.js",
+              textcolor:    "/lib/plugins/textcolor/plugin.min.js",
+              colorpicker:  "/lib/plugins/colorpicker/plugin.min.js",
+              code:         "/lib/plugins/code/plugin.min.js",
             },
             //- https://www.tinymce.com/docs/configure/editor-appearance/#theme_url
-            theme_url:      "#{ md5Url('/lib/themes/modern/theme.min.js') }",
+            theme_url:      "/lib/themes/modern/theme.min.js",
             //- https://www.tinymce.com/docs/configure/editor-appearance/#skin_url
             skin_url:       "/lib/skins/gray-flat",
           },
