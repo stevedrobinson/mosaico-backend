@@ -110,7 +110,7 @@ You can define here the main colors of the application:
     "color-primary-contrast": "white",
     "color-accent": "#3f51b5",
     "color-accent-contrast": "white",
-    "brandName": "My brand name"
+    "name": "My brand name"
 },
 
 ```
