@@ -1,31 +1,11 @@
 #!/usr/bin/env sh -e
 
-#
-# Ask for environment
-#
-
-echo "Choose environment:"
-# select env in dev stage prod;
-select env in dev stage;
-do
-  echo $env
-  break
-done
-
-if [ -z "$env" ]; then
-  echo "aborting"
-  exit
-fi
-
-#
-# Fetch the last tagged version (only if git >= 2.0.0, because of --sort=v:refname option)
-#
-
+branch="release"
 lastversion=""
 gitversion="$(git --version | grep -o "[0-9]*\.[0-9]*\.[0-9]*")"
 if [ $(printf "2.0.0\n%s" "$gitversion" | sort -n | head -n1) = "2.0.0" ]; then
   git fetch --tags 1>/dev/null
-  lastversion="$(git tag -l "$env"-* --sort=v:refname | tail -1)"
+  lastversion="$(git tag -l "$branch"-* --sort=v:refname | tail -1)"
 fi
 
 #
@@ -75,18 +55,18 @@ rm -rf node_modules
 # },
 
 # add, commit and push
-git checkout -b "$env"-"$version"
+git checkout -b "$branch"-"$version"
 git rm -rf --cached .
 git add .
 git commit -m "build v$version"
-git push origin "$env"-"$version":"$env" --force
+git push origin "$branch"-"$version":"$branch" --force
 
 # git add --force node_modules/ public/ tmp/md5public.json
 # git commit -m "build v$version"
-# git push origin "$env"-"$version":"$env" --force
+# git push origin "branch"-"$version":"branch" --force
 
 # tags
-git tag "$env"-"$version"
+git tag "$branch"-"$version"
 git push --tags
 
 #
