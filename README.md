@@ -4,6 +4,12 @@
 
 Ready to go backend for [Mosaico](http://mosaico.io) editor.
 
+Main features are:
+
+- upload templates for Mosaico editor
+- manage users
+
+
 SCREENCAST
 
 ## INSTALL
