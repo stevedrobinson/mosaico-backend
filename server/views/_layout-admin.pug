@@ -30,7 +30,7 @@ html(lang=getLocale())
           a.mdl-navigation__link(href="/templates")=__('general.templates-list')
           a.mdl-navigation__link(href="/logout")=__('general.logout')
           .mdl-layout-spacer
-          a.mdl-navigation__link(href="https://github.com/goodenough/mosaico-backend") v#{_config.about.version}
+          a.mdl-navigation__link(href="https://github.com/goodenough/mosaico-backend/releases/tag/release-#{_config.about.version}") v#{_config.about.version}
 
       main.mdl-layout__content(class=page === 'full-width-layout' ? 'mdl-grid mdl-grid--no-spacing' : '' )
         block content
