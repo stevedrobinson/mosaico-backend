@@ -178,7 +178,8 @@
 			"generate-previews": "générer les miniatures",
 			"files": "fichiers",
 			"new": "nouveau template",
-			"associated": "pas de templates associés"
+			"associated": "pas de templates associés",
+			"builtin-templates-title": "Utiliser un template préexistant"
 		},
 		"users": {
 			"new": "nouvel utilisateur",

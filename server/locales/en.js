@@ -177,7 +177,9 @@
 			"generate-previews": "generate previews",
 			"files": "files",
 			"new": "new template",
-			"associated": "no associated templates"
+			"associated": "no associated templates",
+			"builtin-templates-title": "Use a prebuild template",
+			"preview-notice": "admin.templates.preview-notice"
 		},
 		"users": {
 			"new": "new user",

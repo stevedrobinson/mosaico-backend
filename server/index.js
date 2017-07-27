@@ -331,6 +331,7 @@ module.exports = function () {
   app.all('/templates*',                              guard('admin'))
   app.get('/templates/:templateId/delete',            templates.remove)
   app.get('/templates/:templateId/renderMarkup',      templates.renderMarkup )
+  app.get('/templates/:templateId/auto-upload/:templateName', templates.autoUpload )
   app.get('/templates/:templateId/generatePreviews',  templates.generatePreviews)
   app.get('/templates/:templateId',                   templates.show)
   app.post('/templates/:templateId?',                 templates.update)

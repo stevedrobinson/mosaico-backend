@@ -8,8 +8,9 @@ const filemanager             = require('../filemanager')
 const {
   renderMarkup,
   generatePreviews,
-  nightmareInstance }         = require('./generatePreviews.js')
-const getTemplateImagePrefix  = require('../helpers/get-template-image-prefix.js')
+  nightmareInstance }         = require('./generate-previews')
+const { autoUpload }          = require('./auto-upload')
+const getTemplateImagePrefix  = require('../helpers/get-template-image-prefix')
 const { formatErrors,
   isFromGroup, Groups,
   Templates, Mailings }       = require('../models')
@@ -112,7 +113,7 @@ function update(req, res, next) {
     formatter:  'groups',
   })
   .then( onParse )
-  .catch(next)
+  .catch( next )
 
   function onParse( body ) {
     console.log('files success')
@@ -178,4 +179,5 @@ module.exports = {
   generatePreviews,
   renderMarkup,
   nightmareInstance,
+  autoUpload,
 }
