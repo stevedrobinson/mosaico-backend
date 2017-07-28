@@ -223,7 +223,6 @@ function generatePreviews(req, res, next) {
     Promise
     .all( blocks )
     .then(  imagesBuffer => {
-
       const images  = imagesBuffer.map( (imageBuffer, index) => {
         console.log(`[PREVIEWS] img ${blocksName[ index ]}`)
         // slug to be coherent with upload
@@ -252,10 +251,7 @@ function generatePreviews(req, res, next) {
     console.log(`[PREVIEWS] upload screenshots – ${ getDuration() }`)
     const uploads = files.map( file => {
       console.log(`[PREVIEWS] upload ${file.name}`)
-      // images are captured at 680 but displayed at half the size
-      const pipeline = sharp()
-      fs.createReadStream( file.path ).pipe( pipeline )
-      return filemanager.writeStreamFromStream( pipeline, file.name )
+      return filemanager.writeStreamFromPath( file )
     })
     return Promise.all( uploads )
   }

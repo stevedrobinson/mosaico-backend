@@ -75,7 +75,6 @@ function autoUpload( req, res, next ) {
   Promise
   .all( [dbRequest, htmlRequest, filesRequest] )
   .then( ([template, markup, files]) => {
-    console.log( files )
     template.markup   = markup
     const fileBuffers = files.map( file => fs.readFile(file.path) )
     return Promise.all( [template, files, Promise.all(fileBuffers) ] )
@@ -97,7 +96,6 @@ function autoUpload( req, res, next ) {
     return Promise.all([template, assets, Promise.all(uploads) ])
   })
   .then( ([template, assets, uploads]) => {
-    console.log( assets )
     template.assets  = Object.assign( {}, template.assets || {},  assets )
     return template.save()
   })
