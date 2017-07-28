@@ -1,15 +1,15 @@
 'use strict'
 
-const passport      = require('passport')
-const LocalStrategy = require('passport-local').Strategy
-const session       = require('express-session')
-const flash         = require('express-flash')
-const MongoStore    = require('connect-mongo')(session)
-const createError   = require('http-errors')
+const passport      = require( 'passport')
+const LocalStrategy = require( 'passport-local' ).Strategy
+const session       = require( 'express-session' )
+const flash         = require( 'express-flash' )
+const RedisStore    = require( 'connect-redis' )( session )
+const createError   = require( 'http-errors' )
 
-const config        = require('./config')
+const config        = require( './config' )
 const { connection,
-  Users }           = require('./models')
+  Users }           = require( './models' )
 
 var adminUser = {
   isAdmin:  true,
@@ -67,8 +67,16 @@ function init(app) {
     secret:             'keyboard cat',
     resave:             false,
     saveUninitialized:  false,
-    store:              new MongoStore({ mongooseConnection: connection }),
+    store:              new RedisStore( {url: config.redis} ),
   }))
+
+  // https://www.npmjs.com/package/connect-redis#how-do-i-handle-lost-connections-to-redis
+  app.use( function (req, res, next) {
+    if (!req.session) {
+      return next(new Error('No redis connection')) // handle error
+    }
+    next() // otherwise continue
+  } )
   app.use( flash() )
   app.use( passport.initialize() )
   app.use( passport.session() )

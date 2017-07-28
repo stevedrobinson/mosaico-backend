@@ -69,6 +69,8 @@
 
   "database": "mongodb://localhost/my_database",
 
+  "redis": "redis://localhost:6379",
+
   //////
   // DB COPY (only used for syncing DBs, see ./bin/db-sync)
   //////

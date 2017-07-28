@@ -17,6 +17,7 @@ const config  = rc('backend', {
   forcessl:       false,
   host:           'localhost:3000',
   database:       'mongodb://localhost/mosaico-backend',
+  redis:          'redis://localhost:6379',
   emailTransport: {
     host:         'localhost',
     port:         1025,
@@ -115,6 +116,10 @@ if ( process.env.SENDGRID_USERNAME && process.env.SENDGRID_PASSWORD ) {
 
 if (process.env.MONGODB_URI) {
   config.database = process.env.MONGODB_URI
+}
+
+if (process.env.REDIS_URL) {
+  config.redis = process.env.REDIS_URL
 }
 
 if (process.env.APP_NAME) {

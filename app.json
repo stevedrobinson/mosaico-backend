@@ -38,6 +38,9 @@
     },
     {
       "plan": "sendgrid:starter"
+    },
+    {
+      "plan": "heroku-redis:hobby-dev"
     }
   ],
   "buildpacks": [
