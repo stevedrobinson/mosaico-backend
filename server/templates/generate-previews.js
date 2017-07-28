@@ -15,20 +15,6 @@ const getTemplateImagePrefix  = require( '../helpers/get-template-image-prefix' 
 const slugFilename            = require( '../../shared/slug-filename' )
 const defer                   = require( '../helpers/create-promise' )
 
-
-// https://github.com/segmentio/nightmare#nightmareactionname-electronactionelectronnamespace-actionnamespace
-
-Nightmare.action('clearCache',
-function(name, options, parent, win, renderer, done) {
-  parent.respondTo('clearCache', function(done) {
-    win.webContents.session.clearCache(done)
-  })
-  done()
-},
-function(done) {
-  this.child.call('clearCache', done)
-});
-
 // used by nightmareJS to have the right html
 function renderMarkup(req, res, next) {
   const { templateId }    = req.params

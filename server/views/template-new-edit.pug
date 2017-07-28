@@ -7,11 +7,12 @@ block vars
   - var pageClass = 'full-width-layout'
 
 block content
-  - var hasError  = messages.error && messages.error.length;
-  - var errors    = hasError ? messages.error[0] : {};
-  - var isEdit    = data.template  != null;
-  - var template  = data.template || {};
-  - var action    = isEdit ? template .url.show : '/templates';
+  - var hasError        = messages.error && messages.error.length;
+  - var errors          = hasError ? messages.error[0] : {};
+  - var isEdit          = data.template  != null;
+  - var template        = data.template || {};
+  - const { hasMarkup } = template
+  - var action          = isEdit ? template.url.show : '/templates';
 
   //- LEFT COLUMN
   if isEdit
@@ -20,11 +21,11 @@ block content
         li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.backTo)
           .material-icons.mdl-list__item-icon group
           | #{template._group.name}
-        if template.hasMarkup
+        if hasMarkup
           li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.create)
             .material-icons.mdl-list__item-icon library_add
             | #{__('general.create-mailing')}
-        if !template.hasMarkup
+        if !hasMarkup
           li.mdl-list__item: span.mdl-list__item-primary-content(style="color: #d50000")
             .material-icons.mdl-list__item-icon report_problem
             | #{__('admin.templates.no-markup')}
@@ -34,7 +35,7 @@ block content
         li.mdl-list__item: a.mdl-list__item-primary-content.js-delete-template(data-name=template.name href=deleteUrl )
           .material-icons.mdl-list__item-icon delete_forever
           | #{__('general.delete')}
-        if template.hasMarkup
+        if hasMarkup
           li.mdl-list__item: span.mdl-list__item-primary-content=__('admin.templates.preview-notice')
           li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.generatePreviews )
             .material-icons.mdl-list__item-icon camera_alt
@@ -48,7 +49,7 @@ block content
 
   form(action=action method="post" enctype="multipart/form-data" class=isEdit ? 'mdl-cell--9-col' : 'mdl-cell--12-col').mdl-cell
     .mdl-grid
-      fieldset.mdl-cell.mdl-card.mdl-shadow--2dp(class=isEdit ? 'mdl-cell--4-col' : 'mdl-cell--3-offset-desktop mdl-cell--6-col')
+      fieldset.mdl-cell.mdl-card.mdl-shadow--2dp(class=!isEdit ? 'mdl-cell--3-offset-desktop mdl-cell--6-col' : hasMarkup ? 'mdl-cell--6-col' : 'mdl-cell--4-col')
         .mdl-card__title: .mdl-card__title-text meta
         .mdl-card__supporting-text
           .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
@@ -68,7 +69,20 @@ block content
                 label.mdl-textfield__label.mdl-textfield__label--fixed=__('general.group')
 
       if isEdit
-        fieldset.mdl-cell.mdl-cell--4-col.mdl-card.mdl-shadow--2dp
+        if !hasMarkup
+          //- auto upload
+          div.mdl-cell.mdl-cell--4-col.mdl-card.mdl-shadow--2dp
+            .mdl-card__title: .mdl-card__title-text=__('admin.templates.builtin-templates-title')
+            .mdl-card__supporting-text
+              a.mdl-button.mdl-js-button.mdl-button--raised.mdl-js-ripple-effect.mdl-button--accent(
+                href=`${template.url.show}/auto-upload/tedc15`
+              ) tedc15
+              br
+              br
+              a.mdl-button.mdl-js-button.mdl-button--raised.mdl-js-ripple-effect.mdl-button--accent(
+                href=`${template.url.show}/auto-upload/versafix-1`
+              ) versafix
+        fieldset.mdl-cell.mdl-card.mdl-shadow--2dp(class=hasMarkup ? 'mdl-cell--6-col' : 'mdl-cell--4-col')
           .mdl-card__title: .mdl-card__title-text=__('admin.templates.files')
           .mdl-card__supporting-text
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
@@ -79,15 +93,8 @@ block content
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
               input.mdl-textfield__input#images-field(type="file" accept=".png,.gif,.jpg" multiple name="images")
               label.mdl-textfield__label.mdl-textfield__label--fixed(for="images-field")=__('general.images')
-        //- auto upload
-        div.mdl-cell.mdl-cell--4-col.mdl-card.mdl-shadow--2dp
-          .mdl-card__title: .mdl-card__title-text=__('admin.templates.builtin-templates-title')
-          .mdl-card__supporting-text
-            a(href=`${template.url.show}/auto-upload/tedc15`) tedc
-            br
-            a(href=`${template.url.show}/auto-upload/versafix-1`) versafix
         //- HTML preview block
-        if template.hasMarkup
+        if hasMarkup
           .mdl-cell.mdl-cell--12-col.mdl-card.mdl-shadow--2dp
             .mdl-card__title: .mdl-card__title-text=__('general.markup')
             details.mdl-card__supporting-text
