@@ -77,8 +77,8 @@ TemplateSchema.virtual('url').get(function () {
     group:            groupUrl,
     delete:           `/templates/${this._id}/delete`,
     markup:           `/templates/${this._id}/markup`,
-    generatePreviews: `/templates/${this._id}/generatePreviews`,
-    renderMarkup:     `/templates/${this._id}/renderMarkup`,
+    generatePreviews: `/templates/${this._id}/generate-previews`,
+    renderMarkup:     `/templates/${this._id}/render-markup`,
     imgCover:         imgCover,
   }
 })
