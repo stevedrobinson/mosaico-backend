@@ -445,6 +445,8 @@ module.exports = function () {
       })
       console.log( chalk.green(`[STORAGE] storage is`), chalk.cyan(config.storage.type) )
 
+      setTimeout( templates.startNightmare, 100 )
+
       application.resolve( server )
     }) )
     server.on('close', () => {

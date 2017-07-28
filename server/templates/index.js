@@ -8,7 +8,8 @@ const filemanager             = require('../filemanager')
 const {
   renderMarkup,
   generatePreviews,
-  nightmareInstance }         = require('./generate-previews')
+  nightmareInstance,
+  startNightmare }            = require('./generate-previews')
 const { autoUpload }          = require('./auto-upload')
 const getTemplateImagePrefix  = require('../helpers/get-template-image-prefix')
 const { formatErrors,
@@ -179,5 +180,6 @@ module.exports = {
   generatePreviews,
   renderMarkup,
   nightmareInstance,
+  startNightmare,
   autoUpload,
 }

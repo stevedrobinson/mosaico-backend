@@ -11,8 +11,23 @@ const fs                      = require( 'fs-extra' )
 const config                  = require( '../config' )
 const { Templates}            = require( '../models' )
 const filemanager             = require( '../filemanager' )
-const getTemplateImagePrefix  = require( '../helpers/get-template-image-prefix.js' )
-const slugFilename            = require( '../../shared/slug-filename.js' )
+const getTemplateImagePrefix  = require( '../helpers/get-template-image-prefix' )
+const slugFilename            = require( '../../shared/slug-filename' )
+const defer                   = require( '../helpers/create-promise' )
+
+
+// https://github.com/segmentio/nightmare#nightmareactionname-electronactionelectronnamespace-actionnamespace
+
+Nightmare.action('clearCache',
+function(name, options, parent, win, renderer, done) {
+  parent.respondTo('clearCache', function(done) {
+    win.webContents.session.clearCache(done)
+  })
+  done()
+},
+function(done) {
+  this.child.call('clearCache', done)
+});
 
 // used by nightmareJS to have the right html
 function renderMarkup(req, res, next) {
@@ -23,6 +38,13 @@ function renderMarkup(req, res, next) {
   .then( template => {
     if (!template) return next( createError(404) )
     if (!template.markup) return next( createError(404) )
+
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': 0,
+      'Content-Type': 'text/html',
+    })
     return res.send( template.markup )
   })
   .catch( next )
@@ -33,22 +55,25 @@ function renderMarkup(req, res, next) {
 // https://github.com/benschwarz/heroku-electron-buildpack
 // We make sure that nightmare is connected as admin
 const protocol  = `http${ config.forcessl ? 's' : '' }://`
-const nightmare = Nightmare()
-.viewport(680, 780)
-.goto( `${protocol}${config.host}/admin/login` )
-.insert( '#password-field', config.admin.password )
-.click( 'form[action*="/login"] [type=submit]' )
+const nightmare = Nightmare().viewport(680, 780)
+const connected = defer()
 
-const connected = nightmare
-.evaluate( () => false )
-.then( () => {
-  return Promise.resolve()
-})
-.catch( err => {
-  console.log( chalk.red(`[PREVIEWS] cannot connect to the server`) )
-  console.log( err )
-  throw err
-})
+function startNightmare() {
+  nightmare
+  .goto( `${protocol}${config.host}/admin/login` )
+  .insert( '#password-field', config.admin.password )
+  .click( 'form[action*="/login"] [type=submit]' )
+  .evaluate( () => false )
+  .then( () => {
+    return connected.resolve()
+  })
+  .catch( err => {
+    console.log( chalk.red(`[PREVIEWS] cannot connect to the server`) )
+    console.log( err )
+    connected.reject( err )
+    throw err
+  })
+}
 
 //
 function generatePreviews(req, res, next) {
@@ -77,7 +102,8 @@ function generatePreviews(req, res, next) {
     .then( () => {
       console.log(`[PREVIEWS] get template markup – ${ getDuration() }`)
       return nightmare
-      .goto( `${protocol}${config.host}${template.url.renderMarkup}` )
+      // add a param to force cache reload
+      .goto( `${protocol}${config.host}${template.url.renderMarkup}?t=${new Date().valueOf()}` )
       // wait for `did-finish-load` event
       // https://github.com/segmentio/nightmare/issues/297#issuecomment-150601269
       .evaluate( () => false )
@@ -92,6 +118,7 @@ function generatePreviews(req, res, next) {
     .then( () => {
       res.redirect( template.url.show )
     })
+    .catch( next )
   }
 
   function getTemplateSize() {
@@ -161,42 +188,72 @@ function generatePreviews(req, res, next) {
     console.log(`[PREVIEWS] take screenshots – ${ getDuration() }`)
     console.log( blocks )
     blocks.forEach( ({name}) => blocksName.push( name ) )
-    const screens = blocks.map( ({name, clip}) => {
-      return nightmare
-      .evaluate( () => false )
-      .screenshot( clip )
-      .then( buffer => Promise.resolve(buffer) )
-    })
-    return Promise.all( screens )
+
+    const wholePage     = blocks[ blocks.length - 1 ]
+    const screenBuffer  = defer()
+
+    nightmare
+    .evaluate( () => false )
+    .screenshot( wholePage.clip )
+    .then( screenBuffer.resolve )
+    .catch( screenBuffer.reject )
+
+    return Promise.all( [screenBuffer, blocks] )
   }
 
-  function saveScreenshotsToTmp( imagesBuffer ) {
+  function saveScreenshotsToTmp( [screenBuffer, blocks] ) {
     console.log(`[PREVIEWS] save screenshots to tmp – ${ getDuration() }`)
-    const files   = []
-    const images  = imagesBuffer.map( (imageBuffer, index) => {
-      console.log(`[PREVIEWS] img ${blocksName[ index ]}`)
-      // slug to be coherent with upload
-      const originalName  = slugFilename( blocksName[ index ] )
-      const hash          = crypto.createHash('md5').update( imageBuffer ).digest('hex')
-      const name          = `${ getTemplateImagePrefix(templateId) }-${ hash }.png`
-      const filePath      = path.join( config.images.tmpDir, `/${name}` )
-      files.push({
-        path: filePath,
-        name,
-      })
-      // this will be used to update `assets` field in DB
-      assets[ originalName ] = name
-      return fs.writeFile( filePath, imageBuffer )
+    const dfd = defer()
+    blocks = blocks.map( block => {
+      const { clip } = block
+      return sharp( screenBuffer )
+      .extract( {
+        left:   clip.x,
+        top:    clip.y,
+        width:  clip.width,
+        height: clip.height,
+      } )
+      // images are captured at 680 but displayed at half the size
+      .resize( 340, null )
+      .toBuffer( )
     })
-    return Promise.all( [files, Promise.all(images)] )
+
+    const files   = []
+
+    Promise
+    .all( blocks )
+    .then(  imagesBuffer => {
+
+      const images  = imagesBuffer.map( (imageBuffer, index) => {
+        console.log(`[PREVIEWS] img ${blocksName[ index ]}`)
+        // slug to be coherent with upload
+        const originalName  = slugFilename( blocksName[ index ] )
+        const hash          = crypto.createHash('md5').update( imageBuffer ).digest('hex')
+        const name          = `${ getTemplateImagePrefix(templateId) }-${ hash }.png`
+        const filePath      = path.join( config.images.tmpDir, `/${name}` )
+        files.push({
+          path: filePath,
+          name,
+        })
+        // this will be used to update `assets` field in DB
+        assets[ originalName ] = name
+        return fs.writeFile( filePath, imageBuffer )
+      })
+      return Promise.all( images )
+    })
+    .then( images => {
+      dfd.resolve( files )
+    })
+    .catch( dfd.reject )
+    return dfd
   }
 
-  function uploadScreenshots([files]) {
+  function uploadScreenshots( files ) {
     console.log(`[PREVIEWS] upload screenshots – ${ getDuration() }`)
     const uploads = files.map( file => {
       console.log(`[PREVIEWS] upload ${file.name}`)
       // images are captured at 680 but displayed at half the size
-      const pipeline = sharp().resize( 340, null )
+      const pipeline = sharp()
       fs.createReadStream( file.path ).pipe( pipeline )
       return filemanager.writeStreamFromStream( pipeline, file.name )
     })
@@ -216,4 +273,5 @@ module.exports = {
   renderMarkup,
   generatePreviews,
   nightmareInstance: nightmare,
+  startNightmare,
 }

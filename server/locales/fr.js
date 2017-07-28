@@ -179,7 +179,8 @@
 			"files": "fichiers",
 			"new": "nouveau template",
 			"associated": "pas de templates associés",
-			"builtin-templates-title": "Utiliser un template préexistant"
+			"builtin-templates-title": "Utiliser un template préexistant",
+			"preview-notice": "Générer les images de preview peut prendre quelques secondes"
 		},
 		"users": {
 			"new": "nouvel utilisateur",

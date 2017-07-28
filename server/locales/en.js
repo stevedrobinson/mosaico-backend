@@ -179,7 +179,7 @@
 			"new": "new template",
 			"associated": "no associated templates",
 			"builtin-templates-title": "Use a prebuild template",
-			"preview-notice": "admin.templates.preview-notice"
+			"preview-notice": "Generate the previews can take some seconds"
 		},
 		"users": {
 			"new": "new user",

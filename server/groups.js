@@ -6,7 +6,7 @@ const createError           = require('http-errors')
 const config                = require('./config')
 const { handleValidatorsErrors,
   Groups, Users,
-  Templates, Mailings }   = require('./models')
+  Templates, Mailings }     = require('./models')
 
 function list(req, res, next) {
   Groups

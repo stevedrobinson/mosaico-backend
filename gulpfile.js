@@ -537,12 +537,13 @@ function nodemon(cb) {
     env: {
       'NODE_ENV':     'development',
       'VIPS_WARNING': false,
+      // 'DEBUG':        'nightmare*',
     }
   }, nodemonOptions))
   .on('start', () => {
     // https://gist.github.com/sogko/b53d33d4f3b40d3b4b2e#comment-1457582
     if (init) {
-      init = false;
+      init = false
       cb()
     }
   })
