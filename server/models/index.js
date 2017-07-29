@@ -1,31 +1,35 @@
 'use strict'
 
-const util      = require('util')
-const chalk     = require('chalk')
-const mongoose  = require('mongoose')
+const util      = require( 'util' )
+const chalk     = require( 'chalk' )
+// const mongoose  = require('mongoose')
 
-mongoose.Promise    = global.Promise // Use native promises
-let connection
+const Group     = require( './model-group' )
+const User      = require( './model-user' )
+const sequelize = require( './db-connection' )
 
-const UserSchema        = require('./schema-user')
-const TemplateSchema    = require('./schema-template')
-const MailingSchema     = require('./schema-mailing')
-const GroupSchema       = require('./schema-group')
-const CacheimageSchema  = require('./schema-cache-image')
-const GallerySchema     = require('./schema-gallery')
-const {
-  UserModel,
-  TemplateModel,
-  MailingModel,
-  GroupModel,
-  CacheimageModel,
-  GalleryModel,
-} = require('./names')
+// mongoose.Promise    = global.Promise // Use native promises
+// let connection
 
-mongoose.connection.on('error', console.error.bind(console, chalk.red('[DB] connection error:')))
-mongoose.connection.once('open', e =>  {
-  console.log(chalk.green('[DB] connection OK'))
-})
+// const UserSchema        = require('./schema-user')
+// const TemplateSchema    = require('./schema-template')
+// const MailingSchema     = require('./schema-mailing')
+// const GroupSchema       = require('./schema-group')
+// const CacheimageSchema  = require('./schema-cache-image')
+// const GallerySchema     = require('./schema-gallery')
+// const {
+//   UserModel,
+//   TemplateModel,
+//   MailingModel,
+//   GroupModel,
+//   CacheimageModel,
+//   GalleryModel,
+// } = require('./names')
+
+// mongoose.connection.on('error', console.error.bind(console, chalk.red('[DB] connection error:')))
+// mongoose.connection.once('open', e =>  {
+//   console.log(chalk.green('[DB] connection OK'))
+// })
 
 //////
 // ERRORS HANDLING
@@ -63,12 +67,12 @@ function formatErrors(err, req, res, next) {
   .catch(next)
 }
 
-function connectDB(dbConfig) {
-  // remove depreciation warning
-  // http://mongoosejs.com/docs/connections.html#use-mongo-client
-  connection    = mongoose.connect(dbConfig, { useMongoClient: true, })
-  return connection
-}
+// function connectDB(dbConfig) {
+//   // remove depreciation warning
+//   // http://mongoosejs.com/docs/connections.html#use-mongo-client
+//   connection    = mongoose.connect(dbConfig, { useMongoClient: true, })
+//   return connection
+// }
 
 //////
 // HELPERS
@@ -99,28 +103,35 @@ function addStrictGroupFilter(user, filter) {
 }
 
 //////
+// RELATIONS
+//////
+
+Group.users = Group.hasMany( User )
+User.belongsTo( Group )
+
+//////
 // EXPORTS
 //////
 
-const Users       = mongoose.model( UserModel, UserSchema )
-const Templates   = mongoose.model( TemplateModel, TemplateSchema )
-const Mailings    = mongoose.model( MailingModel, MailingSchema )
-const Groups      = mongoose.model( GroupModel, GroupSchema )
-const Cacheimages = mongoose.model( CacheimageModel, CacheimageSchema )
-const Galleries   = mongoose.model( GalleryModel, GallerySchema )
+// const User       = mongoose.model( UserModel, UserSchema )
+// const Templates   = mongoose.model( TemplateModel, TemplateSchema )
+// const Mailings    = mongoose.model( MailingModel, MailingSchema )
+// const Group      = mongoose.model( GroupModel, GroupSchema )
+// const Cacheimages = mongoose.model( CacheimageModel, CacheimageSchema )
+// const Galleries   = mongoose.model( GalleryModel, GallerySchema )
 
 module.exports    = {
-  connection:       mongoose.connection,
-  connectDB,
+  sequelize,
+  // connectDB,
   formatErrors,
   isFromGroup,
   addGroupFilter,
   addStrictGroupFilter,
   // Compiled schema
-  Users,
-  Templates,
-  Mailings,
-  Groups,
-  Cacheimages,
-  Galleries,
+  Group,
+  User,
+  // Templates,
+  // Mailings,
+  // Cacheimages,
+  // Galleries,
 }

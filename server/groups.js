@@ -1,69 +1,66 @@
 'use strict'
 
-const chalk                 = require('chalk')
-const createError           = require('http-errors')
+const chalk                 = require( 'chalk' )
+const createError           = require( 'http-errors' )
 
-const config                = require('./config')
+const config                = require( './config' )
+const h                     = require( './helpers' )
 const { handleValidatorsErrors,
-  Groups, Users,
-  Templates, Mailings }     = require('./models')
+  Group, User,
+  // Templates, Mailings
+}     = require('./models')
 
-function list(req, res, next) {
-  Groups
-  .find( {} )
-  .sort({ createdAt: -1 })
-  .then( groups => {
-    return res.render('group-list', {
-      data: { groups }
-    })
+async function list(req, res, next) {
+  const reqParams = {
+    order: [
+      ['name', 'ASC'],
+    ],
+  }
+  const groups = await Group.findAll( reqParams )
+  res.render('group-list', {
+    data: { groups }
   })
-  .catch( next )
 }
 
-function show(req, res, next) {
+async function show(req, res, next) {
   const { groupId } = req.params
   if (!groupId) return res.render('group-new-edit')
-  const getGroup    = Groups.findById( groupId )
-  const getUsers    = Users.find({
-    _group:       groupId,
-    isDeactivated:  { $ne: true },
-  }).sort({ createdAt: -1 })
-  const getTemplates = Templates.find({_group: groupId}).sort({ createdAt: -1 })
-  const getMailings  = Mailings
-  .find({_group: groupId, }, '_id name _user _template createdAt updatedAt')
-  .populate('_user', '_id name email')
-  .populate('_template', '_id name')
-  .sort({ updatedAt: -1})
-
-  Promise
-  .all( [getGroup, getUsers, getTemplates, getMailings] )
-  .then( ([group, users, templates, mailings]) => {
-    if (!group) return next(createError(404))
-    res.render('group-new-edit', {
-      data: {
-        group,
-        users,
-        templates,
-        mailings,
+  const reqParams   = {
+    where: {
+      id: groupId,
+    },
+    include: [{
+      model: User,
+      where: {
+        isDeactivated: { $ne: true },
       },
-    })
+      order: [
+        ['createdAt', 'DESC']
+      ],
+    }],
+  }
+  const group       = await Group.findOne( reqParams )
+  if ( !group ) return next( createError(404) )
+  res.render('group-new-edit', {
+    data: {
+      group,
+      users: group.users,
+      templates: [],
+      mailings: [],
+    },
   })
-  .catch( next )
 }
 
-function update(req, res, next) {
-  var groupId = req.params.groupId
-  var dbRequest = groupId ?
-    Groups.findByIdAndUpdate(groupId, req.body, {runValidators: true})
-    : new Groups(req.body).save()
-
-  dbRequest
-  .then( group => res.redirect(`/groups/${group._id}`) )
-  .catch(err => handleValidatorsErrors(err, req, res, next) )
+async function update(req, res, next) {
+  const { groupId } = req.params
+  const { body }    = req
+  const group       = await Group.findByIdAndUpdate( groupId, body )
+  if ( !group ) return next( createError(404) )
+  res.redirect( group.url.show )
 }
 
 module.exports = {
-  list:       list,
-  show:       show,
-  update:     update,
+  list:       h.asyncMiddleware( list ),
+  show:       h.asyncMiddleware( show ),
+  update:     h.asyncMiddleware( update ),
 }

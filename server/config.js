@@ -16,7 +16,7 @@ const config  = rc('backend', {
   debug:          false,
   forcessl:       false,
   host:           'localhost:3000',
-  database:       'mongodb://localhost/mosaico-backend',
+  database:       'postgres://localhost:5432/mosaico-backend',
   redis:          'redis://localhost:6379',
   emailTransport: {
     host:         'localhost',
@@ -56,6 +56,9 @@ const config  = rc('backend', {
   about: {
     version: pkg.version,
     engines: pkg.engines,
+  },
+  log: {
+    db: false,
   }
 })
 

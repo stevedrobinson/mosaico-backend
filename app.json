@@ -34,7 +34,7 @@
   },
   "addons": [
     {
-      "plan": "mongolab:sandbox"
+      "plan": "heroku-postgresql:hobby-dev"
     },
     {
       "plan": "sendgrid:starter"
