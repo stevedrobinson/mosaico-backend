@@ -2,13 +2,13 @@ extends _layout-admin.pug
 
 block vars
   - var user      = data && data.user ? data.user : {};
-  - var isEdit    = user._id
+  - var isEdit    = user.id
   - var pageTitle = isEdit ? __('layout.users.edit', user.name) : __('layout.users.new')
   - var pageClass = 'full-width-layout'
 
 block content
   - var user        = data && data.user ? data.user : {};
-  - var isEdit      = user._id
+  - var isEdit      = user.id
   - var action      = isEdit ? user.url.show : `/users`;
   - var hasError    = messages.error && messages.error.length;
   - var errors      = hasError ? messages.error[0] : {};
@@ -22,16 +22,16 @@ block content
       if isEdit
         li.mdl-list__item: a.mdl-list__item-primary-content(href=user.url.group)
           .material-icons.mdl-list__item-icon group
-          | #{user._group.name}
+          | #{user.group.name}
 
         if !user.isDeactivated
           li.mdl-list__item
-            form.mdl-list__item-primary-content.js-reset-user(action='/users/reset' method="post" data-name=user.safename)
+            a.mdl-list__item-primary-content.js-reset-user(
+              href=mergeQueries(user.url.reset, {redirect: user.url.show})
+              data-name=user.safename
+            )
               .material-icons.mdl-list__item-icon vpn_key
-              input(type="hidden" name="redirect" value=user.url.show)
-              input(type="hidden" name="id" value=user._id)
-              button(type="submit")
-                | #{__(user.status.actionMsg)}
+              | #{__(user.status.actionMsg)}
 
           li.mdl-list__item
             a.mdl-list__item-primary-content.js-user-deactivate(
@@ -44,7 +44,7 @@ block content
         else
           li.mdl-list__item
             a.mdl-list__item-primary-content.js-user-activate(
-              href=mergeQueries(user.url.restore, {redirect: user.url.show})
+              href=mergeQueries(user.url.activate, {redirect: user.url.show})
               data-name=user.safename
             )
               .material-icons.mdl-list__item-icon accessibility
@@ -57,9 +57,9 @@ block content
           | #{__(user.status.value)}
 
       else
-        li.mdl-list__item: a.mdl-list__item-primary-content(href=data.group.url.show)
+        li.mdl-list__item: a.mdl-list__item-primary-content(href=user.group.url.show)
           .material-icons.mdl-list__item-icon group
-          | #{data.group.name}
+          | #{user.group.name}
 
   //- /////////
   //- MAIN CONTENT
@@ -68,10 +68,10 @@ block content
   form(action=action method="post").mdl-cell.mdl-cell--9-col
     .mdl-grid
       fieldset.mdl-cell.mdl-cell--12-col.mdl-card.mdl-shadow--2dp
-        if user._id
-          input(type="hidden" name="id" value=user._id)
+        if user.id
+          input(type="hidden" name="id" value=user.id)
         if !isEdit
-          input(type="hidden" name="_group" value=data.group._id)
+          input(type="hidden" name="groupId" value=user.group.id)
         .mdl-card__title
           .mdl-card__title-text=__('general.informations')
         .mdl-card__supporting-text: .mdl-grid
@@ -123,7 +123,7 @@ block content
                   tr
                     if _config.debug
                       td.mdl-data-table__cell--non-numeric
-                        a(href=mailing.url.update)= mailing._id
+                        a(href=mailing.url.update)= mailing.id
                     td.mdl-data-table__cell--non-numeric
                       a(href=mailing.url.update).js-name= mailing.name
                     td.mdl-data-table__cell--non-numeric

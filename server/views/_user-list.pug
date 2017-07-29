@@ -18,22 +18,22 @@ mixin user-list(opts = {})
       each user in data.users
         tr
           if _config.debug
-            td.mdl-data-table__cell--non-numeric= user._id
+            td.mdl-data-table__cell--non-numeric= user.id
           td.mdl-data-table__cell--non-numeric: a(href=user.url.show)= user.email
           td.mdl-data-table__cell--non-numeric= user.safename
           if (!hideGroup)
             td.mdl-data-table__cell--non-numeric
-              a(href=user.url.group) #{user._group.name}
+              a(href=user.url.group) #{user.group.name}
           td.mdl-data-table__cell--non-numeric: i.material-icons= user.status.icon
           td.mdl-data-table__cell--non-numeric=__(user.status.value)
           td.mdl-data-table__cell--action= user.lang
           td.mdl-data-table__cell--non-numeric= formatDate(user.createdAt)
           td.mdl-data-table__cell--action
             if !user.isDeactivated
-              form.js-reset-user(action='/users/reset' method="post" data-name=user.safename)
-                input(type="hidden" name="redirect" value="/users")
-                input(type="hidden" name="id" value=user._id)
-                button.mdl-button.mdl-js-button.mdl-button--accent(type="submit")=__(user.status.actionMsgShort)
+              a.js-reset-user(
+                href=mergeQueries(user.url.reset, {redirect: '/users'})
+                data-name=user.safename
+              )=__(user.status.actionMsgShort)
           td.mdl-data-table__cell--action
             if !user.isDeactivated
               a.js-user-deactivate(
@@ -44,7 +44,7 @@ mixin user-list(opts = {})
             else
               //- no reactivation for now
               a.js-user-activate(
-                href=user.url.restore
+                href=user.url.activate
                 data-name=user.safename
               ).mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent
                 i.material-icons accessibility
