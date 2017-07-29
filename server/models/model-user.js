@@ -92,7 +92,7 @@ const User     = sequelize.define( 'user', {
   // VIRTUALS
   status: {
     type: new Sequelize.VIRTUAL(Sequelize.JSON, ['isDeactivated', 'password', 'token']),
-    get: function() {
+    get: function () {
       const currentStatus = this.get( 'isDeactivated' ) ? 'deactivated' :
         this.get( 'password' ) ? 'confirmed' :
         this.get( 'token' ) ? 'mail-sent' :
@@ -102,7 +102,7 @@ const User     = sequelize.define( 'user', {
   },
   fullname: {
     type: new Sequelize.VIRTUAL(Sequelize.STRING, ['name', 'email']),
-    get: function() {
+    get: function () {
       const name  = this.get('name')
       const email = this.get('email')
       return name ? `${name} (${email})` : email
@@ -110,14 +110,14 @@ const User     = sequelize.define( 'user', {
   },
   safename: {
     type: new Sequelize.VIRTUAL(Sequelize.STRING, ['name']),
-    get: function() {
+    get: function () {
       const name  = this.get('name')
       return name ? name : '-'
     }
   },
   isReseted: {
     type: new Sequelize.VIRTUAL(Sequelize.BOOLEAN, ['password', 'token']),
-    get: function() {
+    get: function () {
       if (this.get('password'))  return false
       if (this.get('token'))     return true
       return false
@@ -126,13 +126,13 @@ const User     = sequelize.define( 'user', {
   // for better session handling
   isAdmin: {
     type: new Sequelize.VIRTUAL(Sequelize.BOOLEAN),
-    get: function() {
+    get: function () {
       return false
     }
   },
   url: {
     type: new Sequelize.VIRTUAL(Sequelize.JSON, ['id', 'groupId']),
-    get: function() {
+    get: function () {
       const id    = this.get('id')
       const urls  = {
         show:       `/users/${id}`,
@@ -152,7 +152,7 @@ const User     = sequelize.define( 'user', {
 User.findByIdAndUpdate = async function( id, params ) {
   // https://medium.com/@griffinmichl/async-await-with-ternary-operators-af19f374215
   const user = await ( id ? this.findById(id) : new User() )
-  if !user return null
+  if ( !id && !user ) return null
   return user.update( params )
 }
 

@@ -11,7 +11,7 @@ const { handleValidatorsErrors,
 }   = require('./models')
 
 async function list(req, res, next) {
-  const params = {
+  const reqParams   = {
     order: [
       ['createdAt',     'DESC'],
       ['isDeactivated', 'ASC'],
@@ -20,7 +20,7 @@ async function list(req, res, next) {
       model: Group,
     }],
   }
-  const users = await User.findAll( params )
+  const users = await User.findAll( reqParams )
   res.render('user-list', {
     data: { users }
   })
@@ -29,7 +29,8 @@ async function list(req, res, next) {
 async function create(req, res, next) {
   const { groupId } = req.params
   const group       = await Group.findById( groupId )
-  res.render( 'user-new-edit', {data: { group, }} )
+  if ( !group ) return next( createError(404) )
+  res.render( 'user-new-edit', {data: { group }} )
 }
 
 async function show(req, res, next) {
@@ -46,6 +47,7 @@ async function show(req, res, next) {
   if ( !user ) return next( createError(404) )
   res.render('user-new-edit', { data: {
     user,
+    group: user.group,
     mailings:   [],
   }})
 

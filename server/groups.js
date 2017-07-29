@@ -24,13 +24,14 @@ async function list(req, res, next) {
 
 async function show(req, res, next) {
   const { groupId } = req.params
-  if (!groupId) return res.render('group-new-edit')
+  if ( !groupId ) return res.render('group-new-edit')
   const reqParams   = {
     where: {
       id: groupId,
     },
     include: [{
-      model: User,
+      model:    User,
+      required: false,
       where: {
         isDeactivated: { $ne: true },
       },

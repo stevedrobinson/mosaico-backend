@@ -67,7 +67,7 @@
   // DB CONNECTION
   //////
 
-  "database": "mongodb://localhost/my_database",
+  "database": "postgres://localhost:5432/mosaico-backend",
 
   "redis": "redis://localhost:6379",
 
