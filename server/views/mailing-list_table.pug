@@ -36,20 +36,20 @@ table.mdl-data-table
             input(
               name="mailings[]"
               type="checkbox"
-              id=`line-${mailing._id}`
+              id=`line-${mailing.id}`
               data-tags=mailing.tags.join(',')
-              value=mailing._id
+              value=mailing.id
             )
-            label(for=`line-${mailing._id}`)
+            label(for=`line-${mailing.id}`)
           if _config.debug
-            td.mdl-data-table__cell--non-numeric= mailing._id
+            td.mdl-data-table__cell--non-numeric= mailing.id
           td.mdl-data-table__cell--non-numeric
             a(href=mailing.url.update).js-name= mailing.name
             td.mdl-data-table__cell--non-numeric
               if (isAdmin)
-                a(href=mailing.url.template)= mailing.templateName
+                a(href=mailing.url.template)= mailing.template.name
               else
-                span= mailing.templateName
+                span= mailing.template.name
 
           if (!isAdmin)
             td.mdl-data-table__cell--non-numeric: span= mailing.author

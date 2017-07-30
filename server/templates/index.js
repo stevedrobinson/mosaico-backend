@@ -17,7 +17,7 @@ const { formatErrors,
   isFromGroup,
   Group,
   Template,
-  // Mailings
+  Mailing
 }       = require('../models')
 
 async function list(req, res, next) {
@@ -125,34 +125,20 @@ async function remove(req, res, next) {
 
 //----- USER ACTIONS
 
-function userList(req, res, next) {
-  const { isAdmin }       = req.user
-  const filter            = isAdmin ? {} : { _group: req.user._group }
-  // const getTemplate     = Template.find( filter )
-  // // Admin as a user should see which template is coming from which group
-  // if (isAdmin) getTemplate.populate('_group')
-
-  // getTemplate
-  // .sort({ name: 1 })
-  // .then( templates => {
-  //   // can't sort populated fields
-  //   // http://stackoverflow.com/questions/19428471/node-mongoose-3-6-sort-query-with-populated-field/19450541#19450541
-  //   if (isAdmin) {
-  //     templates = templates.sort( (a, b) => {
-  //       let nameA = a._group.name.toLowerCase()
-  //       let nameB = b._group.name.toLowerCase()
-  //       if (nameA < nameB) return -1
-  //       if (nameA > nameB) return 1
-  //       return 0;
-  //     })
-  //   }
-  //   resrender('mailing-show, {
-  //     data: {
-  //       templates,
-  //     }
-  //   })
-  // })
-  // .catch(next)
+async function userList(req, res, next) {
+  const { isAdmin, groupId }  = req.user
+  const reqParams             = {
+    where: isAdmin ? {} : { groupId },
+    include: [{
+      model: Group,
+    }],
+    order: [
+      [ Group, 'name', 'ASC' ],
+      [ 'name', 'ASC' ],
+    ],
+  }
+  const templates             = await Template.findAll( reqParams )
+  res.render( 'mailing-new', {data: { templates }} )
 }
 
 //----- EXPORTS
@@ -167,7 +153,9 @@ module.exports = {
   autoUpload:         h.asyncMiddleware( autoUpload ),
   renderMarkup:       h.asyncMiddleware( renderMarkup ),
   generatePreviews:   h.asyncMiddleware( generatePreviews ),
+
+  userList:           h.asyncMiddleware( userList ),
+
   nightmareInstance,
   startNightmare,
-  userList,
 }

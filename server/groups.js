@@ -6,9 +6,10 @@ const createError           = require( 'http-errors' )
 const config                = require( './config' )
 const h                     = require( './helpers' )
 const { handleValidatorsErrors,
-  Group, User,
+  Group,
+  User,
   Template,
-  // Mailings
+  Mailing,
 }     = require('./models')
 
 async function list(req, res, next) {
@@ -45,6 +46,13 @@ async function show(req, res, next) {
       order: [
         ['createdAt', 'DESC']
       ],
+    },
+    {
+      model:    Mailing,
+      required: false,
+      order: [
+        ['createdAt', 'DESC']
+      ],
     }],
   }
   const group       = await Group.findOne( reqParams )
@@ -54,7 +62,7 @@ async function show(req, res, next) {
       group,
       users:      group.users,
       templates:  group.templates,
-      mailings:   [],
+      mailings:   group.mailings,
     },
   })
 }
@@ -62,6 +70,8 @@ async function show(req, res, next) {
 async function update(req, res, next) {
   const { groupId } = req.params
   const { body }    = req
+  // TODO should use upsert
+  // http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
   const group       = await Group.findByIdAndUpdate( groupId, body )
   if ( !group ) return next( createError(404) )
   res.redirect( group.url.show )

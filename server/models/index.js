@@ -7,6 +7,8 @@ const chalk     = require( 'chalk' )
 const Group     = require( './model-group' )
 const User      = require( './model-user' )
 const Template  = require( './model-template' )
+const Mailing   = require( './model-mailing' )
+const Tag       = require( './model-tags' )
 const sequelize = require( './db-connection' )
 
 // mongoose.Promise    = global.Promise // Use native promises
@@ -107,12 +109,22 @@ function addStrictGroupFilter(user, filter) {
 // RELATIONS
 //////
 
-Group.users     = Group.hasMany( User )
-Group.templates = Group.hasMany( Template )
-
 User.belongsTo( Group )
 
 Template.belongsTo( Group )
+
+Mailing.belongsTo( Group )
+Mailing.belongsTo( User )
+Mailing.belongsTo( Template )
+Mailing.tags    = Mailing.hasMany( Tag )
+
+Tag.belongsTo( Group )
+Tag.belongsToMany( Mailing, {through: 'MailingTag'})
+
+Group.users     = Group.hasMany( User )
+Group.templates = Group.hasMany( Template )
+Group.mailings  = Group.hasMany( Mailing )
+Group.tags      = Group.hasMany( Tag )
 
 //////
 // EXPORTS
@@ -132,11 +144,12 @@ module.exports    = {
   isFromGroup,
   addGroupFilter,
   addStrictGroupFilter,
-  // Compiled schema
+  // Models
   Group,
   User,
   Template,
-  // Mailings,
+  Mailing,
+  Tag,
   // Cacheimages,
   // Galleries,
 }
