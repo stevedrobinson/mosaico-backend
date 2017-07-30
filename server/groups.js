@@ -7,7 +7,8 @@ const config                = require( './config' )
 const h                     = require( './helpers' )
 const { handleValidatorsErrors,
   Group, User,
-  // Templates, Mailings
+  Template,
+  // Mailings
 }     = require('./models')
 
 async function list(req, res, next) {
@@ -38,6 +39,12 @@ async function show(req, res, next) {
       order: [
         ['createdAt', 'DESC']
       ],
+    }, {
+      model:    Template,
+      required: false,
+      order: [
+        ['createdAt', 'DESC']
+      ],
     }],
   }
   const group       = await Group.findOne( reqParams )
@@ -45,9 +52,9 @@ async function show(req, res, next) {
   res.render('group-new-edit', {
     data: {
       group,
-      users: group.users,
-      templates: [],
-      mailings: [],
+      users:      group.users,
+      templates:  group.templates,
+      mailings:   [],
     },
   })
 }

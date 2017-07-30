@@ -47,7 +47,7 @@ async function show(req, res, next) {
   if ( !user ) return next( createError(404) )
   res.render('user-new-edit', { data: {
     user,
-    group: user.group,
+    group:    user.group,
     mailings:   [],
   }})
 
