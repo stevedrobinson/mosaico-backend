@@ -70,6 +70,8 @@ async function show(req, res, next) {
 async function update( req, res, next ) {
   const { userId }  = req.params
   const { body }    = req
+  // TODO should use upsert
+  // http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
   const user        = await User.findByIdAndUpdate( userId, body )
   if ( !user ) return next( createError(404) )
   res.redirect( user.url.show )
@@ -104,72 +106,62 @@ async function adminResetPassword( req, res, next ) {
 
 //----- USER ACTIONS
 
-function userResetPassword(req, res, next) {
-  User
-  .findOne({
-    email: req.body.username
-  })
-  .then(onUser)
-  .catch(next)
-
-  function onUser(user) {
-    if (!user) {
-      req.flash('error', 'invalid email')
-      return res.redirect('/forgot')
+async function userResetPassword(req, res, next) {
+  const { username }  = req.body
+  const reqParams     = {
+    where: {
+      email: h.normalizeString( username )
     }
-    user
-    .resetPassword(req.getLocale(), 'user')
-    .then( user => {
-      req.flash('success', 'password has been reseted. You should receive an email soon')
-      res.redirect('/forgot')
-    })
-    .catch(next)
   }
+  const user          = await User.findOne( reqParams )
+  if ( !user ) {
+    req.flash( 'error', 'invalid email' )
+    return res.redirect( '/forgot' )
+  }
+  const resetedUser   = await user.resetPassword( 'user' )
+  // TODO: I18N
+  req.flash( 'success', 'password has been reseted. You should receive an email soon' )
+  res.redirect( '/forgot' )
 }
 
-function setPassword(req, res, next) {
-  User
-  .findOne({
-    token:        req.params.token,
-    tokenExpire:  { $gt: Date.now() },
-  })
-  .then( user => {
-    if (!user) {
-      req.flash('error', {message: 'password.token.invalid'})
-      res.redirect(req.path)
-      return Promise.resolve(false)
+async function setPassword(req, res, next) {
+  const { token }   = req.params
+  const reqParams   = {
+    where: {
+      token:        token,
+      tokenExpire:  { $gt: Date.now() },
     }
-    if (req.body.password !== req.body.passwordconfirm) {
-      req.flash('error', {message: 'password.nomatch'})
-      res.redirect(req.path)
-      return Promise.resolve(false)
+  }
+  const user        = await User.findOne( reqParams )
+  if (!user) {
+    req.flash( 'error', {message: 'password.token.invalid'} )
+    return res.redirect( req.path )
+  }
+  if (req.body.password !== req.body.passwordconfirm) {
+    req.flash( 'error', {message: 'password.nomatch'} )
+    return res.redirect( req.path )
+  }
+  const updatedUser = await user.setPassword( req.body.password )
+  req.login(updatedUser, err => {
+    if (err) return next(err)
+    res.redirect('/')
+  })
+}
+
+async function showSetPassword(req, res, next) {
+  const { token }   = req.params
+  const reqParams   = {
+    where: {
+      token:        token,
+      tokenExpire:  { $gt: Date.now() },
     }
-    return user.setPassword(req.body.password, req.getLocale())
-  })
-  .then( user => {
-    if (!user) return
-    req.login(user, err => {
-      if (err) return next(err)
-      res.redirect('/')
-    })
-
-  })
-  .catch(next)
+  }
+  const user        = await User.findOne( reqParams )
+  const data        = !user ? { noToken: true } : { token }
+  return res.render( 'password-reset', { data } )
 }
 
-function showSetPassword(req, res, next) {
-  const { token } = req.params
-  User
-  .findOne( {
-    token,
-    tokenExpire: { $gt: Date.now() },
-  } )
-  .then( user => {
-    const data = !user ? { noToken: true } : { token }
-    return res.render( 'password-reset', { data } )
-  })
-  .catch( next )
-}
+//----- EXPORTS
 
 module.exports = {
   list:               h.asyncMiddleware( list ),
@@ -179,7 +171,7 @@ module.exports = {
   activate:           h.asyncMiddleware( activate ),
   deactivate:         h.asyncMiddleware( deactivate ),
   adminResetPassword: h.asyncMiddleware( adminResetPassword ),
-  userResetPassword,
-  setPassword,
-  showSetPassword,
+  userResetPassword:  h.asyncMiddleware( userResetPassword ),
+  setPassword:        h.asyncMiddleware( setPassword ),
+  showSetPassword:    h.asyncMiddleware( showSetPassword ),
 }

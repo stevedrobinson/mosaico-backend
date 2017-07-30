@@ -8,8 +8,9 @@ const RedisStore    = require( 'connect-redis' )( session )
 const createError   = require( 'http-errors' )
 
 const config        = require( './config' )
+const h             = require( './helpers' )
 const { connection,
-  Users }           = require( './models' )
+  User }           = require( './models' )
 
 var adminUser = {
   isAdmin:  true,
@@ -28,19 +29,22 @@ passport.use(new LocalStrategy(
       return done(null, false, { message: 'password.error.incorrect' })
     }
     // user
-    Users
+    User
     .findOne({
-      email:          username,
-      isDeactivated:  { $ne: true },
-      token:          { $exists: false },
+      where: {
+        email:          h.normalizeString( username ),
+        isDeactivated:  { $not: true },
+        token:          { $eq:  null },
+      },
     })
-    .then(function (user) {
-      if (!user) return done(null, false, {message: 'password.error.nouser'})
+    .then( user  => {
+      // TODO email should be automatically filled with the previous value
+      if (!user) return done(null, false, { message: 'password.error.nouser'} )
       var isPasswordValid = user.comparePassword(password)
       if (!isPasswordValid) return done(null, false, { message: 'password.error.incorrect' })
       return done(null, user)
     })
-    .catch(function (err) {
+    .catch( err => {
       return done(null, false, err)
     })
   }
@@ -52,11 +56,13 @@ passport.serializeUser( (user, done) => {
 
 passport.deserializeUser( (id, done) => {
   if (id === config.admin.id) return done(null, adminUser)
-  Users
+  User
   .findOne({
-    _id:            id,
-    isDeactivated:  { $ne: true },
-    token:          { $exists: false },
+    where: {
+      id:            id,
+      isDeactivated:  { $not: true },
+      token:          { $eq:  null },
+    },
   })
   .then( user  => done(null, user) )
   .catch( err => done(null, false, err) )

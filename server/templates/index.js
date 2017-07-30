@@ -91,6 +91,8 @@ async function update(req, res, next) {
     formatter:  'groups',
   }
   const body      = await filemanager.parseMultipart( req, parseParams )
+  // TODO should use upsert
+  // http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
   const template  = await ( isUpdate ? Template.findById(templateId) : new Template() )
   if ( isUpdate && !template ) return next( createError(404) )
   const newDatas          = _.omit( body, ['images'] )

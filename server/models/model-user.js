@@ -41,6 +41,11 @@ const status = {
   },
 }
 
+function encodePassword(password) {
+  if (typeof password === 'undefined') return null
+  return bcrypt.hashSync(password, 10)
+}
+
 const User     = sequelize.define( 'user', {
   id:  {
     type:         Sequelize.UUID,
@@ -72,10 +77,7 @@ const User     = sequelize.define( 'user', {
   password: {
     type:         Sequelize.STRING,
     set:          function ( val ) {
-      if (typeof password === 'val') {
-        return this.setDataValue( 'password', null )
-      }
-      this.setDataValue( 'password', bcrypt.hashSync( val, 10) )
+      this.setDataValue( 'password', encodePassword(val) )
       this.setDataValue( 'token', null )
       this.setDataValue( 'tokenExpire', null )
     },
@@ -195,7 +197,7 @@ User.prototype.resetPassword = async function ( type ) {
 }
 
 User.prototype.setPassword = async function ( password ) {
-  this.setDataValue( 'password',    password )
+  this.setDataValue( 'password',    encodePassword(password) )
   this.setDataValue( 'token',       null )
   this.setDataValue( 'tokenExpire', null )
 
