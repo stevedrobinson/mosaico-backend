@@ -45,7 +45,6 @@ const perpage = 25
 async function userList(req, res, next) {
   const { query, user}        = req
   const { isAdmin, groupId }  = user
-  const groupFilter           = isAdmin ? { $eq: null }  : groupId
 
   //----- SORTING
 
@@ -61,14 +60,71 @@ async function userList(req, res, next) {
     order.push( ['updatedAt', 'DESC'] )
   }
 
-  console.log( order )
+  //----- PAGINATION
+
+  const limit   = query.limit ? ~~query.limit : perpage
+  const page    = query.page ? ~~query.page - 1 : 0
+  const offset  = page * limit
+
+  //----- FILTERING
+
+  // CLEANING QUERY
+
+  // remove empty fields
+  let filterQuery = _.pick( query, ['name', 'userId', 'templateId', 'createdAt', 'updatedAt', 'tags'] )
+  ;['createdAt', 'updatedAt'].forEach( key => {
+    if (!query[key]) return
+    filterQuery[ key ]  = _.omitBy( filterQuery[ key ], value => value === '' )
+  })
+  filterQuery           = _.omitBy( filterQuery, value => {
+    const isEmptyString = value === ''
+    const isEmptyObject = _.isPlainObject(value) && Object.keys(value) < 1
+    return isEmptyString || isEmptyObject
+  } )
+
+  const filterKeys    = Object.keys( filterQuery )
+
+  // normalize array
+  let arrayKeys = ['userId', 'templateId', 'tags']
+  arrayKeys     = _.intersection( arrayKeys, filterKeys )
+  for (let key of arrayKeys) {
+    filterQuery[ key ] = _.concat( [], filterQuery[ key ] )
+  }
+
+  // CONSTRUCT FILTER
+
+  console.log( filterQuery )
+
+  const where = {
+    groupId: isAdmin ? { $eq: null }  : groupId,
+  }
+
+  if (filterQuery.name) where.name = { $regexp: filterQuery.name }
+  // SELECT
+  for (let keys of arrayKeys ) { where[ keys ] = { $in: filterQuery[ keys ] } }
+  // DATES
+  // for…of breaks on return, use forEach
+  const datesFilterKeys = _.intersection( ['createdAt', 'updatedAt'], filterKeys )
+  datesFilterKeys.forEach( key => {
+    const rangeKeys = _.intersection( ['$lte', '$gte'], Object.keys( filterQuery[key] ) )
+    rangeKeys.forEach( range => {
+      // force UTC time for better comparison purpose
+      const date = moment(`${filterQuery[key][range]} +0000`, 'YYYY-MM-DD Z')
+      if (!date.isValid()) return
+      // day begin at 00h00… go to the next ^^
+      if (range === '$lte') date.add(1, 'days')
+      where[key]         = where[key] || {}
+      where[key][range]  = date.toDate()
+    })
+  })
+
   //----- CREATE DB QUERIES
 
   const mailingsParams        = {
-    where: {
-      groupId: groupFilter,
-    },
+    where,
     order,
+    limit,
+    offset,
     include: [{
       model:    User,
       required: false,
@@ -81,7 +137,7 @@ async function userList(req, res, next) {
     }],
   }
   const queries = [
-    Mailing.findAll( mailingsParams ),
+    Mailing.findAndCount( mailingsParams ),
     Template.findAll( isAdmin ? {} : {where: { groupId: groupFilter}} ),
     isAdmin ? Promise.resolve( false ) : User.findAll( {where: { groupId }} )
   ]
@@ -90,200 +146,82 @@ async function userList(req, res, next) {
     templates,
     users,
   ]             = await Promise.all( queries )
+
+  // PAGINATION STATUS
+  const total         = mailings.count
+  const isFirst       = page === 0
+  const isLast        = page >= Math.trunc(total / limit)
+  const pagination    = {
+    total,
+    current: `${offset + 1}-${offset + mailings.rows.length}`,
+    prev:     isFirst ? false : page,
+    next:     isLast  ? false : page + 2
+  }
+
+  // SUMMARY STATUS
+
+  // “translate” ids: need users & templates in order to compute
+  let idToName = ['userId', 'templateId']
+  idToName     = _.intersection( idToName, filterKeys )
+  for (let key of idToName) {
+    const dataList = key === 'userId' ? users : templates
+    filterQuery[ key ] = filterQuery[ key ].map( id => {
+      return _.find( dataList, value => `${value.id}` === id ).name
+    } )
+  }
+
+  // format for view
+  const i18nKeys = {
+    name:       'filter.summary.contain',
+    userId:     'filter.summary.author',
+    templateId: 'filter.summary.template',
+    createdAt:  'filter.summary.createdat',
+    updatedAt:  'filter.summary.updatedat',
+    tags:       'filter.summary.tags',
+  }
+  const summary   = []
+  _.forIn( filterQuery, (value, key) => {
+    let i18nKey = i18nKeys[ key ]
+    if ( _.isString(value) ) return summary.push( { message: i18nKey, value} )
+    if ( _.isArray(value) ) {
+      return summary.push( { message: i18nKey, value: value.join(', ')} )
+    }
+    // dates…
+    summary.push( { message: i18nKey } )
+    if (value.$gte) {
+      summary.push( {
+        message: 'filter.summary.after',
+        value:    value.$gte
+      } )
+    }
+    if (value.$gte && value.$lte ) {
+      summary.push( {
+        message: 'filter.summary.and',
+      } )
+    }
+    if (value.$lte) {
+      summary.push( {
+        message: 'filter.summary.before',
+        value:    value.$lte
+      } )
+    }
+  })
+
+  // FINALLY RENDER \o/
   const data    = {
-    mailings: mailings.map( mail => mail.toJSON() ) ,
-    users: [],
-    templates: [],
+    mailings: mailings.rows,
+    users,
+    templates,
     tagsList: [],
     // tagsList:  tags.map( t => t._id ),
-    pagination: {},
-    filterQuery: {},
-    summary: {},
+    pagination,
+    filterQuery,
+    summary,
   }
-  console.log( inspect(data, {depth: 1}), )
+  // console.log( inspect(data, {depth: 1}), )
 
-  res.render('mailing-list', { data: data } )
+  res.render('mailing-list', { data } )
 
-  //----- PAGINATION
-
-  const pagination  = {
-    page:   query.page ? ~~query.page - 1 : 0,
-    limit:  query.limit ? ~~query.limit : perpage,
-  }
-  pagination.start  = pagination.page * pagination.limit
-
-
-
-  // //----- FILTERING
-
-  // // CLEANING QUERY
-
-  // // remove empty fields
-  // let filterQuery = _.pick( query, ['name', '_user', '_template', 'createdAt', 'updatedAt', 'tags'] )
-  // ;['createdAt', 'updatedAt'].forEach( key => {
-  //   if (!query[key]) return
-  //   filterQuery[ key ]  = _.omitBy( filterQuery[ key ], value => value === '' )
-  // })
-  // filterQuery           = _.omitBy( filterQuery, value => {
-  //   const isEmptyString = value === ''
-  //   const isEmptyObject = _.isPlainObject(value) && Object.keys(value) < 1
-  //   return isEmptyString || isEmptyObject
-  // } )
-
-  // const filterKeys    = Object.keys( filterQuery )
-
-  // // normalize array
-  // let arrayKeys = ['_user', '_template', 'tags']
-  // arrayKeys     = _.intersection( arrayKeys, filterKeys )
-  // for (let key of arrayKeys) {
-  //   filterQuery[ key ] = _.concat( [], filterQuery[ key ] )
-  // }
-
-  // // CONSTRUCT MONGODB FILTER
-
-  // const filter  = { _group }
-  // // text search can be improved
-  // // http://stackoverflow.com/questions/23233223/how-can-i-find-all-documents-where-a-field-contains-a-particular-string
-  // if (filterQuery.name) filter.name = new RegExp(filterQuery.name)
-  // // SELECT
-  // for (let keys of arrayKeys ) { filter[keys] = { $in: filterQuery[keys] } }
-  // // DATES
-  // // for…of breaks on return, use forEach
-  // const datesFilterKeys = _.intersection( ['createdAt', 'updatedAt'], filterKeys )
-  // datesFilterKeys.forEach( key => {
-  //   const rangeKeys = _.intersection( ['$lte', '$gte'], Object.keys( filterQuery[key] ) )
-  //   rangeKeys.forEach( range => {
-  //     // force UTC time for better comparison purpose
-  //     const date = moment(`${filterQuery[key][range]} +0000`, 'YYYY-MM-DD Z')
-  //     if (!date.isValid()) return
-  //     // day begin at 00h00… go to the next ^^
-  //     if (range === '$lte') date.add(1, 'days')
-  //     filter[key]         = filter[key] || {}
-  //     filter[key][range]  = date.toDate()
-  //   })
-  // })
-
-
-
-  // // don't use lean, we need virtuals
-  // const mailingsPaginate  = Mailing
-  // .find( filter )
-  // .sort( sort )
-  // .skip( pagination.page * pagination.limit )
-  // .limit( pagination.limit )
-
-  // const mailingsTotal = Mailing
-  // .find( filter )
-  // .lean()
-
-  // // Extract used tags from mailings
-  // // http://stackoverflow.com/questions/14617379/mongoose-mongodb-count-elements-in-array
-  // const tagsList = Mailing
-  // .aggregate( [
-  //   { $match: {
-  //      _group,
-  //     tags:     { $exists: true },
-  //   } },
-  //   { $unwind: '$tags' },
-  //   { $group: { _id: '$tags', } },
-  //   { $sort:  { _id: 1 } }
-  // ])
-
-  // // tagsList.then(tags => console.log( tags.map( t => t._id ) ))
-
-  // // gather informations for select boxes
-  // const usersRequest      = isAdmin ? Promise.resolve(false)
-  // : User.find( { _group: user._group }, '_id name').lean()
-
-  // const templatesRequest  = isAdmin ? Template.find({}, '_id name').lean()
-  // : Template.find( { _group: user._group }, '_id name').lean()
-
-
-  // //----- GATHER ALL INFOS
-
-  // Promise
-  // .all( [
-  //   mailingsPaginate,
-  //   mailingsTotal,
-  //   usersRequest,
-  //   templatesRequest,
-  //   tagsList
-  // ] )
-  // .then( ([paginated, filtered, users, templates, tags]) => {
-
-  //   // PAGINATION STATUS
-
-  //   const total         = filtered.length
-  //   const isFirst       = pagination.start === 0
-  //   const isLast        = pagination.page >= Math.trunc(total / perpage)
-  //   pagination.total    = total
-  //   pagination.current  = `${pagination.start + 1}-${pagination.start + paginated.length}`
-  //   pagination.prev     = isFirst ? false : pagination.page
-  //   pagination.next     = isLast  ? false : pagination.page + 2
-
-  //   // SUMMARY STATUS
-
-  //   // “translate” ids: need users & templates in order to compute
-  //   let idToName = ['_user', '_template']
-  //   idToName     = _.intersection( idToName, filterKeys )
-  //   for (let key of idToName) {
-  //     const dataList = key === '_user' ? users : templates
-  //     filterQuery[ key ] = filterQuery[ key ].map( id => {
-  //       return _.find( dataList, value => `${value._id}` === id ).name
-  //     } )
-  //   }
-
-  //   // format for view
-  //   const i18nKeys = {
-  //     name:       'filter.summary.contain',
-  //     _user:      'filter.summary.author',
-  //     _template:  'filter.summary.template',
-  //     createdAt:  'filter.summary.createdat',
-  //     updatedAt:  'filter.summary.updatedat',
-  //     tags:       'filter.summary.tags',
-  //   }
-  //   const summary   = []
-  //   _.forIn( filterQuery, (value, key) => {
-  //     let i18nKey = i18nKeys[ key ]
-  //     if ( _.isString(value) ) return summary.push( { message: i18nKey, value} )
-  //     if ( _.isArray(value) ) {
-  //       return summary.push( { message: i18nKey, value: value.join(', ')} )
-  //     }
-  //     // dates…
-  //     summary.push( { message: i18nKey } )
-  //     if (value.$gte) {
-  //       summary.push( {
-  //         message: 'filter.summary.after',
-  //         value:    value.$gte
-  //       } )
-  //     }
-  //     if (value.$gte && value.$lte ) {
-  //       summary.push( {
-  //         message: 'filter.summary.and',
-  //       } )
-  //     }
-  //     if (value.$lte) {
-  //       summary.push( {
-  //         message: 'filter.summary.before',
-  //         value:    value.$lte
-  //       } )
-  //     }
-  //   })
-
-  //   // FINALLY RENDER \o/
-  //   res.render('mailing-list', {
-  //     data: {
-  //       mailings:  paginated,
-  //       tagsList:  tags.map( t => t._id ),
-  //       pagination,
-  //       filterQuery,
-  //       users,
-  //       templates,
-  //       summary,
-  //     }
-  //   })
-  // })
-  // .catch(next)
 }
 
 //////
