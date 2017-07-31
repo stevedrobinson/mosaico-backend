@@ -7,8 +7,9 @@ const createError = require( 'http-errors' )
 const moment      = require( 'moment' )
 const { Types }   = require( 'mongoose' )
 
-const config        = require( './config' )
-const filemanager   = require( './filemanager' )
+const config        = require( '../config' )
+const filemanager   = require( '../filemanager' )
+const models        = require( '../models' )
 const {
   Template,
   Mailing,
@@ -17,20 +18,21 @@ const {
   Tag,
   addGroupFilter,
   addStrictGroupFilter,
-}                         = require( './models' )
-const cleanTagName        = require( '../shared/clean-tag-name' )
-const h                   = require( './helpers' )
+}                         = models
+const cleanTagName        = require( '../../shared/clean-tag-name' )
+const h                   = require( '../helpers' )
+const transfer            = require( './transfer' )
 
 const translations  = {
   en: JSON.stringify(_.assign(
     {},
-    require('../res/lang/mosaico-en.json'),
-    require('../res/lang/custom-en')
+    require('../../res/lang/mosaico-en.json'),
+    require('../../res/lang/custom-en')
   )),
   fr: JSON.stringify(_.assign(
     {},
-    require('../res/lang/mosaico-fr.json'),
-    require('../res/lang/custom-fr')
+    require('../../res/lang/mosaico-fr.json'),
+    require('../../res/lang/custom-fr')
   )),
 }
 
@@ -44,10 +46,29 @@ async function userList(req, res, next) {
   const { query, user}        = req
   const { isAdmin, groupId }  = user
   const groupFilter           = isAdmin ? { $eq: null }  : groupId
+
+  //----- SORTING
+
+  const order = []
+  if ( query.sort ) {
+    const { sort, dir }       = query
+    const isRelationOrdering  = /^[A-Z][a-z]+\.[A-Za-z]+$/.test( sort )
+    const field               = isRelationOrdering ? sort.split('.')[ 1 ] : sort
+    const rowOrdering         = [ field, dir.toUpperCase() ]
+    if ( isRelationOrdering ) rowOrdering.unshift( models[sort.split('.')[ 0 ]] )
+    order.push( rowOrdering )
+  } else {
+    order.push( ['updatedAt', 'DESC'] )
+  }
+
+  console.log( order )
+  //----- CREATE DB QUERIES
+
   const mailingsParams        = {
     where: {
       groupId: groupFilter,
     },
+    order,
     include: [{
       model:    User,
       required: false,
@@ -82,28 +103,16 @@ async function userList(req, res, next) {
   console.log( inspect(data, {depth: 1}), )
 
   res.render('mailing-list', { data: data } )
-  // // admin doesn't have a group
-  // const _group        = isAdmin ? { $exists: false } : req.user._group
 
-  // //----- PAGINATION
+  //----- PAGINATION
 
-  // // Pagination could be done better
-  // // http://stackoverflow.com/questions/5539955/how-to-paginate-with-mongoose-in-node-js/23640287#23640287
-  // // https://scalegrid.io/blog/fast-paging-with-mongodb/
-  // const pagination  = {
-  //   page:   query.page ? ~~query.page - 1 : 0,
-  //   limit:  query.limit ? ~~query.limit : perpage,
-  // }
-  // pagination.start  = pagination.page * pagination.limit
+  const pagination  = {
+    page:   query.page ? ~~query.page - 1 : 0,
+    limit:  query.limit ? ~~query.limit : perpage,
+  }
+  pagination.start  = pagination.page * pagination.limit
 
-  // //----- SORTING
 
-  // const sorting     = {
-  //   sort: query.sort  ? query.sort  : 'updatedAt',
-  //   dir:  query.dir   ? query.dir   : 'desc',
-  // }
-  // // beware that sorting on populated keys won't work
-  // const sort = { [sorting.sort]: sorting.dir === 'desc' ? -1 : 1}
 
   // //----- FILTERING
 
@@ -154,7 +163,7 @@ async function userList(req, res, next) {
   //   })
   // })
 
-  // //----- CREATE DB QUERIES
+
 
   // // don't use lean, we need virtuals
   // const mailingsPaginate  = Mailing

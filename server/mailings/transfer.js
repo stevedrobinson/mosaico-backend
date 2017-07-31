@@ -1,15 +1,15 @@
 const createError           = require('http-errors')
 
 const {
-  Mailings,
-  Users,
+  Mailing,
+  User,
   addStrictGroupFilter,
-}                         = require('./models')
+}                         = require('../models')
 
 function get(req, res, next) {
   const filter = addStrictGroupFilter(req.user, { _id: req.params.mailingId,} )
 
-  Mailings
+  Mailing
   .findOne( filter, '_template name' )
   .populate('_template', '_group')
   .then( onMailing )
@@ -17,16 +17,16 @@ function get(req, res, next) {
 
   function onMailing(mailing) {
     mailing = mailing
-    Users
+    User
     .find({
       _group:       mailing._template._group,
       isDeactivated:  { $ne: true },
     }, 'name email')
-    .then( users => onUsers(mailing, users) )
+    .then( users => onUser(mailing, users) )
     .catch( next )
   }
 
-  function onUsers(mailing, users) {
+  function onUser(mailing, users) {
     res.render('mailing-transfer', {
       data: { mailing, users },
     })
@@ -36,8 +36,8 @@ function get(req, res, next) {
 function post(req, res, next) {
   const { userId }      = req.body
   const { mailingId }  = req.params
-  const userQuery       = Users.findById(userId, 'name _group')
-  const mailingQuery   = Mailings.findById(mailingId, 'name')
+  const userQuery       = User.findById(userId, 'name _group')
+  const mailingQuery   = Mailing.findById(mailingId, 'name')
 
   Promise
   .all([userQuery, mailingQuery])
