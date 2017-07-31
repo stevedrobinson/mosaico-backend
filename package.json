@@ -68,7 +68,7 @@
     "nodemailer-wellknown": "^0.2.3",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
-    "pg": "^7.0.2",
+    "pg": "^6.4.1",
     "pg-hstore": "^2.3.2",
     "probe-image-size": "^3.0.0",
     "pug": "^2.0.0-beta6",

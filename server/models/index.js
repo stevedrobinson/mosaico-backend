@@ -2,37 +2,14 @@
 
 const util      = require( 'util' )
 const chalk     = require( 'chalk' )
-// const mongoose  = require('mongoose')
 
 const Group     = require( './model-group' )
 const User      = require( './model-user' )
 const Template  = require( './model-template' )
 const Mailing   = require( './model-mailing' )
-const Tag       = require( './model-tags' )
+const Tag       = require( './model-tag' )
+const Gallery   = require( './model-gallery' )
 const sequelize = require( './db-connection' )
-
-// mongoose.Promise    = global.Promise // Use native promises
-// let connection
-
-// const UserSchema        = require('./schema-user')
-// const TemplateSchema    = require('./schema-template')
-// const MailingSchema     = require('./schema-mailing')
-// const GroupSchema       = require('./schema-group')
-// const CacheimageSchema  = require('./schema-cache-image')
-// const GallerySchema     = require('./schema-gallery')
-// const {
-//   UserModel,
-//   TemplateModel,
-//   MailingModel,
-//   GroupModel,
-//   CacheimageModel,
-//   GalleryModel,
-// } = require('./names')
-
-// mongoose.connection.on('error', console.error.bind(console, chalk.red('[DB] connection error:')))
-// mongoose.connection.once('open', e =>  {
-//   console.log(chalk.green('[DB] connection OK'))
-// })
 
 //////
 // ERRORS HANDLING
@@ -70,13 +47,6 @@ function formatErrors(err, req, res, next) {
   .catch(next)
 }
 
-// function connectDB(dbConfig) {
-//   // remove depreciation warning
-//   // http://mongoosejs.com/docs/connections.html#use-mongo-client
-//   connection    = mongoose.connect(dbConfig, { useMongoClient: true, })
-//   return connection
-// }
-
 //////
 // HELPERS
 //////
@@ -112,30 +82,28 @@ function addStrictGroupFilter(user, filter) {
 User.belongsTo( Group )
 
 Template.belongsTo( Group )
+Template.gallery  = Template.hasMany( Gallery )
 
 Mailing.belongsTo( Group )
 Mailing.belongsTo( User )
 Mailing.belongsTo( Template )
-Mailing.tags    = Mailing.hasMany( Tag )
+Mailing.tags      = Mailing.hasMany( Tag )
+Mailing.gallery   = Mailing.hasMany( Gallery )
 
 Tag.belongsTo( Group )
 Tag.belongsToMany( Mailing, {through: 'MailingTag'})
 
-Group.users     = Group.hasMany( User )
-Group.templates = Group.hasMany( Template )
-Group.mailings  = Group.hasMany( Mailing )
-Group.tags      = Group.hasMany( Tag )
+Group.users       = Group.hasMany( User )
+Group.templates   = Group.hasMany( Template )
+Group.mailings    = Group.hasMany( Mailing )
+Group.tags        = Group.hasMany( Tag )
+
+Gallery.belongsTo( Mailing )
+Gallery.belongsTo( Template )
 
 //////
 // EXPORTS
 //////
-
-// const User       = mongoose.model( UserModel, UserSchema )
-// const Templates   = mongoose.model( TemplateModel, TemplateSchema )
-// const Mailings    = mongoose.model( MailingModel, MailingSchema )
-// const Group      = mongoose.model( GroupModel, GroupSchema )
-// const Cacheimages = mongoose.model( CacheimageModel, CacheimageSchema )
-// const Galleries   = mongoose.model( GalleryModel, GallerySchema )
 
 module.exports    = {
   sequelize,
@@ -150,6 +118,6 @@ module.exports    = {
   Template,
   Mailing,
   Tag,
+  Gallery,
   // Cacheimages,
-  // Galleries,
 }

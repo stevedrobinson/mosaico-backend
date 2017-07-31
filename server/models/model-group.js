@@ -1,12 +1,12 @@
 'use strict'
 
-const Sequelize       = require( 'sequelize' )
+const Sequelize = require( 'sequelize' )
 
-const sequelize       = require( './db-connection' )
-const h               = require( '../helpers' )
+const sequelize = require( './db-connection' )
+const h         = require( '../helpers' )
 
-const Group    = sequelize.define( 'group', {
-  id:  {
+const Group     = sequelize.define( 'group', {
+  id: {
     type:         Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,
     primaryKey:   true,
