@@ -2,7 +2,7 @@ li.beTagsPanel__item.be-tags-input.js-check-tag
   //- WARN
   //- `tag-` prefix is used backend in mailings.js
   //- and frontend in tags.js
-  input(type="radio"  name="tag-" + tag value="remove" checked)
-  input(type="radio"  name="tag-" + tag value="unchange" )
-  input(type="radio"  name="tag-" + tag value="add" )
-  span.be-tags-input__title= tag
+  input(type="radio"  name="tag-" + tag.name value="remove" checked)
+  input(type="radio"  name="tag-" + tag.name value="unchange" )
+  input(type="radio"  name="tag-" + tag.name value="add" )
+  span.be-tags-input__title= tag.name

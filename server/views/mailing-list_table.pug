@@ -53,7 +53,7 @@ table.mdl-data-table
 
           if (!isAdmin)
             td.mdl-data-table__cell--non-numeric: span= mailing.user.name
-          td.mdl-data-table__cell--long-text: span= mailing.tags.join(', ')
+          td.mdl-data-table__cell--long-text: span= mailing.tags.map( t => t.name ).join(', ')
           td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.createdAt)
           td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.updatedAt)
           if (isAdmin)

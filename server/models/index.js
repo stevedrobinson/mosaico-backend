@@ -87,7 +87,7 @@ Template.gallery  = Template.hasMany( Gallery )
 Mailing.belongsTo( Group )
 Mailing.belongsTo( User )
 Mailing.belongsTo( Template )
-Mailing.tags      = Mailing.hasMany( Tag )
+Mailing.tags      = Mailing.belongsToMany( Tag, {through: 'MailingTag'} )
 Mailing.gallery   = Mailing.hasMany( Gallery )
 
 Tag.belongsTo( Group )

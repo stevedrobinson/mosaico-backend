@@ -93,8 +93,6 @@ async function userList(req, res, next) {
 
   // CONSTRUCT FILTER
 
-  console.log( filterQuery )
-
   const where = {
     groupId: isAdmin ? { $eq: null }  : groupId,
   }
@@ -138,13 +136,15 @@ async function userList(req, res, next) {
   }
   const queries = [
     Mailing.findAndCount( mailingsParams ),
-    Template.findAll( isAdmin ? {} : {where: { groupId: groupFilter}} ),
-    isAdmin ? Promise.resolve( false ) : User.findAll( {where: { groupId }} )
+    Template.findAll( isAdmin ? {} : {where: { groupId}} ),
+    isAdmin ? Promise.resolve( false ) : User.findAll( {where: { groupId }} ),
+    Tag.findAll( {where: { groupId: isAdmin ? { $eq: null }  : groupId }} ),
   ]
   const [
     mailings,
     templates,
     users,
+    tags,
   ]             = await Promise.all( queries )
 
   // PAGINATION STATUS
@@ -212,7 +212,7 @@ async function userList(req, res, next) {
     mailings: mailings.rows,
     users,
     templates,
-    tagsList: [],
+    tagsList: tags,
     // tagsList:  tags.map( t => t._id ),
     pagination,
     filterQuery,
@@ -294,54 +294,67 @@ function getRedirectUrl(req) {
   return redirectUrl
 }
 
-function updateLabels(req, res, next) {
-  const { body }    = req
-  let { mailings } = body
-  const tagRegex    = /^tag-/
-  const redirectUrl = getRedirectUrl(req)
-  if (!_.isArray( mailings ) || !mailings.length ) return res.redirect( redirectUrl )
+async function updateLabels(req, res, next) {
+  const { isAdmin, groupId }  = req.user
+  const { body }              = req
+  const tagRegex              = /^tag-/
+  const redirectUrl           = getRedirectUrl( req )
+  if (!_.isArray( body.mailings ) || !body.mailings.length ) return res.redirect( redirectUrl )
 
-  // Entries will be supported natively without flag in node 7+
-  // use lodash for not bumping node version
-  // http://node.green/#features
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/entries
-  let tags = _.entries( body )
-  .filter( element => tagRegex.test( element[0] ) )
-  .map( tag => {
-    tag[0] = tag[0].replace(tagRegex, '')
-    return tag
+  const allTags       = []
+  const tagsToAdd     = []
+  const tagsToRemove  = []
+  Object.entries( body )
+  .filter( ([tagName, action]) => tagRegex.test( tagName ) )
+  .forEach( ([tagName, action]) => {
+    if (action === 'unchange') return
+    const cleanedName = tagName.replace(tagRegex, '')
+    allTags.push( cleanedName )
+    action            = action === 'add' ? tagsToAdd : tagsToRemove
+    action.push( cleanedName )
   } )
 
-  Mailing
-  .find( addStrictGroupFilter(req.user, {
-    _id: {
-      $in: mailings.map(Types.ObjectId),
+  const mailingsParams  = {
+    where: {
+      groupId: isAdmin ? { $eq: null }  : groupId,
+      id: {
+        $in: body.mailings,
+      },
     },
-  }) )
-  .then(onMailing)
-  .catch(next)
-
-  function onMailing(docs) {
-    Promise
-    .all( docs.map( updateTags ) )
-    .then( onSave )
-    .catch( next )
+    attributes: [ 'id' ],
   }
+  const mailings        = await Mailing.findAll( mailingsParams )
+  if ( !mailings.length ) return next( createError(404) )
+  const mailingsId      = mailings.map( mailing => mailing.id )
+  // check if all tags are created
+  // const
 
-  function updateTags(doc) {
-    tags.forEach( tagAction => {
-      const [tag, action] = tagAction
-      if (action === 'unchange') return
-      if (action === 'add')    doc.tags = _.union( doc.tags, [ tag ] )
-      if (action === 'remove') doc.tags = _.without( doc.tags, tag )
-    })
-    doc.tags = doc.tags.sort().map( cleanTagName )
-    return doc.save()
-  }
+  console.log({
+    allTags,
+    tagsToAdd,
+    tagsToRemove,
+  })
 
-  function onSave(docs) {
-    res.redirect( redirectUrl )
-  }
+  const tagsRequest     = allTags.map( async name => {
+    const params          = { name }
+    if ( !isAdmin ) params.groupId = groupId
+    const [tag, created]  = await Tag.findCreateFind( {
+      where:    params,
+      default:  params,
+    } )
+    return tag
+  })
+  const dbTags          = await Promise.all( tagsRequest )
+
+  const relationQUery   = dbTags.map( tag => {
+    const method = tagsToAdd.includes( tag.name ) ? 'addMailings' : 'removeMailings'
+    return tag[ method ]( mailingsId )
+  })
+
+  const updatedTags     = await Promise.all( relationQUery )
+
+  res.redirect( redirectUrl )
+
 }
 
 async function bulkRemove(req, res, next) {
@@ -445,7 +458,7 @@ module.exports = {
   userList:     h.asyncMiddleware( userList ),
   show:         h.asyncMiddleware( show ),
   update:       h.asyncMiddleware( update ),
-  updateLabels,
+  updateLabels: h.asyncMiddleware( updateLabels ),
   bulkRemove:   h.asyncMiddleware( bulkRemove ),
   create:       h.asyncMiddleware( create ),
   duplicate,
