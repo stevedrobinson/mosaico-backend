@@ -92,14 +92,17 @@ async function userList(req, res, next) {
   }
 
   // CONSTRUCT FILTER
-
   const where = {
     groupId: isAdmin ? { $eq: null }  : groupId,
   }
 
   if (filterQuery.name) where.name = { $regexp: filterQuery.name }
   // SELECT
-  for (let keys of arrayKeys ) { where[ keys ] = { $in: filterQuery[ keys ] } }
+  // don't put tags filter in the mailing model
+  arrayKeys.forEach( keys => {
+    if (keys === 'tags') return
+    where[ keys ] = { $in: filterQuery[ keys ] }
+  })
   // DATES
   // for…of breaks on return, use forEach
   const datesFilterKeys = _.intersection( ['createdAt', 'updatedAt'], filterKeys )
@@ -116,6 +119,29 @@ async function userList(req, res, next) {
     })
   })
 
+  // RELATIONS
+  // declare them here for better handling of filtering
+  const userInclude     = {
+    model:    User,
+    required: false,
+  }
+  const TemplateInclude = {
+    model:    Template,
+    required: true,
+  }
+  const tagInclude      =  {
+    model:    Tag,
+    required: false,
+  }
+
+  // add tags filter in the tag relation
+  if ( filterQuery.tags && filterQuery.tags.length ) {
+    tagInclude.required = true
+    tagInclude.where    = {
+      name: { $in: filterQuery.tags },
+    }
+  }
+
   //----- CREATE DB QUERIES
 
   const mailingsParams        = {
@@ -123,16 +149,11 @@ async function userList(req, res, next) {
     order,
     limit,
     offset,
-    include: [{
-      model:    User,
-      required: false,
-    }, {
-      model:    Template,
-      required: false,
-    }, {
-      model:    Tag,
-      required: false,
-    }],
+    include: [
+      userInclude,
+      TemplateInclude,
+      tagInclude,
+    ],
   }
   const queries = [
     Mailing.findAndCount( mailingsParams ),
@@ -324,17 +345,9 @@ async function updateLabels(req, res, next) {
     attributes: [ 'id' ],
   }
   const mailings        = await Mailing.findAll( mailingsParams )
-  if ( !mailings.length ) return next( createError(404) )
+
+  if ( !mailings.length ) return res.redirect( redirectUrl )
   const mailingsId      = mailings.map( mailing => mailing.id )
-  // check if all tags are created
-  // const
-
-  console.log({
-    allTags,
-    tagsToAdd,
-    tagsToRemove,
-  })
-
   const tagsRequest     = allTags.map( async name => {
     const params          = { name }
     if ( !isAdmin ) params.groupId = groupId
@@ -352,9 +365,7 @@ async function updateLabels(req, res, next) {
   })
 
   const updatedTags     = await Promise.all( relationQUery )
-
   res.redirect( redirectUrl )
-
 }
 
 async function bulkRemove(req, res, next) {

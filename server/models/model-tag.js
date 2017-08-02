@@ -4,6 +4,7 @@ const Sequelize       = require( 'sequelize' )
 
 const sequelize       = require( './db-connection' )
 const h               = require( '../helpers' )
+const cleanTagName    = require( '../../shared/clean-tag-name' )
 
 const Tag             = sequelize.define( 'tag', {
   id:  {
@@ -14,7 +15,12 @@ const Tag             = sequelize.define( 'tag', {
   name: {
     type:         Sequelize.STRING,
     set:          function ( val ) {
-      this.setDataValue( 'name', h.normalizeString(val) )
+      val = cleanTagName( h.normalizeString(val) )
+      this.setDataValue( 'name', val )
+    },
+    validate:     {
+      is:         /[^",']+/,
+      notEmpty:   true,
     },
   },
 })

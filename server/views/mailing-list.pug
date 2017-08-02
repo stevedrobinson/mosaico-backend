@@ -122,7 +122,6 @@ block content
             multiple
           ).mdl-textfield__input
             each tag in tagsList
-              //- - const { _id, name } = user
               - const selected = !filterQuery.tags ? false : filterQuery.tags.includes( tag.name )
               option(value=tag.name selected=selected)= tag.name
           label(for="tag-field").mdl-textfield__label= __('filter.tag')

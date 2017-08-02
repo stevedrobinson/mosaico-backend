@@ -37,7 +37,7 @@ table.mdl-data-table
               name="mailings[]"
               type="checkbox"
               id=`line-${mailing.id}`
-              data-tags=mailing.tags.join(',')
+              data-tags=mailing.tags.map( t => t.name ).join(',')
               value=mailing.id
             )
             label(for=`line-${mailing.id}`)
