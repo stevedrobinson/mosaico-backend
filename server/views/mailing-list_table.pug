@@ -11,6 +11,9 @@ table.mdl-data-table
       +reorder('/', 'name', 'home.saved.name')
     th.mdl-data-table__cell--non-numeric
       +reorder('/', 'Template.name', 'home.saved.template-name')
+    if (isAdmin)
+      th.mdl-data-table__cell--non-numeric
+        | from group
     if (!isAdmin)
       th.mdl-data-table__cell--non-numeric
         +reorder('/', 'User.name', 'home.saved.created-by')
@@ -50,7 +53,9 @@ table.mdl-data-table
                 a(href=mailing.url.template)= mailing.template.name
               else
                 span= mailing.template.name
-
+          if (isAdmin)
+            td.mdl-data-table__cell--non-numeric
+              a(href=mailing.template.group.url.show)= mailing.template.group.name
           if (!isAdmin)
             td.mdl-data-table__cell--non-numeric: span= mailing.user.name
           td.mdl-data-table__cell--long-text: span= mailing.tags.map( t => t.name ).join(', ')

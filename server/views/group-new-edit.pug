@@ -145,8 +145,8 @@ block content
                         //- Should consolidate DB to always have a name before removing this
                         a(href=mailing.url.update).js-name= mailing.name || __('general.noname')
                       td.mdl-data-table__cell--non-numeric
-                        a(href=mailing._user.url.show).js-name= mailing._user.fullname
-                      td.mdl-data-table__cell--non-numeric: a(href=mailing._template.url.show)= mailing._template.name
+                        a(href=mailing.user.url.show).js-name= mailing.user.fullname
+                      td.mdl-data-table__cell--non-numeric: a(href=mailing.template.url.show)= mailing.template.name
                       td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.createdAt)
                       td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.updatedAt)
 

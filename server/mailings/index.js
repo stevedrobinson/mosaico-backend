@@ -14,6 +14,7 @@ const {
   Template,
   Mailing,
   Gallery,
+  Group,
   User,
   Tag,
   addGroupFilter,
@@ -128,6 +129,12 @@ async function userList(req, res, next) {
   const TemplateInclude = {
     model:    Template,
     required: true,
+  }
+  // admin have an additional column where the group's name is displayed
+  if (isAdmin) {
+    TemplateInclude.include = [{
+      model: Group,
+    }]
   }
   const tagInclude      =  {
     model:    Tag,

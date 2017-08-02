@@ -1,63 +1,66 @@
-const createError           = require('http-errors')
+'use strict'
+
+const createError         = require( 'http-errors' )
+
+const h                   = require( '../helpers' )
+const { inspect }         = require( 'util' )
 
 const {
   Mailing,
   User,
+  Group,
+  Template,
   addStrictGroupFilter,
 }                         = require('../models')
 
-function get(req, res, next) {
-  const filter = addStrictGroupFilter(req.user, { _id: req.params.mailingId,} )
-
-  Mailing
-  .findOne( filter, '_template name' )
-  .populate('_template', '_group')
-  .then( onMailing )
-  .catch( next )
-
-  function onMailing(mailing) {
-    mailing = mailing
-    User
-    .find({
-      _group:       mailing._template._group,
-      isDeactivated:  { $ne: true },
-    }, 'name email')
-    .then( users => onUser(mailing, users) )
-    .catch( next )
+async function get(req, res, next) {
+  const { mailingId } = req.params
+  const reqParams     = {
+    where: {
+      id: mailingId,
+    },
+    include: [{
+      model: Template,
+      include: [{
+        model: Group,
+        include: [{
+          model:    User,
+          required: false,
+          where: {
+            isDeactivated: { $not: true },
+          },
+        }]
+      }]
+    }]
   }
+  const mailing = await Mailing.findOne( addStrictGroupFilter(req, reqParams) )
 
-  function onUser(mailing, users) {
-    res.render('mailing-transfer', {
-      data: { mailing, users },
-    })
-  }
+  if ( !mailing ) return next( createError(404) )
+  return res.render('mailing-transfer', {
+    data: {
+      mailing,
+      users: mailing.template.group.users,
+    },
+  })
 }
 
-function post(req, res, next) {
+async function post(req, res, next) {
   const { userId }      = req.body
-  const { mailingId }  = req.params
-  const userQuery       = User.findById(userId, 'name _group')
-  const mailingQuery   = Mailing.findById(mailingId, 'name')
+  const { mailingId }   = req.params
+  const userQuery       = User.findById( userId )
+  const mailingQuery    = Mailing.findById( mailingId )
 
-  Promise
-  .all([userQuery, mailingQuery])
-  .then( onQueries )
-  .catch( next )
-
-  function onQueries( [ user, mailing ] ) {
-    if (!user || !mailing) return next( createError(404) )
-    mailing._user    = user._id
-    mailing.author   = user.name
-    mailing._group = user._group
-
-    mailing
-    .save()
-    .then( mailing => res.redirect('/') )
-    .catch( next )
-  }
+  const [user, mailing] = await Promise.all( [userQuery, mailingQuery] )
+  if (!user) return next( createError(404, 'no user founded') )
+  if (!mailing) return next( createError(404, 'no mailing founded') )
+  const update          = await mailing.update({
+    userId:   user.id,
+    groupId:  user.groupId,
+  })
+  res.redirect('/')
 }
 
 module.exports = {
-  get,
-  post,
+  get:  h.asyncMiddleware( get ),
+  post: h.asyncMiddleware( post ),
 }

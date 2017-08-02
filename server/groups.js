@@ -34,11 +34,12 @@ async function show(req, res, next) {
     include: [{
       model:    User,
       required: false,
-      where: {
-        isDeactivated: { $ne: true },
-      },
+      // where: {
+      //   isDeactivated: { $not: true },
+      // },
       order: [
-        ['createdAt', 'DESC']
+        ['isDeactivated', 'DESC'],
+        ['name', 'DESC'],
       ],
     }, {
       model:    Template,
@@ -53,6 +54,11 @@ async function show(req, res, next) {
       order: [
         ['createdAt', 'DESC']
       ],
+      include: [{
+        model:  User,
+      }, {
+        model:  Template,
+      }],
     }],
   }
   const group       = await Group.findOne( reqParams )

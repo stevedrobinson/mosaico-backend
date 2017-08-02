@@ -30,6 +30,7 @@ const mail            = require( './mail' )
 
 module.exports = function () {
 
+  const config        = require( './config' )
   const { sequelize } = require( './models' )
 
   //////
@@ -188,15 +189,15 @@ module.exports = function () {
   // ROUTING
   //////
 
-  const download        = require( './download' )
-  const images          = require( './images' )
   const render          = require( './render' )
-  const users           = require( './users' )
   const groups          = require( './groups' )
+  const users           = require( './users' )
   const templates       = require( './templates' )
   const mailings        = require( './mailings' )
-  const mailingTransfer = require( './mailing-transfer' )
-  const filemanager     = require( './filemanager' )
+
+  const images          = require( './images' )
+  const download        = require( './download' )
+
   const guard           = session.guard
 
   //----- EXPOSE DATAS TO VIEWS
@@ -279,23 +280,22 @@ module.exports = function () {
   })
 
   //----- PARAMS CHECK
+  // http://expressjs.com/en/api.html#app.param
 
+  // regexp for checking valid postgreSQL Ids
   const dbIdRegexp    = /^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/
-  app.param( ['groupId', 'userId'],  checkPostgreId )
+  app.param( ['groupId', 'userId', 'templateId', 'mailingId', 'postgreId'],  checkPostgreId )
   function checkPostgreId(req, res, next, postgreId) {
     if (dbIdRegexp.test(postgreId)) return next()
-    console.log('test mongoId INVALID', postgreId)
+    console.log('test postgreId INVALID', postgreId)
     next( createError(404) )
   }
-  // regexp for checking valid mongoDB Ids
-  // http://expressjs.com/en/api.html#app.param
-  // http://stackoverflow.com/questions/20988446/regex-for-mongodb-objectid#20988824
-  app.param(['templateId', 'mailingId', 'mongoId'], checkMongoId)
-  function checkMongoId(req, res, next, mongoId) {
-    if (/^[a-f\d]{24}$/i.test(mongoId)) return next()
-    console.log('test mongoId INVALID', mongoId)
+
+  app.param( ['galleryType'], (req, res, next, galleryType) => {
+    if ( ['mailing', 'template'].includes(galleryType) ) return next()
+    console.log('galleryType format INVALID', galleryType)
     next( createError(404) )
-  }
+  })
 
   app.param(['placeholderSize'], (req, res, next, placeholderSize) => {
     if ( /(\d+)x(\d+)\.png/.test(placeholderSize) ) return next()
@@ -314,18 +314,16 @@ module.exports = function () {
   app.get('/admin',                                   guard('admin'), groups.list)
   // groups
   app.all('/groups*',                                 guard('admin'))
-  app.get('/groups/:groupId/new-user',                users.show)
-  app.get('/groups/:groupId/new-template',            templates.show)
+  app.get('/groups/:groupId/new-user',                users.new)
+  app.get('/groups/:groupId/new-template',            templates.new)
   app.get('/groups/:groupId?',                        groups.show)
   app.post('/groups/:groupId?',                       groups.update)
-  // app.post('/users/:userId/delete',                groups.delete)
-  // users' groups
+  app.get('/groups',                                  groups.list)
   app.all('/users*',                                  guard('admin'))
-  app.get('/users/:userId/templates/:templateId?',    groups.show)
   // users
-  app.get('/users/:userId/restore',                   users.activate)
+  app.get('/users/:userId/activate',                  users.activate)
   app.delete('/users/:userId',                        users.deactivate)
-  app.post('/users/reset',                            users.adminResetPassword)
+  app.get('/users/:userId/reset',                     users.adminResetPassword)
   app.get('/users/:userId',                           users.show)
   app.post('/users/:userId?',                         users.update)
   app.get('/users',                                   users.list)
@@ -334,7 +332,7 @@ module.exports = function () {
   app.get('/templates/:templateId/markup',            guard('user'), templates.getMarkup)
   app.all('/templates*',                              guard('admin'))
   app.get('/templates/:templateId/delete',            templates.remove)
-  app.get('/templates/:templateId/render-markup',     templates.renderMarkup )
+  app.get('/templates/:templateId/render-markup',     templates.renderMarkup)
   app.get('/templates/:templateId/auto-upload/:templateName', templates.autoUpload )
   app.get('/templates/:templateId/generate-previews', templates.generatePreviews)
   app.get('/templates/:templateId',                   templates.show)
@@ -357,24 +355,23 @@ module.exports = function () {
 
   //----- IMAGES
 
-  app.get('/img/:imageName',                images.read)
-  app.delete('/img/:imageName',             guard('user'), images.destroy )
-  app.get('/placeholder/:placeholderSize',  images.checkImageCache, images.placeholder )
-  app.get('/resize/:sizes/:imageName',      images.checkImageCache, images.checkSizes, images.resize )
-  app.get('/cover/:sizes/:imageName',       images.checkImageCache, images.checkSizes, images.cover )
-  app.get('/img/',                          images.handleOldImageUrl )
+  app.get('/img/:imageName',                  images.read)
+  app.delete('/img/:imageName',               guard('user'), images.destroy)
+  app.get('/placeholder/:placeholderSize',    images.checkCache, images.placeholder)
+  app.get('/resize/:sizes/:imageName',        images.checkCache, images.checkSizes, images.resize)
+  app.get('/cover/:sizes/:imageName',         images.checkCache, images.checkSizes, images.cover)
 
   //----- UPLOADS
 
-  app.all('/upload*',                       guard('user'))
-  app.get('/upload/:mongoId',               images.listImages )
-  app.post('/upload/:mongoId',              images.upload )
+  app.all('/upload*',                         guard('user'))
+  app.get('/upload/:galleryType/:postgreId',  images.listImages )
+  app.post('/upload/:galleryType/:postgreId', images.upload )
 
   //----- MAILINGS
 
   app.all('/mailings/:mailingId/transfer',    guard('admin'))
-  app.get('/mailings/:mailingId/transfer',    mailingTransfer.get )
-  app.post('/mailings/:mailingId/transfer',   mailingTransfer.post )
+  app.get('/mailings/:mailingId/transfer',    mailings.transfer.get )
+  app.post('/mailings/:mailingId/transfer',   mailings.transfer.post )
   app.all('/mailings*',                       guard('user'))
   app.get('/mailings/:mailingId/duplicate',   mailings.duplicate )
   app.post('/mailings/:mailingId/send',       download.send )
@@ -382,13 +379,13 @@ module.exports = function () {
   app.get('/mailings/:mailingId',             mailings.show)
   app.post('/mailings/:mailingId',            mailings.update)
   app.post('/mailings',                       mailings.create)
-  app.delete('/mailings',                     mailings.bulkRemove )
-  app.patch('/mailings',                      mailings.updateLabels )
-  app.get('/mailings',                        mailings.userList )
+  app.delete('/mailings',                     mailings.bulkRemove)
+  app.patch('/mailings',                      mailings.updateLabels)
+  app.get('/mailings',                        mailings.userList)
 
   app.get('/about',                           render.about )
 
-  app.get('/',                                guard('user'), mailings.userList )
+  app.get('/',                                guard('user'), mailings.userList)
 
   //////
   // ERROR HANDLING
@@ -439,6 +436,10 @@ module.exports = function () {
         chalk.green('on mode'), chalk.cyan(config.NODE_ENV)
       )
 
+      if ( config.debug ) {
+        console.log( chalk.yellow('[DEBUG] is on') )
+      }
+
       //----- LOG MAIN EXTERNAL SERVICES STATUS
 
       mail
@@ -454,7 +455,7 @@ module.exports = function () {
       // TODO should test storage connection if AWS
       console.log( chalk.green(`[STORAGE] storage is`), chalk.cyan(config.storage.type) )
 
-      // setTimeout( templates.startNightmare, 100 )
+      setTimeout( templates.startNightmare, 100 )
 
       sequelize
       .authenticate()
