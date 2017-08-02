@@ -151,7 +151,9 @@ const User     = sequelize.define( 'user', {
 
 //----- MODEL METHODS
 
-User.findByIdAndUpdate = async function( id, params ) {
+// Don't use upsert as it didn't return an instance but only a status
+// http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
+User.updateOrCreate = async function( id, params ) {
   // https://medium.com/@griffinmichl/async-await-with-ternary-operators-af19f374215
   const user = await ( id ? this.findById(id) : new User() )
   if ( !id && !user ) return null

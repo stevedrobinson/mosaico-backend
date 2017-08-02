@@ -34,9 +34,6 @@ async function show(req, res, next) {
     include: [{
       model:    User,
       required: false,
-      // where: {
-      //   isDeactivated: { $not: true },
-      // },
       order: [
         ['isDeactivated', 'DESC'],
         ['name', 'DESC'],
@@ -76,9 +73,7 @@ async function show(req, res, next) {
 async function update(req, res, next) {
   const { groupId } = req.params
   const { body }    = req
-  // TODO should use upsert
-  // http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
-  const group       = await Group.findByIdAndUpdate( groupId, body )
+  const group       = await Group.updateOrCreate( groupId, body )
   if ( !group ) return next( createError(404) )
   res.redirect( group.url.show )
 }

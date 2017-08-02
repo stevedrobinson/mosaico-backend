@@ -70,9 +70,7 @@ async function show(req, res, next) {
 async function update( req, res, next ) {
   const { userId }  = req.params
   const { body }    = req
-  // TODO should use upsert
-  // http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
-  const user        = await User.findByIdAndUpdate( userId, body )
+  const user        = await User.updateOrCreate( userId, body )
   if ( !user ) return next( createError(404) )
   res.redirect( user.url.show )
 }

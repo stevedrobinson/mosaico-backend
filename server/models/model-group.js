@@ -35,10 +35,12 @@ const Group     = sequelize.define( 'group', {
   },
 })
 
-Group.findByIdAndUpdate = async function( id, params ) {
+// Don't use upsert as it didn't return an instance but only a status
+// http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
+Group.updateOrCreate = async function( id, params ) {
   // https://medium.com/@griffinmichl/async-await-with-ternary-operators-af19f374215
   const group = await ( id ? this.findById(id) : new Group() )
-  if ( !id & !group   ) return null
+  if ( !id & !group ) return null
   return group.update( params )
 }
 
