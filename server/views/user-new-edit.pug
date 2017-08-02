@@ -10,7 +10,7 @@ block content
   - var user        = data && data.user ? data.user : {};
   - const { group } = data
   - var isEdit      = user.id
-  - var action      = isEdit ? user.url.show : `/users`;
+  - var action      = mergeQueries( isEdit ? user.url.show : `/users`, {fromPath: _path})
   - var hasError    = messages.error && messages.error.length;
   - var errors      = hasError ? messages.error[0] : {};
 

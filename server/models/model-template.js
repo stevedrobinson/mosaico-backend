@@ -13,7 +13,10 @@ const Template        = sequelize.define( 'template', {
   },
   name: {
     type:         Sequelize.STRING,
-    unique:       true,
+    allowNull:    false,
+    validate:     {
+      notEmpty: true,
+    },
     set:          function ( val ) {
       this.setDataValue( 'name', h.normalizeString(val) )
     },

@@ -64,7 +64,6 @@ const User     = sequelize.define( 'user', {
   name: {
     type:         Sequelize.STRING,
     allowNull:    true,
-    unique:       true,
     set:          function ( val ) {
       this.setDataValue( 'name', h.normalizeString(val) )
     },

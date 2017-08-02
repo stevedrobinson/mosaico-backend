@@ -13,7 +13,7 @@ const favicon         = require('serve-favicon')
 const cookieParser    = require('cookie-parser')
 const i18n            = require('i18n')
 const moment          = require('moment')
-const util            = require('util')
+const { inspect }     = require('util')
 const createError     = require('http-errors')
 const helmet          = require('helmet')
 const httpShutdown    = require('http-shutdown')
@@ -253,8 +253,8 @@ module.exports = function () {
   // those datas need to be refreshed on every request
   // and also not exposed to `app` but to `res` ^^
   app.use(function exposeDataToViews(req, res, next) {
-    res.locals._query   = req.query
-    res.locals._path    = req.path
+    res.locals._query       = req.query
+    res.locals._path        = req.originalUrl
     res.locals._user    = req.user ? req.user : {}
     if (config.isDev) {
       res.locals._debug = JSON.stringify({
@@ -398,21 +398,46 @@ module.exports = function () {
   //////
 
   // everyhting that go there without an error should be treated as a 404
-  app.use(function (req, res, next) {
+  app.use( (req, res, next) => {
     if (req.xhr) return  res.status(404).send('not found')
     return res.status(404).render('error-404')
   })
 
-  app.use(function (err, req, res, next) {
-    var status = err.status || err.statusCode || (err.status = 500)
+  function isSequelizeError( err ) {
+    const { name } = err
+    if ( !name ) return false
+    return [
+      'SequelizeUniqueConstraintError',
+      'SequelizeValidationError',
+    ].includes( name )
+  }
+
+  app.use( (err, req, res, next) => {
+
+    if ( isSequelizeError(err) ) {
+      const { fromPath }    = req.query
+      console.log( 'handle sequelize error', err.errors )
+      console.log( inspect(err, {colors: true}) )
+      const sequelizeErrors = {}
+      err.errors.forEach( sequelizeError => {
+        const { path }          = sequelizeError
+        sequelizeErrors[ path ] = sequelizeError
+      })
+      req.flash( 'error', sequelizeErrors )
+      console.log( req.originalUrl )
+      return res.redirect( fromPath || req.originalUrl )
+    }
+
+    const status = err.status || err.statusCode || (err.status = 500)
     console.log('error handling', status)
-    if (status >= 500) {
-      console.log(util.inspect(err, {showHidden: true}))
-      console.trace(err)
+    if ( status >= 500 ) {
+      console.log( inspect(err, {colors: true}))
+      // console.log(util.inspect(err, {showHidden: true}))
+      // console.trace(err)
     }
 
     // force status for morgan to catch up
-    res.status(status)
+    res.status( status )
     // different formating
     if (req.xhr) return res.send(err)
     if (status === 404) return res.render('error-404')
@@ -460,6 +485,10 @@ module.exports = function () {
       })
       // TODO should test storage connection if AWS
       console.log( chalk.green(`[STORAGE] storage is`), chalk.cyan(config.storage.type) )
+
+      // TODO should test redis connection also
+      // https://stackoverflow.com/questions/24231963/check-if-redis-is-running-node-js
+      // https://stackoverflow.com/questions/12038128/nodejs-using-redis-connect-redis-with-express
 
       setTimeout( templates.startNightmare, 100 )
 
