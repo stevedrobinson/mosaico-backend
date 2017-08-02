@@ -168,7 +168,7 @@ const streamImageToResponse = (req, res, next, imageName) => {
 // =>   vips warning: VipsJpeg: error reading resolution
 // https://github.com/lovell/sharp/issues/657
 
-function checkImageCache(req, res, next) {
+function checkCache(req, res, next) {
   if (!config.images.cache) return next()
 
   const { path } = req
@@ -435,7 +435,7 @@ module.exports = {
   cover,
   resize,
   placeholder,
-  checkImageCache,
+  checkCache,
   checkSizes,
   read,
   listImages: h.asyncMiddleware( listImages ),

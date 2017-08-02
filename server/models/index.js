@@ -51,28 +51,22 @@ function formatErrors(err, req, res, next) {
 // HELPERS
 //////
 
-function isFromGroup(user, groupId) {
-  if (!user) return false
-  if (user.isAdmin) return true
-  // mailings from admin doesn't gave a groupId
-  if (!groupId) return false
-  return user._group.toString() === groupId.toString()
-}
-
 // users can access only same group content
 // admin everything
-function addGroupFilter(user, filter) {
-  if (user.isAdmin) return filter
-  filter._group = user._group
-  return filter
+function addGroupFilter(req, dbQueryParams) {
+  const { user }        = req
+  const { isAdmin }     = user
+  if ( !isAdmin ) dbQueryParams.where.groupId = user.groupId
+  return dbQueryParams
 }
 
 // Strict difference from above:
-// Admin can't content with a group
-function addStrictGroupFilter(user, filter) {
-  const _group  = user.isAdmin ? { $exists: false } : user._group
-  filter._group = _group
-  return filter
+// Admin can only see content without a group (so created by him)
+function addStrictGroupFilter(req, dbQueryParams) {
+  const { user }        = req
+  const { isAdmin }     = user
+  dbQueryParams.where.groupId = isAdmin ? { $eq: null } : user.groupId
+  return dbQueryParams
 }
 
 //////
@@ -109,7 +103,6 @@ module.exports    = {
   sequelize,
   // connectDB,
   formatErrors,
-  isFromGroup,
   addGroupFilter,
   addStrictGroupFilter,
   // Models

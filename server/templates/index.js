@@ -14,7 +14,6 @@ const {
 const { autoUpload }          = require( './auto-upload' )
 const h                       = require( '../helpers' )
 const { formatErrors,
-  isFromGroup,
   Group,
   Template,
   Mailing

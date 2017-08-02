@@ -13,7 +13,7 @@ const models        = require( '../models' )
 const {
   Template,
   Mailing,
-  Galleries,
+  Gallery,
   User,
   Tag,
   addGroupFilter,
@@ -93,15 +93,15 @@ async function userList(req, res, next) {
 
   // CONSTRUCT FILTER
   const where = {
-    groupId: isAdmin ? { $eq: null }  : groupId,
+    groupId: isAdmin ? { $eq: null } : groupId,
   }
 
   if (filterQuery.name) where.name = { $regexp: filterQuery.name }
   // SELECT
   // don't put tags filter in the mailing model
-  arrayKeys.forEach( keys => {
-    if (keys === 'tags') return
-    where[ keys ] = { $in: filterQuery[ keys ] }
+  arrayKeys.forEach( key => {
+    if (key === 'tags') return
+    where[ key ] = { $in: filterQuery[ key ] }
   })
   // DATES
   // for…of breaks on return, use forEach
@@ -234,15 +234,11 @@ async function userList(req, res, next) {
     users,
     templates,
     tagsList: tags,
-    // tagsList:  tags.map( t => t._id ),
     pagination,
     filterQuery,
     summary,
   }
-  // console.log( inspect(data, {depth: 1}), )
-
   res.render('mailing-list', { data } )
-
 }
 
 //////
@@ -419,50 +415,60 @@ async function update(req, res, next) {
   res.json( updatedMailing.mosaico )
 }
 
-// TODO while duplicating we should copy only the used images by the mailing
-function duplicate(req, res, next) {
-  const { mailingId }    = req.params
-
-  Promise
-  .all([
-    Mailing.findOne( addGroupFilter(req.user, { _id: mailingId }) ),
-    Galleries.findOne( { mailingOrTemplateId: mailingId } ),
-  ])
-  // Be sure that all images are duplicated before saving the duplicated mailing
-  .then( duplicateImages )
-  .then( saveMailing )
-  .then( redirectToHome )
-  .catch( err => {
-    if (err.responseSend) return
-    next( err )
-  } )
-
-  function duplicateImages( [mailing, gallery] ) {
-    if (!mailing) {
-      next( createError(404) )
-      // Early return out of the promise chain
-      return Promise.reject( {responseSend: true} )
-    }
-    const duplicatedMailing = mailing.duplicate( req.user )
-    return Promise.all([
-      duplicatedMailing,
-      gallery,
-      filemanager.copyImages( req.params.mailingId, duplicatedMailing._id ),
-    ])
+async function duplicate(req, res, next) {
+  const { isAdmin }   = req.user
+  const { mailingId } = req.params
+  const redirectUrl   = getRedirectUrl( req )
+  const reqParams     = {
+    where: {
+      id: mailingId,
+    },
+    include: [{
+      model:    Gallery,
+      required: false,
+    }, {
+      model:    Template,
+      required: true,
+    }, {
+      model:    Tag,
+      required: true,
+    }],
   }
+  let mailing     = await Mailing.findOne( addStrictGroupFilter(req, reqParams) )
 
-  function saveMailing( [duplicatedMailing, gallery] ) {
-    return Promise.all( [duplicatedMailing.save(), gallery ])
+  if ( !mailing ) return res.redirect( redirectUrl )
+  mailing           = mailing.toJSON()
+  const galleries   = mailing.galleries.map( img => ({name: img.name}))
+  let data          = mailing.data
+  const keys        = ['name', 'groupId', 'templateId', 'tags']
+  const copyValues  = _.pick(mailing, keys)
+
+  // update values
+  copyValues.name   = `${copyValues.name} copy`
+  copyValues.tags   = copyValues.tags.map( tag => {
+    return {name: tag.name, groupId: tag.groupId }
+  })
+  // change the author
+  if ( !isAdmin ) copyValues.userId = req.user.id
+  const copy        = await Mailing.build( copyValues, {include: [Gallery, Template, Tag]} )
+
+  const newId       = copy.id
+  const imagesCopy  = await filemanager.copyImages( mailingId, newId )
+
+  const oldId       = new RegExp( mailingId, 'gm' )
+  // be sure that all previous mailing id's are cleaned from mosaico's data
+  if (data) {
+    data          = JSON.stringify( data )
+    data          = data.replace( oldId, newId )
+    data          = JSON.parse( data )
+    copy.set( 'data', data )
   }
+  copy.set( 'galleries', galleries.map( img => {
+    return { name: img.name.replace( oldId, newId ) }
+  }) )
 
-  function redirectToHome( [duplicatedMailing, gallery] ) {
-    res.redirect('/')
-    // if gallery can't be created it's not a problem
-    // it will be created when opening the duplicated mailing
-    // we only loose hidden images
-    if ( gallery ) gallery.duplicate( duplicatedMailing._id ).save()
-  }
-
+  const newMailing = await copy.save()
+  return res.redirect( redirectUrl )
 }
 
 module.exports = {
@@ -472,5 +478,6 @@ module.exports = {
   updateLabels: h.asyncMiddleware( updateLabels ),
   bulkRemove:   h.asyncMiddleware( bulkRemove ),
   create:       h.asyncMiddleware( create ),
-  duplicate,
+  duplicate:    h.asyncMiddleware( duplicate ),
+  transfer,
 }
