@@ -54,18 +54,20 @@ function formatErrors(err, req, res, next) {
 
 // users can access only same group content
 // admin everything
-function addGroupFilter(req, dbQueryParams) {
+function addGroupFilter(req, dbQueryParams = {}) {
   const { user }        = req
   const { isAdmin }     = user
+  dbQueryParams.where   = dbQueryParams.where || {}
   if ( !isAdmin ) dbQueryParams.where.groupId = user.groupId
   return dbQueryParams
 }
 
 // Strict difference from above:
 // Admin can only see content without a group (so created by him)
-function addStrictGroupFilter(req, dbQueryParams) {
+function addStrictGroupFilter(req, dbQueryParams = {}) {
   const { user }        = req
   const { isAdmin }     = user
+  dbQueryParams.where   = dbQueryParams.where || {}
   dbQueryParams.where.groupId = isAdmin ? { $eq: null } : user.groupId
   return dbQueryParams
 }

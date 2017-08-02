@@ -9,8 +9,10 @@ const createError   = require( 'http-errors' )
 
 const config        = require( './config' )
 const h             = require( './helpers' )
-const { connection,
-  User }           = require( './models' )
+const {
+  connection,
+  User
+}                   = require( './models' )
 
 var adminUser = {
   isAdmin:  true,

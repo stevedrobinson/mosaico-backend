@@ -13,8 +13,12 @@ const createError   = require('http-errors')
 
 const mail          = require('./mail')
 const config        = require('./config')
-const { Mailing }   = require('./models')
 const h             = require( './helpers' )
+const {
+  Mailing,
+  addGroupFilter,
+}                   = require('./models')
+
 
 //----- UTILS
 
@@ -39,7 +43,6 @@ function secureHtml(html) {
 
 async function send(req, res, next) {
   if (!req.xhr) return next(createError(501)) // Not Implemented
-  const { isAdmin }     = req.user
   const { user, body }  = req
   const { mailingId }   = req.params
   const reqParams       = {
@@ -47,8 +50,7 @@ async function send(req, res, next) {
       id: mailingId,
     },
   }
-  if ( !isAdmin ) reqParams.where.groupId = req.user.groupId
-  const mailing         = await Mailing.findOne( reqParams )
+  const mailing         = await Mailing.findOne( addGroupFilter(req, reqParams) )
 
   if (!mailing) return next( createError(404) )
   const html            = secureHtml( body.html )
@@ -72,7 +74,6 @@ const imagesFolder = 'images'
 // https://github.com/archiverjs/node-archiver/blob/master/examples/express.js
 
 async function zip(req, res, next) {
-  const { isAdmin }     = req.user
   const { user, body }  = req
   const { mailingId }   = req.params
   const reqParams       = {
@@ -80,8 +81,7 @@ async function zip(req, res, next) {
       id: mailingId,
     },
   }
-  if ( !isAdmin ) reqParams.where.groupId = req.user.groupId
-  const mailing         = await Mailing.findOne( reqParams )
+  const mailing         = await Mailing.findOne( addGroupFilter(req, reqParams) )
 
   if (!mailing) return next( createError(404) )
   const archive = archiver( 'zip' )

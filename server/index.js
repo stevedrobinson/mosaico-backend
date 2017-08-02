@@ -297,6 +297,12 @@ module.exports = function () {
     next( createError(404) )
   })
 
+  app.param( ['templateName'], (req, res, next, templateName) => {
+    if ( ['tedc15', 'versafix-1'].includes(templateName) ) return next()
+    console.log('templateName format INVALID', templateName)
+    next( createError(404) )
+  })
+
   app.param(['placeholderSize'], (req, res, next, placeholderSize) => {
     if ( /(\d+)x(\d+)\.png/.test(placeholderSize) ) return next()
     console.log('placeholder format INVALID', placeholderSize)

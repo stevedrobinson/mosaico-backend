@@ -16,8 +16,8 @@ const {
 async function list(req, res, next) {
   const reqParams   = {
     order: [
-      ['createdAt',     'DESC'],
-      ['isDeactivated', 'ASC'],
+      ['isDeactivated', 'DESC'],
+      ['name',          'ASC'],
     ],
     include: [{
       model: Group,

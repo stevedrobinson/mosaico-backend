@@ -93,9 +93,7 @@ async function userList(req, res, next) {
   }
 
   // CONSTRUCT FILTER
-  const where = {
-    groupId: isAdmin ? { $eq: null } : groupId,
-  }
+  const where = { }
 
   if (filterQuery.name) where.name = { $regexp: filterQuery.name }
   // SELECT
@@ -163,10 +161,10 @@ async function userList(req, res, next) {
     ],
   }
   const queries = [
-    Mailing.findAndCount( mailingsParams ),
+    Mailing.findAndCount( addStrictGroupFilter(req, mailingsParams) ),
     Template.findAll( isAdmin ? {} : {where: { groupId}} ),
     isAdmin ? Promise.resolve( false ) : User.findAll( {where: { groupId }} ),
-    Tag.findAll( {where: { groupId: isAdmin ? { $eq: null }  : groupId }} ),
+    Tag.findAll( addStrictGroupFilter(req) ),
   ]
   const [
     mailings,
@@ -253,7 +251,6 @@ async function userList(req, res, next) {
 //////
 
 async function show(req, res, next) {
-  const { isAdmin }     = req.user
   const { mailingId }   = req.params
   const data            = {
     translations: translations[ res.getLocale() ],
@@ -270,8 +267,7 @@ async function show(req, res, next) {
       required: false,
     }],
   }
-  if ( !isAdmin ) reqParams.where.groupId = req.user.groupId
-  const mailing         = await Mailing.findOne( reqParams )
+  const mailing         = await Mailing.findOne( addGroupFilter(req, reqParams) )
   if ( !mailing ) return next( createError(404) )
   res.render('mailing-edit', {
     data: _.assign( {}, data, mailing.mosaico)
@@ -290,8 +286,7 @@ async function create(req, res, next) {
       id: templateId,
     },
   }
-  if ( !isAdmin ) reqParams.where.groupId = req.user.groupId
-  const template        = await Template.findOne( reqParams )
+  const template        = await Template.findOne( addGroupFilter(req, reqParams) )
   if ( !template ) return next( createError(404) )
   const initParameters  = {
     // Always give a default name: needed for ordering & filtering
@@ -340,14 +335,13 @@ async function updateLabels(req, res, next) {
 
   const mailingsParams  = {
     where: {
-      groupId: isAdmin ? { $eq: null }  : groupId,
       id: {
         $in: body.mailings,
       },
     },
     attributes: [ 'id' ],
   }
-  const mailings        = await Mailing.findAll( mailingsParams )
+  const mailings        = await Mailing.findAll( addStrictGroupFilter(req, mailingsParams) )
 
   if ( !mailings.length ) return res.redirect( redirectUrl )
   const mailingsId      = mailings.map( mailing => mailing.id )
@@ -372,10 +366,11 @@ async function updateLabels(req, res, next) {
 }
 
 async function bulkRemove(req, res, next) {
-  const { isAdmin }     = req.user
   const { mailings }    = req.body
-  if (!_.isArray( mailings ) || !mailings.length ) return res.redirect( redirectUrl )
   const redirectUrl     = getRedirectUrl( req )
+  if (!_.isArray( mailings ) || !mailings.length ) {
+    return res.redirect( redirectUrl )
+  }
   const reqParams       = {
     where: {
       id: {
@@ -383,8 +378,7 @@ async function bulkRemove(req, res, next) {
       }
     }
   }
-  if ( !isAdmin ) reqParams.where.groupId = req.user.groupId
-  const deleted         = await Mailing.destroy( reqParams )
+  const deleted         = await Mailing.destroy( addGroupFilter(req, reqParams) )
   res.redirect( redirectUrl )
 }
 
@@ -394,8 +388,6 @@ async function bulkRemove(req, res, next) {
 
 async function update(req, res, next) {
   if (!req.xhr) return next( createError(501) ) // Not Implemented
-
-  const { isAdmin }     = req.user
   const { mailingId }   = req.params
   const reqParams       = {
     where: {
@@ -410,8 +402,7 @@ async function update(req, res, next) {
     }],
   }
 
-  if ( !isAdmin ) reqParams.where.groupId = req.user.groupId
-  const mailing        = await Mailing.findOne( reqParams )
+  const mailing        = await Mailing.findOne( addGroupFilter(req, reqParams) )
 
   if (!mailing) return next( createError(404) )
   mailing.data = req.body.data || mailing.data
@@ -438,9 +429,10 @@ async function duplicate(req, res, next) {
       required: true,
     }, {
       model:    Tag,
-      required: true,
+      required: false,
     }],
   }
+  console.log( addStrictGroupFilter(req, reqParams) )
   let mailing     = await Mailing.findOne( addStrictGroupFilter(req, reqParams) )
 
   if ( !mailing ) return res.redirect( redirectUrl )

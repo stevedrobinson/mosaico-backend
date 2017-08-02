@@ -13,11 +13,13 @@ const {
   startNightmare }            = require( './generate-previews' )
 const { autoUpload }          = require( './auto-upload' )
 const h                       = require( '../helpers' )
-const { formatErrors,
+const {
+  formatErrors,
   Group,
   Template,
   Mailing,
   Gallery,
+  addGroupFilter,
 }                             = require('../models')
 
 async function list(req, res, next) {
@@ -56,30 +58,6 @@ async function show(req, res, next) {
     template,
     group: template.group,
   }} )
-}
-
-async function getMarkup(req, res, next) {
-  const { templateId }  = req.params
-  const { isAdmin }     = req.user
-  const reqParams       = {
-    where: {
-      id: templateId,
-    },
-    attributes: ['name', 'markup', 'groupId'],
-  }
-  if ( !isAdmin ) reqParams.where.groupId = req.user.groupId
-
-  const template        = await Template.findById( templateId )
-  if ( !template || !template.markup ) return next( createError(404) )
-  const markup          = template.get( 'markup' )
-  if (req.xhr) return res.send( markup )
-  // let download content
-  console.log(template.get('name'))
-  const filename = `${ template.get('name') }.html`
-  res.setHeader( 'Content-disposition', `attachment; filename=${ slugFilename( filename ) }` )
-  res.setHeader( 'Content-type', 'text/html' )
-  res.write( markup )
-  return res.end()
 }
 
 async function update(req, res, next) {
@@ -140,10 +118,28 @@ async function remove(req, res, next) {
 
 //----- USER ACTIONS
 
+async function getMarkup(req, res, next) {
+  const { templateId }  = req.params
+  const reqParams       = {
+    where: {
+      id: templateId,
+    },
+  }
+  const template        = await Template.findOne( addGroupFilter(req, reqParams) )
+  if ( !template || !template.markup ) return next( createError(404) )
+  const markup          = template.get( 'markup' )
+  if (req.xhr) return res.send( markup )
+  // let download content
+  const filename = `${ template.get('name') }.html`
+  res.setHeader( 'Content-disposition', `attachment; filename=${ slugFilename( filename ) }` )
+  res.setHeader( 'Content-type', 'text/html' )
+  res.write( markup )
+  return res.end()
+}
+
 async function userList(req, res, next) {
   const { isAdmin, groupId }  = req.user
   const reqParams             = {
-    where: isAdmin ? {} : { groupId },
     include: [{
       model: Group,
     }],
@@ -152,7 +148,7 @@ async function userList(req, res, next) {
       [ 'name', 'ASC' ],
     ],
   }
-  const templates             = await Template.findAll( reqParams )
+  const templates             = await Template.findAll( addGroupFilter(req, reqParams) )
   res.render( 'mailing-new', {data: { templates }} )
 }
 
