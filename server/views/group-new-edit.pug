@@ -10,7 +10,7 @@ block vars
 block content
   - var group     = data && data.group ? data.group : {};
   - var isEdit    = group.id;
-  - var action    = mergeQueries( isEdit ? isEdit ? group.url.show : `/groups`, {fromPath: _path});
+  - var action    = mergeQueries( isEdit ? group.url.show : `/groups`, {fromPath: _path});
   - var hasError  = messages.error && messages.error.length;
   - var errors    = hasError ? messages.error[0] : {};
 
