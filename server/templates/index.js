@@ -16,8 +16,9 @@ const h                       = require( '../helpers' )
 const { formatErrors,
   Group,
   Template,
-  Mailing
-}       = require('../models')
+  Mailing,
+  Gallery,
+}                             = require('../models')
 
 async function list(req, res, next) {
   const reqParams   = {
@@ -46,7 +47,7 @@ async function show(req, res, next) {
       id: templateId,
     },
     include: [{
-      model: Group,
+      model:    Group,
     }],
   }
   const template        = await Template.findOne( reqParams )
@@ -108,18 +109,33 @@ async function update(req, res, next) {
 async function remove(req, res, next) {
   const { templateId }  = req.params
   const { redirect }    = req.query
-
   const tmplParams      = {
-    where: {
-      id: templateId
-    },
+    where: { id:  templateId },
+    include: [{
+      model:    Mailing,
+      required: false,
+    }]
   }
+  const template        = await Template.findOne( tmplParams )
+  if ( !template ) return next( createError(404) )
   const mailingParams   = {
     where: { templateId },
   }
-  const removedTemplate = await Template.destroy( tmplParams )
-  // const removedMailings = await Mailing.destroy( mailingParams )
-  res.redirect( req.query.redirect )
+  const galleryParams   = {
+    where: {
+      templateId,
+      $or: {
+        mailingId: { $in: template.mailings.map( mailing => mailing.id) }
+      },
+    },
+  }
+  const dbRequests = [
+    template.destroy(),
+    Mailing.destroy( mailingParams ),
+    Gallery.destroy( galleryParams ),
+  ]
+  const result          = await Promise.all( dbRequests )
+  res.redirect( redirect )
 }
 
 //----- USER ACTIONS

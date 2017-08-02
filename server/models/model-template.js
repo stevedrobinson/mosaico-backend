@@ -69,7 +69,7 @@ const Template        = sequelize.define( 'template', {
         backTo:           groupId ? groupUrl : userUrl,
         user:             userUrl,
         group:            groupUrl,
-        delete:           `/templates/${ id }/delete`,
+        delete:           `/templates/${ id }?_method=DELETE`,
         markup:           `/templates/${ id }/markup`,
         generatePreviews: `/templates/${ id }/generate-previews`,
         renderMarkup:     `/templates/${ id }/render-markup`,
