@@ -20,7 +20,10 @@ const {
   writeStreamFromStream,
   list,
   parseMultipart, }   = require( './filemanager' )
-const { Cacheimages, Gallery } = require( './models' )
+const {
+  ImageCache,
+  Gallery,
+}                     = require( './models' )
 
 console.log('[IMAGES] config.images.cache', config.images.cache)
 
@@ -61,15 +64,15 @@ const handleFileStreamError = next => err => {
 }
 
 const onWriteResizeEnd = datas => () => {
-  const { path, name, imageName, } = datas
+  const { path, name }  = datas
+  const params          = { path, name }
 
   // save in DB for cataloging
-  new Cacheimages({
-    path,
-    name,
-    imageName,
+  ImageCache
+  .findCreateFind({
+    where:    params,
+    default:  params,
   })
-  .save()
   .then( ci => console.log( green('cache image infos saved in DB', path )) )
   .catch( e => {
     console.log( red(`[IMAGE] can't save cache image infos in DB`), path )
@@ -101,7 +104,7 @@ function handleSharpStream(req, res, next, pipeline) {
     const name          = getResizedImageName( req.path )
 
     writeStreamFromStream( pipeline.clone(), name )
-    .then( onWriteResizeEnd({ path, name, imageName, }) )
+    .then( onWriteResizeEnd({ path, name }) )
     .catch( onWriteResizeError(path) )
   }
   // flow readstream into the pipeline!
@@ -126,7 +129,7 @@ const handleGifStream = (req, res, next, gifProcessor) => {
   const name              = getResizedImageName( path )
 
   writeStreamFromStream( streamForSave, name )
-  .then( onWriteResizeEnd({path, name, imageName}) )
+  .then( onWriteResizeEnd({path, name}) )
   .catch( onWriteResizeError(path) )
 
 }
@@ -172,9 +175,8 @@ function checkCache(req, res, next) {
   if (!config.images.cache) return next()
 
   const { path } = req
-  Cacheimages
-  .findOne( { path } )
-  .lean()
+  ImageCache
+  .findById( path )
   .then( onCacheimage )
   .catch( e => {
     console.log('[CHECKSIZES] error in image cache check')
@@ -333,7 +335,7 @@ function placeholder(req, res, next) {
   const name      = getResizedImageName( req.path )
 
   writeStreamFromStream( pipeline.clone(), name )
-  .then( onWriteResizeEnd({ path, name, imageName: placeholderSize }) )
+  .then( onWriteResizeEnd({ path, name }) )
   .catch( onWriteResizeError(path) )
 }
 

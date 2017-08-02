@@ -1,15 +1,16 @@
 'use strict'
 
-const util      = require( 'util' )
-const chalk     = require( 'chalk' )
+const util        = require( 'util' )
+const chalk       = require( 'chalk' )
 
-const Group     = require( './model-group' )
-const User      = require( './model-user' )
-const Template  = require( './model-template' )
-const Mailing   = require( './model-mailing' )
-const Tag       = require( './model-tag' )
-const Gallery   = require( './model-gallery' )
-const sequelize = require( './db-connection' )
+const sequelize   = require( './db-connection' )
+const Group       = require( './model-group' )
+const User        = require( './model-user' )
+const Template    = require( './model-template' )
+const Mailing     = require( './model-mailing' )
+const Tag         = require( './model-tag' )
+const Gallery     = require( './model-gallery' )
+const ImageCache  = require( './model-image-cache' )
 
 //////
 // ERRORS HANDLING
@@ -101,7 +102,7 @@ Gallery.belongsTo( Template )
 
 module.exports    = {
   sequelize,
-  // connectDB,
+  // utilities,
   formatErrors,
   addGroupFilter,
   addStrictGroupFilter,
@@ -112,5 +113,5 @@ module.exports    = {
   Mailing,
   Tag,
   Gallery,
-  // Cacheimages,
+  ImageCache,
 }
