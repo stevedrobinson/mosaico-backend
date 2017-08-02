@@ -26,7 +26,7 @@ function handleValidationErrors(err) {
   }
   // duplicated field
   if (err.name === 'MongoError' && err.code === 11000) {
-    // mongo doens't provide field name out of the box
+    // mongo doesn't provide field name out of the box
     // fix that based on the error message
     var fieldName = /index:\s([a-z]*)/.exec(err.message)[1]
     var errorMsg  = {}
@@ -75,9 +75,11 @@ function addStrictGroupFilter(req, dbQueryParams) {
 //////
 
 User.belongsTo( Group )
+User.mailings     = User.hasMany( Mailing )
 
 Template.belongsTo( Group )
 Template.gallery  = Template.hasMany( Gallery )
+Template.mailings = Template.hasMany( Mailing )
 
 Mailing.belongsTo( Group )
 Mailing.belongsTo( User )

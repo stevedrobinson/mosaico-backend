@@ -5,10 +5,13 @@ const { merge }             = require( 'lodash' )
 
 const config                = require( './config' )
 const h                     = require( './helpers' )
-const { handleValidatorsErrors,
-  Group, User,
-  // Templates, Mailings
-}   = require('./models')
+const {
+  handleValidatorsErrors,
+  Group,
+  User,
+  Mailing,
+  Template,
+}                           = require('./models')
 
 async function list(req, res, next) {
   const reqParams   = {
@@ -41,6 +44,12 @@ async function show(req, res, next) {
     },
     include: [{
       model: Group,
+    }, {
+      model:    Mailing,
+      required: false,
+      include:  [{
+        model:    Template,
+      }]
     }],
   }
   const user        = await User.findOne( reqParams )
@@ -48,23 +57,8 @@ async function show(req, res, next) {
   res.render('user-new-edit', { data: {
     user,
     group:    user.group,
-    mailings:   [],
+    mailings: user.mailings,
   }})
-
-  // const getMailings  = Mailings.find( { _user: userId } ).populate('_template')
-
-  // // UPDATE
-  // Promise
-  // .all([getUser, getMailings])
-  // .then( (dbResponse) => {
-  //   const user      = dbResponse[0]
-  //   const mailings = dbResponse[1]
-  //   res.render('user-new-edit', { data: {
-  //     user:       user,
-  //     mailings:  mailings,
-  //   }})
-  // })
-  // .catch(next)
 }
 
 async function update( req, res, next ) {
