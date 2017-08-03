@@ -1,31 +1,16 @@
 'use strict'
 
-const util      = require('util')
-const chalk     = require('chalk')
-const mongoose  = require('mongoose')
+const util        = require( 'util' )
+const chalk       = require( 'chalk' )
 
-mongoose.Promise    = global.Promise // Use native promises
-let connection
-
-const UserSchema        = require('./schema-user')
-const TemplateSchema    = require('./schema-template')
-const MailingSchema     = require('./schema-mailing')
-const GroupSchema       = require('./schema-group')
-const CacheimageSchema  = require('./schema-cache-image')
-const GallerySchema     = require('./schema-gallery')
-const {
-  UserModel,
-  TemplateModel,
-  MailingModel,
-  GroupModel,
-  CacheimageModel,
-  GalleryModel,
-} = require('./names')
-
-mongoose.connection.on('error', console.error.bind(console, chalk.red('[DB] connection error:')))
-mongoose.connection.once('open', e =>  {
-  console.log(chalk.green('[DB] connection OK'))
-})
+const sequelize   = require( './db-connection' )
+const Group       = require( './model-group' )
+const User        = require( './model-user' )
+const Template    = require( './model-template' )
+const Mailing     = require( './model-mailing' )
+const Tag         = require( './model-tag' )
+const Gallery     = require( './model-gallery' )
+const ImageCache  = require( './model-image-cache' )
 
 //////
 // ERRORS HANDLING
@@ -41,7 +26,7 @@ function handleValidationErrors(err) {
   }
   // duplicated field
   if (err.name === 'MongoError' && err.code === 11000) {
-    // mongo doens't provide field name out of the box
+    // mongo doesn't provide field name out of the box
     // fix that based on the error message
     var fieldName = /index:\s([a-z]*)/.exec(err.message)[1]
     var errorMsg  = {}
@@ -63,64 +48,74 @@ function formatErrors(err, req, res, next) {
   .catch(next)
 }
 
-function connectDB(dbConfig) {
-  // remove depreciation warning
-  // http://mongoosejs.com/docs/connections.html#use-mongo-client
-  connection    = mongoose.connect(dbConfig, { useMongoClient: true, })
-  return connection
-}
-
 //////
 // HELPERS
 //////
 
-function isFromGroup(user, groupId) {
-  if (!user) return false
-  if (user.isAdmin) return true
-  // mailings from admin doesn't gave a groupId
-  if (!groupId) return false
-  return user._group.toString() === groupId.toString()
-}
-
 // users can access only same group content
 // admin everything
-function addGroupFilter(user, filter) {
-  if (user.isAdmin) return filter
-  filter._group = user._group
-  return filter
+function addGroupFilter(req, dbQueryParams = {}) {
+  const { user }        = req
+  const { isAdmin }     = user
+  dbQueryParams.where   = dbQueryParams.where || {}
+  if ( !isAdmin ) dbQueryParams.where.groupId = user.groupId
+  return dbQueryParams
 }
 
 // Strict difference from above:
-// Admin can't content with a group
-function addStrictGroupFilter(user, filter) {
-  const _group  = user.isAdmin ? { $exists: false } : user._group
-  filter._group = _group
-  return filter
+// Admin can only see content without a group (so created by him)
+function addStrictGroupFilter(req, dbQueryParams = {}) {
+  const { user }        = req
+  const { isAdmin }     = user
+  dbQueryParams.where   = dbQueryParams.where || {}
+  dbQueryParams.where.groupId = isAdmin ? { $eq: null } : user.groupId
+  return dbQueryParams
 }
+
+//////
+// RELATIONS
+//////
+
+User.belongsTo( Group )
+User.mailings     = User.hasMany( Mailing )
+
+Template.belongsTo( Group )
+Template.gallery  = Template.hasMany( Gallery )
+Template.mailings = Template.hasMany( Mailing )
+
+Mailing.belongsTo( Group )
+Mailing.belongsTo( User )
+Mailing.belongsTo( Template )
+Mailing.tags      = Mailing.belongsToMany( Tag, {through: 'MailingTag'} )
+Mailing.gallery   = Mailing.hasMany( Gallery )
+
+Tag.belongsTo( Group )
+Tag.belongsToMany( Mailing, {through: 'MailingTag'})
+
+Group.users       = Group.hasMany( User )
+Group.templates   = Group.hasMany( Template )
+Group.mailings    = Group.hasMany( Mailing )
+Group.tags        = Group.hasMany( Tag )
+
+Gallery.belongsTo( Mailing )
+Gallery.belongsTo( Template )
 
 //////
 // EXPORTS
 //////
 
-const Users       = mongoose.model( UserModel, UserSchema )
-const Templates   = mongoose.model( TemplateModel, TemplateSchema )
-const Mailings    = mongoose.model( MailingModel, MailingSchema )
-const Groups      = mongoose.model( GroupModel, GroupSchema )
-const Cacheimages = mongoose.model( CacheimageModel, CacheimageSchema )
-const Galleries   = mongoose.model( GalleryModel, GallerySchema )
-
 module.exports    = {
-  connection:       mongoose.connection,
-  connectDB,
+  sequelize,
+  // utilities,
   formatErrors,
-  isFromGroup,
   addGroupFilter,
   addStrictGroupFilter,
-  // Compiled schema
-  Users,
-  Templates,
-  Mailings,
-  Groups,
-  Cacheimages,
-  Galleries,
+  // Models
+  Group,
+  User,
+  Template,
+  Mailing,
+  Tag,
+  Gallery,
+  ImageCache,
 }

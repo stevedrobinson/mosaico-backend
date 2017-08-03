@@ -1,228 +1,170 @@
 'use strict'
 
-const createError           = require('http-errors')
-const { merge }             = require('lodash')
+const createError           = require( 'http-errors' )
+const { merge }             = require( 'lodash' )
 
-const config                = require('./config')
-const { handleValidatorsErrors,
-  Groups, Users,
-  Templates, Mailings }   = require('./models')
+const config                = require( './config' )
+const h                     = require( './helpers' )
+const {
+  handleValidatorsErrors,
+  Group,
+  User,
+  Mailing,
+  Template,
+}                           = require('./models')
 
-function list(req, res, next) {
-  Users
-  .find( {} )
-  .populate( '_group' )
-  .sort( { isDeactivated: 1, createdAt: -1 } )
-  .then( users => {
-    return res.render('user-list', {
-      data: { users }
-    })
-  })
-  .catch( next )
-}
-
-function show(req, res, next) {
-  // group is for member mailing…
-  // …userId when it's created :)
-  const { groupId, userId } = req.params
-
-  // CREATE
-  if (groupId) {
-    Groups
-    .findById(groupId)
-    .then( group => {
-      res.render('user-new-edit', { data: {
-        group,
-      }})
-    })
-    .catch(next)
-    return
+async function list(req, res, next) {
+  const reqParams   = {
+    order: [
+      ['isDeactivated', 'DESC'],
+      ['name',          'ASC'],
+    ],
+    include: [{
+      model: Group,
+    }],
   }
-
-  const getUser       = Users.findById(userId).populate('_group')
-  const getMailings  = Mailings.find( { _user: userId } ).populate('_template')
-
-  // UPDATE
-  Promise
-  .all([getUser, getMailings])
-  .then( (dbResponse) => {
-    const user      = dbResponse[0]
-    const mailings = dbResponse[1]
-    if (!user) return next(createError(404))
-    res.render('user-new-edit', { data: {
-      user:       user,
-      mailings:  mailings,
-    }})
+  const users = await User.findAll( reqParams )
+  res.render('user-list', {
+    data: { users }
   })
-  .catch(next)
 }
 
-function update(req, res, next) {
-  const { body }    = req
+async function create(req, res, next) {
+  const { groupId } = req.params
+  const group       = await Group.findById( groupId )
+  if ( !group ) return next( createError(404) )
+  res.render( 'user-new-edit', {data: { group }} )
+}
+
+async function show(req, res, next) {
   const { userId }  = req.params
-  const dbRequest   = userId ?
-    Users.findById(userId)
-    : Promise.resolve(new Users(body))
-
-  dbRequest
-  .then(handleUser)
-  .catch(next)
-
-  function handleUser(user) {
-    const nameChange  = body.name !== user.name
-    user              = merge(user, body)
-    user
-    .save()
-    .then( user => res.redirect( user.url.show ) )
-    .catch( err => handleValidatorsErrors(err, req, res, next) )
-
-    // copy user name attribute in mailing author
-    if (userId && nameChange) {
-      Mailings
-      .find({_user: userId})
-      .then( mailings => {
-        mailings.forEach( mailing => {
-          mailing.author = body.name
-          mailing.save().catch(console.log)
-        })
-      })
-      .catch(console.log)
-    }
+  const reqParams   = {
+    where: {
+      id: userId,
+    },
+    include: [{
+      model: Group,
+    }, {
+      model:    Mailing,
+      required: false,
+      include:  [{
+        model:    Template,
+      }]
+    }],
   }
+  const user        = await User.findOne( reqParams )
+  if ( !user ) return next( createError(404) )
+  res.render('user-new-edit', { data: {
+    user,
+    group:    user.group,
+    mailings: user.mailings,
+  }})
 }
 
-function activate(req, res, next) {
+async function update( req, res, next ) {
+  const { userId }  = req.params
+  const { body }    = req
+  const user        = await User.updateOrCreate( userId, body )
+  if ( !user ) return next( createError(404) )
+  res.redirect( user.url.show )
+}
+
+async function activate( req, res, next ) {
   const { userId }    = req.params
   const { redirect }  = req.query
-
-  Users
-  .findById( userId )
-  .then( handleUser )
-  .catch( next )
-
-  function handleUser(user) {
-    user
-    .activate()
-    .then( user => res.redirect( redirect ? redirect : '/users' ) )
-    .catch( next )
-  }
-
+  const user          = await User.findById( userId )
+  if ( !user ) return next( createError(404) )
+  const activation    = await user.activate()
+  res.redirect( redirect ? redirect : '/users' )
 }
 
-function deactivate(req, res, next) {
+async function deactivate(req, res, next) {
   const { userId }    = req.params
   const { redirect }  = req.query
-
-  Users
-  .findById( userId )
-  .then( handleUser )
-  .catch( next )
-
-  function handleUser(user) {
-    user
-    .deactivate()
-    .then( user => res.redirect( redirect ? redirect : '/users' ) )
-    .catch( next )
-  }
+  const user          = await User.findById( userId )
+  if ( !user ) return next( createError(404) )
+  const deactivation  = await user.deactivate()
+  res.redirect( redirect ? redirect : '/users' )
 }
 
-function adminResetPassword(req, res, next) {
-  const { id } = req.body
-
-  Users
-  .findById(id)
-  .then(handleUser)
-  .catch(next)
-
-  function handleUser(user) {
-    if (!user) return next(createError(404))
-    user
-    .resetPassword(user.lang, 'admin')
-    .then(user => {
-      // reset from elsewhere
-      if (req.body.redirect) return res.redirect(req.body.redirect)
-      // reset from group page
-      res.redirect(user.url.group)
-    })
-    .catch(next)
-  }
+async function adminResetPassword( req, res, next ) {
+  const { userId }    = req.params
+  const { redirect }  = req.query
+  const user          = await User.findById( userId )
+  if ( !user ) return next( createError(404) )
+  const reset         = await user.resetPassword( 'admin' )
+  res.redirect( redirect ? redirect : user.url.group )
 }
 
-function userResetPassword(req, res, next) {
-  Users
-  .findOne({
-    email: req.body.username
-  })
-  .then(onUser)
-  .catch(next)
+//----- USER ACTIONS
 
-  function onUser(user) {
-    if (!user) {
-      req.flash('error', 'invalid email')
-      return res.redirect('/forgot')
+async function userResetPassword(req, res, next) {
+  const { username }  = req.body
+  const reqParams     = {
+    where: {
+      email:    h.normalizeString( username ),
+      password: { $not: null },
     }
-    user
-    .resetPassword(req.getLocale(), 'user')
-    .then( user => {
-      req.flash('success', 'password has been reseted. You should receive an email soon')
-      res.redirect('/forgot')
-    })
-    .catch(next)
   }
+  const user          = await User.findOne( reqParams )
+  if ( !user ) {
+    req.flash( 'error', 'invalid email' )
+    return res.redirect( '/forgot' )
+  }
+  const resetedUser   = await user.resetPassword( 'user' )
+  // TODO: I18N
+  req.flash( 'success', 'password has been reseted. You should receive an email soon' )
+  res.redirect( '/forgot' )
 }
 
-function setPassword(req, res, next) {
-  Users
-  .findOne({
-    token:        req.params.token,
-    tokenExpire:  { $gt: Date.now() },
-  })
-  .then( user => {
-    if (!user) {
-      req.flash('error', {message: 'password.token.invalid'})
-      res.redirect(req.path)
-      return Promise.resolve(false)
+async function setPassword(req, res, next) {
+  const { token }   = req.params
+  const reqParams   = {
+    where: {
+      token:        token,
+      tokenExpire:  { $gt: Date.now() },
     }
-    if (req.body.password !== req.body.passwordconfirm) {
-      req.flash('error', {message: 'password.nomatch'})
-      res.redirect(req.path)
-      return Promise.resolve(false)
+  }
+  const user        = await User.findOne( reqParams )
+  if (!user) {
+    req.flash( 'error', {message: 'password.token.invalid'} )
+    return res.redirect( req.path )
+  }
+  if (req.body.password !== req.body.passwordconfirm) {
+    req.flash( 'error', {message: 'password.nomatch'} )
+    return res.redirect( req.path )
+  }
+  const updatedUser = await user.setPassword( req.body.password )
+  req.login(updatedUser, err => {
+    if (err) return next(err)
+    res.redirect('/')
+  })
+}
+
+async function showSetPassword(req, res, next) {
+  const { token }   = req.params
+  const reqParams   = {
+    where: {
+      token:        token,
+      tokenExpire:  { $gt: Date.now() },
     }
-    return user.setPassword(req.body.password, req.getLocale())
-  })
-  .then( user => {
-    if (!user) return
-    req.login(user, err => {
-      if (err) return next(err)
-      res.redirect('/')
-    })
-
-  })
-  .catch(next)
+  }
+  const user        = await User.findOne( reqParams )
+  const data        = !user ? { noToken: true } : { token }
+  return res.render( 'password-reset', { data } )
 }
 
-function showSetPassword(req, res, next) {
-  const { token } = req.params
-  Users
-  .findOne( {
-    token,
-    tokenExpire: { $gt: Date.now() },
-  } )
-  .then( user => {
-    const data = !user ? { noToken: true } : { token }
-    return res.render( 'password-reset', { data } )
-  })
-  .catch( next )
-}
+//----- EXPORTS
 
 module.exports = {
-  list,
-  show,
-  update,
-  activate,
-  deactivate,
-  adminResetPassword,
-  userResetPassword,
-  setPassword,
-  showSetPassword,
+  list:               h.asyncMiddleware( list ),
+  show:               h.asyncMiddleware( show ),
+  new:                h.asyncMiddleware( create ),
+  update:             h.asyncMiddleware( update ),
+  activate:           h.asyncMiddleware( activate ),
+  deactivate:         h.asyncMiddleware( deactivate ),
+  adminResetPassword: h.asyncMiddleware( adminResetPassword ),
+  userResetPassword:  h.asyncMiddleware( userResetPassword ),
+  setPassword:        h.asyncMiddleware( setPassword ),
+  showSetPassword:    h.asyncMiddleware( showSetPassword ),
 }

@@ -10,10 +10,13 @@ table.mdl-data-table
     th.mdl-data-table__cell--non-numeric
       +reorder('/', 'name', 'home.saved.name')
     th.mdl-data-table__cell--non-numeric
-      +reorder('/', 'template', 'home.saved.template-name')
+      +reorder('/', 'Template.name', 'home.saved.template-name')
+    if (isAdmin)
+      th.mdl-data-table__cell--non-numeric
+        | from group
     if (!isAdmin)
       th.mdl-data-table__cell--non-numeric
-        +reorder('/', 'author', 'home.saved.created-by')
+        +reorder('/', 'User.name', 'home.saved.created-by')
     th.mdl-data-table__cell--non-numeric= __('home.saved.tags')
     th.mdl-data-table__cell--non-numeric
       +reorder('/', 'createdAt', 'home.saved.created')
@@ -36,24 +39,26 @@ table.mdl-data-table
             input(
               name="mailings[]"
               type="checkbox"
-              id=`line-${mailing._id}`
-              data-tags=mailing.tags.join(',')
-              value=mailing._id
+              id=`line-${mailing.id}`
+              data-tags=mailing.tags.map( t => t.name ).join(',')
+              value=mailing.id
             )
-            label(for=`line-${mailing._id}`)
+            label(for=`line-${mailing.id}`)
           if _config.debug
-            td.mdl-data-table__cell--non-numeric= mailing._id
+            td.mdl-data-table__cell--non-numeric= mailing.id
           td.mdl-data-table__cell--non-numeric
             a(href=mailing.url.update).js-name= mailing.name
             td.mdl-data-table__cell--non-numeric
               if (isAdmin)
-                a(href=mailing.url.template)= mailing.templateName
+                a(href=mailing.url.template)= mailing.template.name
               else
-                span= mailing.templateName
-
+                span= mailing.template.name
+          if (isAdmin)
+            td.mdl-data-table__cell--non-numeric
+              a(href=mailing.template.group.url.show)= mailing.template.group.name
           if (!isAdmin)
-            td.mdl-data-table__cell--non-numeric: span= mailing.author
-          td.mdl-data-table__cell--long-text: span= mailing.tags.join(', ')
+            td.mdl-data-table__cell--non-numeric: span= mailing.user.name
+          td.mdl-data-table__cell--long-text: span= mailing.tags.map( t => t.name ).join(', ')
           td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.createdAt)
           td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.updatedAt)
           if (isAdmin)

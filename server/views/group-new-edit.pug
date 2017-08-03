@@ -3,14 +3,14 @@ include _user-list.pug
 
 block vars
   - var group   = data && data.group ? data.group : {};
-  - var isEdit    = group._id;
+  - var isEdit    = group.id;
   - var pageTitle = isEdit ? __('layout.groups.edit', group.name) : __('layout.groups.new');
   - var pageClass = 'full-width-layout';
 
 block content
   - var group     = data && data.group ? data.group : {};
-  - var isEdit    = group._id;
-  - var action    = isEdit ? `/groups/${group._id}` : `/groups`;
+  - var isEdit    = group.id;
+  - var action    = mergeQueries( isEdit ? group.url.show : `/groups`, {fromPath: _path});
   - var hasError  = messages.error && messages.error.length;
   - var errors    = hasError ? messages.error[0] : {};
 
@@ -37,19 +37,18 @@ block content
 
       #info-panel.mdl-tabs__panel(class= isEdit ? '' : 'is-active'): .mdl-grid
         form.mdl-cell.mdl-cell--12-col.mdl-card.mdl-shadow--2dp(action=action method="post")
-          if group._id
-            input(type="hidden" name="id" value=group._id)
+          if group.id
+            input(type="hidden" name="id" value=group.id)
           .mdl-card__title
             .mdl-card__title-text=__('general.informations')
-          if !group._id
-            //- Groups are a way to share a single templates among many users
+          if !group.id
             .mdl-card__supporting-text=__('admin.groups.notice')
           fieldset.mdl-card__supporting-text
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label(class= errors.name ? 'is-invalid' : '')
-              input.mdl-textfield__input#name-field(type="text" name="name" value=group.name)
+              input.mdl-textfield__input#name-field(type="text" name="name" required value=group.name)
               label.mdl-textfield__label(for="name-field")=__('general.name')
               if errors.name
-                span.mdl-textfield__error= errors.name.message
+                span.mdl-textfield__error=__(errors.name.message)
           .mdl-card__actions.mdl-card--border
             button(type="submit").mdl-button.mdl-button--accent.mdl-js-button.mdl-js-ripple-effect=__('general.save')
 
@@ -145,8 +144,8 @@ block content
                         //- Should consolidate DB to always have a name before removing this
                         a(href=mailing.url.update).js-name= mailing.name || __('general.noname')
                       td.mdl-data-table__cell--non-numeric
-                        a(href=mailing._user.url.show).js-name= mailing._user.fullname
-                      td.mdl-data-table__cell--non-numeric: a(href=mailing._template.url.show)= mailing._template.name
+                        a(href=mailing.user.url.show).js-name= mailing.user.fullname
+                      td.mdl-data-table__cell--non-numeric: a(href=mailing.template.url.show)= mailing.template.name
                       td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.createdAt)
                       td.mdl-data-table__cell--non-numeric: span= formatDate(mailing.updatedAt)
 

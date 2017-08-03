@@ -14,34 +14,18 @@ const {
   bgGreen, }          = require( 'chalk' )
 
 const config          = require('./config')
+const h               = require( './helpers' )
 const {
   streamImage,
   writeStreamFromStream,
   list,
   parseMultipart, }   = require( './filemanager' )
-const { Cacheimages, Galleries } = require( './models' )
+const {
+  ImageCache,
+  Gallery,
+}                     = require( './models' )
 
 console.log('[IMAGES] config.images.cache', config.images.cache)
-
-//////
-// OLD IMAGE HANDLING
-//////
-
-// Check logs on march
-// if no more `[IMAGE] old url for path` => remove
-function handleOldImageUrl(req, res, next) {
-  if (!req.query.src)     return next( createError(404) )
-  if (!req.query.method)  return next( createError(404) )
-  let imageName = /([^/]*)$/.exec( req.query.src )
-  if (!imageName[1])      return next( createError(404) )
-  imageName       = imageName[1]
-  const method    = req.query.method
-  const sizes     = req.query.params ? req.query.params.split(',') : [0, 0]
-  const width     = sizes[0]
-  const height    = sizes[1]
-  console.warn(`[IMAGE] old url for path ${req.originalUrl}`)
-  return res.redirect(308, `/${method}/${width}x${height}/${imageName}`)
-}
 
 //////
 // IMAGE UTILS
@@ -80,15 +64,15 @@ const handleFileStreamError = next => err => {
 }
 
 const onWriteResizeEnd = datas => () => {
-  const { path, name, imageName, } = datas
+  const { path, name }  = datas
+  const params          = { path, name }
 
   // save in DB for cataloging
-  new Cacheimages({
-    path,
-    name,
-    imageName,
+  ImageCache
+  .findCreateFind({
+    where:    params,
+    default:  params,
   })
-  .save()
   .then( ci => console.log( green('cache image infos saved in DB', path )) )
   .catch( e => {
     console.log( red(`[IMAGE] can't save cache image infos in DB`), path )
@@ -120,7 +104,7 @@ function handleSharpStream(req, res, next, pipeline) {
     const name          = getResizedImageName( req.path )
 
     writeStreamFromStream( pipeline.clone(), name )
-    .then( onWriteResizeEnd({ path, name, imageName, }) )
+    .then( onWriteResizeEnd({ path, name }) )
     .catch( onWriteResizeError(path) )
   }
   // flow readstream into the pipeline!
@@ -145,7 +129,7 @@ const handleGifStream = (req, res, next, gifProcessor) => {
   const name              = getResizedImageName( path )
 
   writeStreamFromStream( streamForSave, name )
-  .then( onWriteResizeEnd({path, name, imageName}) )
+  .then( onWriteResizeEnd({path, name}) )
   .catch( onWriteResizeError(path) )
 
 }
@@ -187,13 +171,12 @@ const streamImageToResponse = (req, res, next, imageName) => {
 // =>   vips warning: VipsJpeg: error reading resolution
 // https://github.com/lovell/sharp/issues/657
 
-function checkImageCache(req, res, next) {
+function checkCache(req, res, next) {
   if (!config.images.cache) return next()
 
   const { path } = req
-  Cacheimages
-  .findOne( { path } )
-  .lean()
+  ImageCache
+  .findById( path )
   .then( onCacheimage )
   .catch( e => {
     console.log('[CHECKSIZES] error in image cache check')
@@ -352,7 +335,7 @@ function placeholder(req, res, next) {
   const name      = getResizedImageName( req.path )
 
   writeStreamFromStream( pipeline.clone(), name )
-  .then( onWriteResizeEnd({ path, name, imageName: placeholderSize }) )
+  .then( onWriteResizeEnd({ path, name }) )
   .catch( onWriteResizeError(path) )
 }
 
@@ -369,81 +352,60 @@ function read(req, res, next) {
 // EDITOR SPECIFIC
 //////
 
-function createGallery( mongoId ) {
-  // create the gallery in DB
-  return list( mongoId )
-  .then( files => {
-    return new Galleries({
-      mailingOrTemplateId: mongoId,
-      files,
-    })
-    .save()
-  })
+function getGalleryRelationKey( req ) {
+  const isMailingGallery  = req.params.galleryType === 'mailing'
+  const relationKey       = isMailingGallery ? 'mailingId' : 'templateId'
+  return relationKey
 }
 
 // Those functions are accessible only from the editor
-// groups assets (preview & template fixed assets)…
-// …are handled separatly in groups.js#update
+// templates assets (preview & template fixed assets)…
+// …are handled separatly in templates.js#update
 
-function listImages( req, res, next ) {
-  if (!req.xhr) return next( createError(501) ) // Not Implemented
-
-  const { mongoId } = req.params
-
-  Galleries
-  .findOne({
-    mailingOrTemplateId: mongoId,
-  }, 'files' )
-  .lean()
-  .then( gallery => {
-    if ( gallery ) return Promise.resolve( gallery )
-    return createGallery( mongoId )
-  })
-  .then( gallery => {
-    res.json( gallery )
-  })
-  .catch( next )
+async function listImages( req, res, next ) {
+  if ( !req.xhr ) return next( createError(501) ) // Not Implemented
+  const { postgreId } = req.params
+  const relationKey   = getGalleryRelationKey( req )
+  const reqParams     = {
+    where: {
+      [ relationKey ]:  postgreId,
+    }
+  }
+  const files       = await Gallery.findAll( reqParams )
+  res.json( {files} )
 }
 
 // upload & update gallery
-function upload( req, res, next ) {
+// `pg` node_module has to be downgraded to 6for solving this issue:
+// https://github.com/sequelize/sequelize/issues/7999#issue-244898237
+async function upload( req, res, next ) {
   if (!req.xhr) return next( createError(501) ) // Not Implemented
-  const { mongoId }       = req.params
+  const { postgreId }     = req.params
+  const relationKey       = getGalleryRelationKey( req )
   const multipartOptions  = {
-    prefix:     mongoId,
+    prefix:     postgreId,
     formatter:  'editor',
   }
-
-  Promise.all([
-    parseMultipart( req,  multipartOptions),
-    Galleries.findOne({ mailingOrTemplateId: mongoId }),
-  ])
-  .then( ([uploads, gallery]) => {
-    if ( gallery ) return Promise.all( [uploads, gallery] )
-    // gallery could not be created at this point
-    // without opening galleries panel in the editor no automatic DB gallery mailing :(
-    return Promise.all( [uploads, createGallery( mongoId ) ])
-  })
-  .then( ([uploads, gallery]) => {
-
-    uploads.files.forEach( upload => {
-      const imageName   = upload.name
-      const { files }   = gallery
-      const imageIndex  = files.findIndex( file =>  file.name === imageName )
-      if ( imageIndex < 0 ) files.push( upload )
+  const uploads = await parseMultipart( req,  multipartOptions)
+  console.log( uploads.files )
+  const records = uploads.files.map( upload => {
+    return Gallery.upsert({
+      name:             upload.name,
+      [ relationKey ]:  postgreId,
     })
-
-    gallery.markModified( 'files' )
-
-    return Promise.all([uploads, gallery.save()])
-
   })
-  .then( ([uploads, gallery]) => {
-    // send only the new uploads
-    // front-application will iterate over them to update the gallery previews
-    res.send( JSON.stringify(uploads) )
+  // we can't do a bulkCreate because postgre doesn't support ignoreDuplicates params
+  // upsert doesn't return the result
+  // only a boolean indicating whether the row was created or updated
+  const result  = await Promise.all( records )
+  const files   = await Gallery.findAll({
+    where: {
+      $or: uploads.files.map( upload => ({name: upload.name}) )
+    }
   })
-  .catch( next )
+  // send only the new uploads
+  // front-application will iterate over them to update the gallery previews
+  res.json( {files} )
 }
 
 // destroy an image is not a real deletion…
@@ -453,42 +415,32 @@ function upload( req, res, next ) {
 //  - even thougt every cropped images are cached
 //    an image can be used at it's original size (no cropped image cache)
 // so:
-//  - we just flag this image in the gallery table as not visible
-function destroy(req, res, next) {
+//  - we just remove the image from the gallery table
+async function destroy(req, res, next) {
   if (!req.xhr) return next( createError(501) ) // Not Implemented
   const { imageName }   = req.params
-  let mongoId = /^([a-f\d]{24})-/.exec( imageName )
-  if ( !mongoId ) return next( createError(422) ) // UnprocessableEntity
-  mongoId     = mongoId[ 1 ]
-
-  Galleries
-  .findOne({
-    mailingOrTemplateId: mongoId,
-  })
-  .then( gallery => {
-    // TODO handle non existing gallery
-    // mongoID could be incorrect
-    const { files }   = gallery
-    const imageIndex  = files.findIndex( file =>  file.name === imageName )
-    files.splice(imageIndex, 1)
-    gallery.markModified( 'files' )
-    return gallery.save()
-  })
-  .then( gallery => {
-    res.send( {files: gallery.files} )
-  })
-  .catch( next )
+  const image           = await Gallery.findById( imageName )
+  if ( !image ) return next( createError(404) )
+  const { mailingId, templateId } = image
+  const removedImage  = await image.destroy()
+  const relationKey   = mailingId ? 'mailingId' : 'templateId'
+  const reqParams     = {
+    where: {
+      [ relationKey ]: mailingId ? mailingId : templateId,
+    },
+  }
+  const files         = await Gallery.findAll( reqParams )
+  res.json( {files} )
 }
 
 module.exports = {
-  handleOldImageUrl,
   cover,
   resize,
   placeholder,
-  checkImageCache,
+  checkCache,
   checkSizes,
   read,
-  destroy,
-  listImages,
-  upload,
+  listImages: h.asyncMiddleware( listImages ),
+  upload:     h.asyncMiddleware( upload ),
+  destroy:    h.asyncMiddleware( destroy ),
 }

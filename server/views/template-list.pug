@@ -25,11 +25,11 @@ block content
             tr
               if _config.debug
                 td.mdl-data-table__cell--non-numeric
-                  a(href=template.url.show)= template._id
+                  a(href=template.url.show)= template.id
               td.mdl-data-table__cell--non-numeric
                   a.js-template-name(href=template.url.show)= template.name
               td.mdl-data-table__cell--non-numeric
-                a(href=template.url.group)= template._group.name
+                a(href=template.url.group)= template.group.name
 
               td.mdl-data-table__cell--action
                 if template.hasMarkup
@@ -37,7 +37,7 @@ block content
                 else
                   i.material-icons report_problem
               td.mdl-data-table__cell--action
-                a.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent(href='/editor?templateId=' + template._id)
+                a.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent(href='/editor?templateId=' + template.id)
                   i.material-icons library_add
               - var deleteUrl = mergeQueries(template.url.delete, {redirect: '/templates' })
               td.mdl-data-table__cell--action

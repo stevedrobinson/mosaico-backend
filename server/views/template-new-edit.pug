@@ -9,10 +9,11 @@ block vars
 block content
   - var hasError        = messages.error && messages.error.length;
   - var errors          = hasError ? messages.error[0] : {};
-  - var isEdit          = data.template  != null;
+  - var isEdit          = data.template != null
   - var template        = data.template || {};
+  - const { group }     = data
   - const { hasMarkup } = template
-  - var action          = isEdit ? template.url.show : '/templates';
+  - var action          = mergeQueries( isEdit ? template.url.show : '/templates', {fromPath: _path});
 
   //- LEFT COLUMN
   if isEdit
@@ -20,7 +21,7 @@ block content
       ul.mdl-list
         li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.backTo)
           .material-icons.mdl-list__item-icon group
-          | #{template._group.name}
+          | #{group.name}
         if hasMarkup
           li.mdl-list__item: a.mdl-list__item-primary-content(href=template.url.create)
             .material-icons.mdl-list__item-icon library_add
@@ -52,20 +53,20 @@ block content
       fieldset.mdl-cell.mdl-card.mdl-shadow--2dp(class=!isEdit ? 'mdl-cell--3-offset-desktop mdl-cell--6-col' : hasMarkup ? 'mdl-cell--6-col' : 'mdl-cell--4-col')
         .mdl-card__title: .mdl-card__title-text meta
         .mdl-card__supporting-text
-          .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+          .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label(class= errors.name ? 'is-invalid' : '')
             input.mdl-textfield__input#name-field(type="text" name="name" required value=template.name)
             label.mdl-textfield__label(for="name-field")=__('general.name')
             if errors.name
-              span.mdl-textfield__error= errors.name.message
+              span.mdl-textfield__error=__(errors.name.message)
           .mdl-textfield.mdl-js-textfield
             textarea.mdl-textfield__input#description-field(type="text" rows="1" name="description")=template.description
             label.mdl-textfield__label(for="description-field")=__('general.description')
 
           if !isEdit
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
-              input(type="hidden" name="_group" value=data.group._id)
+              input(type="hidden" name="groupId" value=group.id)
               .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
-                p.mdl-textfield__input= data.group.name
+                p.mdl-textfield__input= group.name
                 label.mdl-textfield__label.mdl-textfield__label--fixed=__('general.group')
 
       if isEdit

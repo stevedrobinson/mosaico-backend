@@ -49,8 +49,8 @@ html(lang=getLocale())
             //- don't prepend basePath
             //- CORS errors can occur while using browsersync
             url: {
-              mailing:  '/upload/#{data.meta.id}',
-              template: '/upload/#{data.meta._template}',
+              mailing:  '/upload/mailing/#{data.meta.id}',
+              template: '/upload/template/#{data.meta._template}',
             },
             // messages are done in app.js#start
           },

@@ -17,7 +17,7 @@ block content
               name="userId"
             ).mdl-textfield__input
               each user in users
-                option(value=user._id)= user.fullname
+                option(value=user.id)= user.fullname
             label(for="userId-field").mdl-textfield__label= __('filter.author')
 
       .mdl-card__actions.mdl-card--border

@@ -137,7 +137,7 @@ function addTag() {
   const newTag = cleanTagName( $ui.newTagInput.val() )
   if (!newTag) return hideModal()
   if ($(`[name="tag-${newTag}"]`).length) return hideModal()
-  const $line   = $( tmpl({ tag: newTag }) )
+  const $line   = $( tmpl({ tag: {name: newTag} }) )
   $line.find('input:checked').prop('checked', false)
   $line.find('input:last-of-type').prop('checked', true)
   $ui.tagsWrapper.append( $line )

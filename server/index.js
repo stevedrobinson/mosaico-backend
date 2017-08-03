@@ -13,7 +13,7 @@ const favicon         = require('serve-favicon')
 const cookieParser    = require('cookie-parser')
 const i18n            = require('i18n')
 const moment          = require('moment')
-const util            = require('util')
+const { inspect }     = require('util')
 const createError     = require('http-errors')
 const helmet          = require('helmet')
 const httpShutdown    = require('http-shutdown')
@@ -30,10 +30,8 @@ const mail            = require( './mail' )
 
 module.exports = function () {
 
-  const config  = require( './config' )
-  const db      = require( './models' )
-
-  db.connectDB( config.database )
+  const config        = require( './config' )
+  const { sequelize } = require( './models' )
 
   //////
   // SERVER CONFIG
@@ -191,15 +189,15 @@ module.exports = function () {
   // ROUTING
   //////
 
-  const download        = require( './download' )
-  const images          = require( './images' )
   const render          = require( './render' )
-  const users           = require( './users' )
   const groups          = require( './groups' )
+  const users           = require( './users' )
   const templates       = require( './templates' )
   const mailings        = require( './mailings' )
-  const mailingTransfer = require( './mailing-transfer' )
-  const filemanager     = require( './filemanager' )
+
+  const images          = require( './images' )
+  const download        = require( './download' )
+
   const guard           = session.guard
 
   //----- EXPOSE DATAS TO VIEWS
@@ -255,8 +253,8 @@ module.exports = function () {
   // those datas need to be refreshed on every request
   // and also not exposed to `app` but to `res` ^^
   app.use(function exposeDataToViews(req, res, next) {
-    res.locals._query   = req.query
-    res.locals._path    = req.path
+    res.locals._query       = req.query
+    res.locals._path        = req.originalUrl
     res.locals._user    = req.user ? req.user : {}
     if (config.isDev) {
       res.locals._debug = JSON.stringify({
@@ -282,16 +280,28 @@ module.exports = function () {
   })
 
   //----- PARAMS CHECK
-
-  // regexp for checking valid mongoDB Ids
   // http://expressjs.com/en/api.html#app.param
-  // http://stackoverflow.com/questions/20988446/regex-for-mongodb-objectid#20988824
-  app.param(['groupId', 'userId', 'templateId', 'mailingId', 'mongoId'], checkMongoId)
-  function checkMongoId(req, res, next, mongoId) {
-    if (/^[a-f\d]{24}$/i.test(mongoId)) return next()
-    console.log('test mongoId INVALID', mongoId)
+
+  // regexp for checking valid postgreSQL Ids
+  const dbIdRegexp    = /^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$/
+  app.param( ['groupId', 'userId', 'templateId', 'mailingId', 'postgreId'],  checkPostgreId )
+  function checkPostgreId(req, res, next, postgreId) {
+    if (dbIdRegexp.test(postgreId)) return next()
+    console.log('test postgreId INVALID', postgreId)
     next( createError(404) )
   }
+
+  app.param( ['galleryType'], (req, res, next, galleryType) => {
+    if ( ['mailing', 'template'].includes(galleryType) ) return next()
+    console.log('galleryType format INVALID', galleryType)
+    next( createError(404) )
+  })
+
+  app.param( ['templateName'], (req, res, next, templateName) => {
+    if ( ['tedc15', 'versafix-1'].includes(templateName) ) return next()
+    console.log('templateName format INVALID', templateName)
+    next( createError(404) )
+  })
 
   app.param(['placeholderSize'], (req, res, next, placeholderSize) => {
     if ( /(\d+)x(\d+)\.png/.test(placeholderSize) ) return next()
@@ -310,18 +320,16 @@ module.exports = function () {
   app.get('/admin',                                   guard('admin'), groups.list)
   // groups
   app.all('/groups*',                                 guard('admin'))
-  app.get('/groups/:groupId/new-user',                users.show)
-  app.get('/groups/:groupId/new-template',            templates.show)
+  app.get('/groups/:groupId/new-user',                users.new)
+  app.get('/groups/:groupId/new-template',            templates.new)
   app.get('/groups/:groupId?',                        groups.show)
   app.post('/groups/:groupId?',                       groups.update)
-  // app.post('/users/:userId/delete',                groups.delete)
-  // users' groups
+  app.get('/groups',                                  groups.list)
   app.all('/users*',                                  guard('admin'))
-  app.get('/users/:userId/templates/:templateId?',    groups.show)
   // users
-  app.get('/users/:userId/restore',                   users.activate)
+  app.get('/users/:userId/activate',                  users.activate)
   app.delete('/users/:userId',                        users.deactivate)
-  app.post('/users/reset',                            users.adminResetPassword)
+  app.get('/users/:userId/reset',                     users.adminResetPassword)
   app.get('/users/:userId',                           users.show)
   app.post('/users/:userId?',                         users.update)
   app.get('/users',                                   users.list)
@@ -329,8 +337,8 @@ module.exports = function () {
   app.get('/templates/select',                        guard('user'), templates.userList)
   app.get('/templates/:templateId/markup',            guard('user'), templates.getMarkup)
   app.all('/templates*',                              guard('admin'))
-  app.get('/templates/:templateId/delete',            templates.remove)
-  app.get('/templates/:templateId/render-markup',     templates.renderMarkup )
+  app.delete('/templates/:templateId',                templates.remove)
+  app.get('/templates/:templateId/render-markup',     templates.renderMarkup)
   app.get('/templates/:templateId/auto-upload/:templateName', templates.autoUpload )
   app.get('/templates/:templateId/generate-previews', templates.generatePreviews)
   app.get('/templates/:templateId',                   templates.show)
@@ -353,24 +361,23 @@ module.exports = function () {
 
   //----- IMAGES
 
-  app.get('/img/:imageName',                images.read)
-  app.delete('/img/:imageName',             guard('user'), images.destroy )
-  app.get('/placeholder/:placeholderSize',  images.checkImageCache, images.placeholder )
-  app.get('/resize/:sizes/:imageName',      images.checkImageCache, images.checkSizes, images.resize )
-  app.get('/cover/:sizes/:imageName',       images.checkImageCache, images.checkSizes, images.cover )
-  app.get('/img/',                          images.handleOldImageUrl )
+  app.get('/img/:imageName',                  images.read)
+  app.delete('/img/:imageName',               guard('user'), images.destroy)
+  app.get('/placeholder/:placeholderSize',    images.checkCache, images.placeholder)
+  app.get('/resize/:sizes/:imageName',        images.checkCache, images.checkSizes, images.resize)
+  app.get('/cover/:sizes/:imageName',         images.checkCache, images.checkSizes, images.cover)
 
   //----- UPLOADS
 
-  app.all('/upload*',                       guard('user'))
-  app.get('/upload/:mongoId',               images.listImages )
-  app.post('/upload/:mongoId',              images.upload )
+  app.all('/upload*',                         guard('user'))
+  app.get('/upload/:galleryType/:postgreId',  images.listImages )
+  app.post('/upload/:galleryType/:postgreId', images.upload )
 
   //----- MAILINGS
 
   app.all('/mailings/:mailingId/transfer',    guard('admin'))
-  app.get('/mailings/:mailingId/transfer',    mailingTransfer.get )
-  app.post('/mailings/:mailingId/transfer',   mailingTransfer.post )
+  app.get('/mailings/:mailingId/transfer',    mailings.transfer.get )
+  app.post('/mailings/:mailingId/transfer',   mailings.transfer.post )
   app.all('/mailings*',                       guard('user'))
   app.get('/mailings/:mailingId/duplicate',   mailings.duplicate )
   app.post('/mailings/:mailingId/send',       download.send )
@@ -378,34 +385,60 @@ module.exports = function () {
   app.get('/mailings/:mailingId',             mailings.show)
   app.post('/mailings/:mailingId',            mailings.update)
   app.post('/mailings',                       mailings.create)
-  app.delete('/mailings',                     mailings.bulkRemove )
-  app.patch('/mailings',                      mailings.updateLabels )
-  app.get('/mailings',                        mailings.userList )
+  app.delete('/mailings',                     mailings.bulkRemove)
+  app.patch('/mailings',                      mailings.updateLabels)
+  app.get('/mailings',                        mailings.userList)
 
   app.get('/about',                           render.about )
 
-  app.get('/',                                guard('user'), mailings.userList )
+  app.get('/',                                guard('user'), mailings.userList)
 
   //////
   // ERROR HANDLING
   //////
 
   // everyhting that go there without an error should be treated as a 404
-  app.use(function (req, res, next) {
+  app.use( (req, res, next) => {
     if (req.xhr) return  res.status(404).send('not found')
     return res.status(404).render('error-404')
   })
 
-  app.use(function (err, req, res, next) {
-    var status = err.status || err.statusCode || (err.status = 500)
+  function isSequelizeError( err ) {
+    const { name } = err
+    if ( !name ) return false
+    return [
+      'SequelizeUniqueConstraintError',
+      'SequelizeValidationError',
+    ].includes( name )
+  }
+
+  app.use( (err, req, res, next) => {
+
+    if ( isSequelizeError(err) ) {
+      // fromPath is used for getting the form route, instead of the action
+      const { fromPath }    = req.query
+      console.log( 'handle sequelize error', err.errors )
+      console.log( inspect(err, {colors: true}) )
+      const sequelizeErrors = {}
+      err.errors.forEach( sequelizeError => {
+        const { path }          = sequelizeError
+        sequelizeErrors[ path ] = sequelizeError
+      })
+      req.flash( 'error', sequelizeErrors )
+      console.log( req.originalUrl )
+      return res.redirect( fromPath || req.originalUrl )
+    }
+
+    const status = err.status || err.statusCode || (err.status = 500)
     console.log('error handling', status)
-    if (status >= 500) {
-      console.log(util.inspect(err, {showHidden: true}))
-      console.trace(err)
+    if ( status >= 500 ) {
+      console.log( inspect(err, {colors: true}))
+      // console.log(util.inspect(err, {showHidden: true}))
+      // console.trace(err)
     }
 
     // force status for morgan to catch up
-    res.status(status)
+    res.status( status )
     // different formating
     if (req.xhr) return res.send(err)
     if (status === 404) return res.render('error-404')
@@ -434,31 +467,59 @@ module.exports = function () {
         chalk.green('Server is listening on port'), chalk.cyan(server.address().port),
         chalk.green('on mode'), chalk.cyan(config.NODE_ENV)
       )
+
+      if ( config.debug ) {
+        console.log( chalk.yellow('[DEBUG] is on') )
+      }
+
+      //----- LOG MAIN EXTERNAL SERVICES STATUS
+
       mail
       .status
-      .then(function () {
-        console.log(chalk.green('[EMAIL] transport mailing – SUCCESS'))
+      .then( () => {
+        console.log( chalk.green('[EMAIL] transport mailing – SUCCESS') )
       })
-      .catch(function (err) {
-        console.log(chalk.red('[EMAIL] transport mailing – ERROR'))
+      .catch( err => {
+        console.log( chalk.red('[EMAIL] transport mailing – ERROR') )
         console.trace(err)
+        throw err
       })
+      // TODO should test storage connection if AWS
       console.log( chalk.green(`[STORAGE] storage is`), chalk.cyan(config.storage.type) )
+
+      // TODO should test redis connection also
+      // https://stackoverflow.com/questions/24231963/check-if-redis-is-running-node-js
+      // https://stackoverflow.com/questions/12038128/nodejs-using-redis-connect-redis-with-express
 
       setTimeout( templates.startNightmare, 100 )
 
+      sequelize
+      .authenticate()
+      .then( () => sequelize.sync() )
+      .then( () => {
+        console.log( chalk.green('[DATABASE] connection – SUCCESS') )
+      })
+      .catch( err => {
+        console.log( chalk.red('[DATABASE] connection – ERROR') )
+        console.trace( err )
+        throw err
+      })
+
       application.resolve( server )
     }) )
+
+    //----- TEARDOWN
     server.on('close', () => {
       // again for being sure that while testing with tape…
       // …every process generated by the app are killed
-      templates
-      .nightmareInstance
-      .end()
+      const closeNightmare  = templates.nightmareInstance.end()
+      const closeDB         = sequelize.connectionManager.close()
+
+      Promise
+      .all( [closeNightmare, closeDB] )
       .then( () => {
         server.emit( 'shutdown' )
       })
-      mongoose.disconnect()
     })
   })
 

@@ -54,26 +54,26 @@ block content
         if !isAdmin
           .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
             select#author-field(
-              name="_user"
+              name="userId"
               multiple
             ).mdl-textfield__input
               each user in users
-                - const { _id, name } = user
-                - const selected = !filterQuery._user ? false : filterQuery._user.includes(`${_id}`)
-                option(value=_id selected=selected)= name
+                - const { id, name } = user
+                - const selected = !filterQuery.user ? false : filterQuery.user.includes( id )
+                option(value=id selected=selected)= name
             label(for="author-field").mdl-textfield__label= __('filter.author')
         else
           div
 
         .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
           select#template-field(
-            name="_template"
+            name="templateId"
             multiple
           ).mdl-textfield__input
             each template in templates
-              - const { _id, name } = template
-              - const selected = !filterQuery._template ? false : filterQuery._template.includes(`${_id}`)
-              option(value=template._id selected=selected)= template.name
+              - const { id, name } = template
+              - const selected = !filterQuery.template ? false : filterQuery.template.includes( id )
+              option(value=template.id selected=selected)= name
           label(for="template-field").mdl-textfield__label= __('filter.template')
 
       .be-table-filter__row
@@ -122,9 +122,8 @@ block content
             multiple
           ).mdl-textfield__input
             each tag in tagsList
-              //- - const { _id, name } = user
-              - const selected = !filterQuery.tags ? false : filterQuery.tags.includes(`${tag}`)
-              option(value=tag selected=selected)= tag
+              - const selected = !filterQuery.tags ? false : filterQuery.tags.includes( tag.name )
+              option(value=tag.name selected=selected)= tag.name
           label(for="tag-field").mdl-textfield__label= __('filter.tag')
 
       .be-table-filter__row

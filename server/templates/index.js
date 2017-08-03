@@ -1,185 +1,172 @@
 'use strict'
 
-const _                       = require('lodash')
-const createError             = require('http-errors')
+const _                       = require( 'lodash' )
+const createError             = require( 'http-errors' )
 
-const config                  = require('../config')
-const filemanager             = require('../filemanager')
+const config                  = require( '../config' )
+const filemanager             = require( '../filemanager' )
+const slugFilename            = require( '../../shared/slug-filename.js' )
 const {
   renderMarkup,
   generatePreviews,
   nightmareInstance,
-  startNightmare }            = require('./generate-previews')
-const { autoUpload }          = require('./auto-upload')
-const getTemplateImagePrefix  = require('../helpers/get-template-image-prefix')
-const { formatErrors,
-  isFromGroup, Groups,
-  Templates, Mailings }       = require('../models')
+  startNightmare }            = require( './generate-previews' )
+const { autoUpload }          = require( './auto-upload' )
+const h                       = require( '../helpers' )
+const {
+  formatErrors,
+  Group,
+  Template,
+  Mailing,
+  Gallery,
+  addGroupFilter,
+}                             = require('../models')
 
-function list(req, res, next) {
-  Templates
-  .find( {} )
-  .populate('_user')
-  .populate('_group')
-  .then( templates => {
-    res.render('template-list', {
-      data: { templates }
-    })
-  })
-  .catch( next )
-}
-
-function userList(req, res, next) {
-  const isAdmin           = req.user.isAdmin
-  const filter            = isAdmin ? {} : { _group: req.user._group }
-  const getTemplates     = Templates.find( filter )
-  // Admin as a user should see which template is coming from which group
-  if (isAdmin) getTemplates.populate('_group')
-
-  getTemplates
-  .sort({ name: 1 })
-  .then( templates => {
-    // can't sort populated fields
-    // http://stackoverflow.com/questions/19428471/node-mongoose-3-6-sort-query-with-populated-field/19450541#19450541
-    if (isAdmin) {
-      templates = templates.sort( (a, b) => {
-        let nameA = a._group.name.toLowerCase()
-        let nameB = b._group.name.toLowerCase()
-        if (nameA < nameB) return -1
-        if (nameA > nameB) return 1
-        return 0;
-      })
-    }
-    res.render('mailing-new', {
-      data: {
-        templates,
-      }
-    })
-  })
-  .catch(next)
-}
-
-function show(req, res, next) {
-  const { groupId, templateId } = req.params
-
-  // CREATE
-  if (!templateId) {
-    return Groups
-    .findById( groupId )
-    .then( group => {
-      res.render('template-new-edit', { data: { group }} )
-    })
-    .catch(next)
+async function list(req, res, next) {
+  const reqParams   = {
+    order: [
+      ['createdAt', 'DESC'],
+    ],
+    include: [{
+      model: Group,
+    }],
   }
-
-  // UPDATE
-  Templates
-  .findById( templateId )
-  .populate('_user')
-  .populate('_group')
-  .then( template => {
-    if (!template) return next( createError(404) )
-    res.render('template-new-edit', { data: { template, }} )
-  })
-  .catch(next)
+  const templates = await Template.findAll( reqParams )
+  res.render( 'template-list', {data: { templates }} )
 }
 
-function getMarkup(req, res, next) {
-  const { templateId } = req.params
+async function create(req, res, next) {
+  const { groupId } = req.params
+  const group       = await Group.findById( groupId )
+  if ( !group ) return next( createError(404) )
+  res.render( 'template-new-edit', {data: { group, }} )
+}
 
-  Templates
-  .findById( req.params.templateId )
-  .then( onTemplate )
-  .catch( next )
-
-  function onTemplate(template) {
-    if (!isFromGroup(req.user, template._group)) return next(createError(401))
-    if (!template.markup) return next(createError(404))
-    if (req.xhr) return res.send(template.markup)
-    // let download content
-    res.setHeader('Content-disposition', `attachment; filename=${template.name}.html`)
-    res.setHeader('Content-type', 'text/html')
-    res.write(template.markup)
-    return res.end()
+async function show(req, res, next) {
+  const { templateId }  = req.params
+  const reqParams       = {
+    where: {
+      id: templateId,
+    },
+    include: [{
+      model:    Group,
+    }],
   }
+  const template        = await Template.findOne( reqParams )
+  if ( !template ) return next( createError(404) )
+  res.render('template-new-edit', { data: {
+    template,
+    group: template.group,
+  }} )
 }
 
-function update(req, res, next) {
-  const { templateId } = req.params
-
-  filemanager
-  .parseMultipart(req, {
+async function update(req, res, next) {
+  const { templateId }  = req.params
+  const isUpdate        = typeof templateId !== 'undefined'
+  const parseParams     = {
     // add a `template` prefix to differ from user uploaded template assets
-    prefix:     getTemplateImagePrefix( templateId ),
+    prefix:     h.getTemplateImagePrefix( templateId ),
     formatter:  'groups',
-  })
-  .then( onParse )
-  .catch( next )
-
-  function onParse( body ) {
-    console.log('files success')
-    var dbRequest = templateId ?
-      Templates.findById( templateId )
-      : Promise.resolve( new Templates() )
-
-    dbRequest
-    .then( template => {
-      const nameChange  = body.name !== template.name
-      // custom update function
-      template         = _.assignIn(template, _.omit(body, ['images', 'assets']))
-      // TODO check if there is any assets to update
-      template.assets  = _.assign( {}, template.assets || {}, body.assets )
-      template.markModified( 'assets' )
-
-      // copy template name in mailing
-      if (templateId && nameChange) {
-        Mailings
-        .find( { _template: templateId } )
-        .then( mailings => {
-          mailings.forEach( mailing => {
-            mailing.templateName = body.name
-            mailing.save().catch( console.log )
-          })
-        })
-        .catch( console.log )
-      }
-      // return
-      return template.save()
-    })
-    .then( template => {
-      console.log('template success', templateId ? 'updated' : 'created')
-      req.flash('success', templateId ? 'updated' : 'created')
-      return res.redirect(template.url.show)
-    })
-    .catch( err => formatErrors(err, req, res, next) )
   }
+  const body      = await filemanager.parseMultipart( req, parseParams )
+  // Don't use upsert as it didn't return an instance but only a status
+  // http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
+  const template  = await ( isUpdate ? Template.findById(templateId) : new Template() )
+  if ( isUpdate && !template ) return next( createError(404) )
+  const newDatas          = _.omit( body, ['images'] )
+  if ( isUpdate ) {
+    const templateAssets  = template.assets
+    newDatas.assets       = _.assign( {}, templateAssets || {}, newDatas.assets )
+  }
+  const udpatedTemplate = await template.update( newDatas )
+  const message         = isUpdate ? 'updated' : 'created'
+  req.flash( 'success', message )
+  return res.redirect( template.url.show )
 }
 
-function remove(req, res, next) {
-  const { templateId } = req.params
-
-  Mailings
-  .find( {_template: templateId} )
-  .then( mailings => {
-    console.log(mailings.length, 'to remove')
-    mailings = mailings.map( mailing => mailing.remove() )
-    return Promise.all(mailings)
-  })
-  .then( deletedMailings => Templates.findByIdAndRemove( templateId ) )
-  .then( deletedTemplate => res.redirect(req.query.redirect) )
-  .catch( next )
+async function remove(req, res, next) {
+  const { templateId }  = req.params
+  const { redirect }    = req.query
+  const tmplParams      = {
+    where: { id:  templateId },
+    include: [{
+      model:    Mailing,
+      required: false,
+    }]
+  }
+  const template        = await Template.findOne( tmplParams )
+  if ( !template ) return next( createError(404) )
+  const mailingParams   = {
+    where: { templateId },
+  }
+  const galleryParams   = {
+    where: {
+      templateId,
+      $or: {
+        mailingId: { $in: template.mailings.map( mailing => mailing.id) }
+      },
+    },
+  }
+  const dbRequests = [
+    template.destroy(),
+    Mailing.destroy( mailingParams ),
+    Gallery.destroy( galleryParams ),
+  ]
+  const result          = await Promise.all( dbRequests )
+  res.redirect( redirect )
 }
+
+//----- USER ACTIONS
+
+async function getMarkup(req, res, next) {
+  const { templateId }  = req.params
+  const reqParams       = {
+    where: {
+      id: templateId,
+    },
+  }
+  const template        = await Template.findOne( addGroupFilter(req, reqParams) )
+  if ( !template || !template.markup ) return next( createError(404) )
+  const markup          = template.get( 'markup' )
+  if (req.xhr) return res.send( markup )
+  // let download content
+  const filename = `${ template.get('name') }.html`
+  res.setHeader( 'Content-disposition', `attachment; filename=${ slugFilename( filename ) }` )
+  res.setHeader( 'Content-type', 'text/html' )
+  res.write( markup )
+  return res.end()
+}
+
+async function userList(req, res, next) {
+  const { isAdmin, groupId }  = req.user
+  const reqParams             = {
+    include: [{
+      model: Group,
+    }],
+    order: [
+      [ Group, 'name', 'ASC' ],
+      [ 'name', 'ASC' ],
+    ],
+  }
+  const templates             = await Template.findAll( addGroupFilter(req, reqParams) )
+  res.render( 'mailing-new', {data: { templates }} )
+}
+
+//----- EXPORTS
 
 module.exports = {
-  list,
-  userList,
-  show,
-  update,
-  remove,
-  getMarkup,
-  generatePreviews,
-  renderMarkup,
+  list:               h.asyncMiddleware( list ),
+  new:                h.asyncMiddleware( create ),
+  show:               h.asyncMiddleware( show ),
+  update:             h.asyncMiddleware( update ),
+  remove:             h.asyncMiddleware( remove ),
+  getMarkup:          h.asyncMiddleware( getMarkup ),
+  autoUpload:         h.asyncMiddleware( autoUpload ),
+  renderMarkup:       h.asyncMiddleware( renderMarkup ),
+  generatePreviews:   h.asyncMiddleware( generatePreviews ),
+
+  userList:           h.asyncMiddleware( userList ),
+
   nightmareInstance,
   startNightmare,
-  autoUpload,
 }

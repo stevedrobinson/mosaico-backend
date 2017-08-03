@@ -34,10 +34,13 @@
   },
   "addons": [
     {
-      "plan": "mongolab:sandbox"
+      "plan": "heroku-postgresql:hobby-dev"
     },
     {
       "plan": "sendgrid:starter"
+    },
+    {
+      "plan": "heroku-redis:hobby-dev"
     }
   ],
   "buildpacks": [

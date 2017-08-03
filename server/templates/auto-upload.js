@@ -4,8 +4,9 @@ const path                    = require( 'path' )
 const chalk                   = require( 'chalk' )
 const fs                      = require( 'fs-extra' )
 const crypto                  = require( 'crypto' )
+const createError             = require( 'http-errors' )
 
-const { Templates }           = require( '../models' )
+const { Template }            = require( '../models' )
 const defer                   = require( '../helpers/create-promise' )
 const getTemplateImagePrefix  = require( '../helpers/get-template-image-prefix' )
 const slugFilename            = require( '../../shared/slug-filename' )
@@ -58,49 +59,42 @@ function getAllFiles( basePath ) {
   return walk( basePath )
 }
 
-function autoUpload( req, res, next ) {
+async function autoUpload( req, res, next ) {
   const {
     templateId,
     templateName }  = req.params
   const redirectUrl = `/templates/${templateId}`
-
   if (!templateName in tmplsPath) return res.redirect( redirectUrl )
 
   const tmplPath      = tmplsPath[templateName]
   const hasFiles      = tmplPath.files != null
-  const dbRequest     = Templates.findById( templateId )
-  const htmlRequest   = fs.readFile( tmplPath.html, 'utf8' )
-  const filesRequest  = hasFiles ? getAllFiles( tmplPath.files ) : Promise.resolve( [] )
+  const requests      = [
+    Template.findById( templateId ),
+    fs.readFile( tmplPath.html, 'utf8' ),
+    hasFiles ? getAllFiles( tmplPath.files ) : Promise.resolve( [] ),
+  ]
+  const [template, markup, files] = await Promise.all( requests )
+  if ( !template ) return next( createError(404) )
 
-  Promise
-  .all( [dbRequest, htmlRequest, filesRequest] )
-  .then( ([template, markup, files]) => {
-    template.markup   = markup
-    const fileBuffers = files.map( file => fs.readFile(file.path) )
-    return Promise.all( [template, files, Promise.all(fileBuffers) ] )
+  template.markup   = markup
+  const fileBuffers = await Promise.all( files.map( file => fs.readFile(file.path)) )
+  const uploads     = []
+  const assets      = {}
+  files.forEach( (file, i) => {
+    const ext           = path.extname( file.name )
+    const fileName      = slugFilename( file.name )
+    const hash          = crypto.createHash('md5').update( fileBuffers[i] ).digest('hex')
+    const name          = `${ getTemplateImagePrefix(templateId) }-${ hash }.${ ext }`
+    file.name           = name
+    file.originalName   = fileName
+    // this will be used to update `assets` field in DB
+    assets[ fileName ]  = name
+    uploads.push( filemanager.writeStreamFromPath(file) )
   })
-  .then( ([template, files, fileBuffers]) => {
-    const uploads   = []
-    const assets    = {}
-    files.forEach( (file, i) => {
-      const ext           = path.extname( file.name )
-      const fileName      = slugFilename( file.name )
-      const hash          = crypto.createHash('md5').update( fileBuffers[i] ).digest('hex')
-      const name          = `${ getTemplateImagePrefix(templateId) }-${ hash }.${ ext }`
-      file.name           = name
-      file.originalName   = fileName
-      // this will be used to update `assets` field in DB
-      assets[ fileName ]  = name
-      uploads.push( filemanager.writeStreamFromPath(file) )
-    })
-    return Promise.all([template, assets, Promise.all(uploads) ])
-  })
-  .then( ([template, assets, uploads]) => {
-    template.assets  = Object.assign( {}, template.assets || {},  assets )
-    return template.save()
-  })
-  .then( template => res.redirect( redirectUrl ) )
-  .catch( next )
+  const uploadsDone     = await Promise.all( uploads )
+  template.assets       = Object.assign( {}, template.assets || {},  assets )
+  const updatedTemplate = await template.save()
+  res.redirect( redirectUrl )
 }
 
 module.exports = {
