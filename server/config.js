@@ -117,8 +117,8 @@ if ( process.env.SENDGRID_USERNAME && process.env.SENDGRID_PASSWORD ) {
   }
 }
 
-if (process.env.MONGODB_URI) {
-  config.database = process.env.MONGODB_URI
+if (process.env.DATABASE_URL) {
+  config.database = process.env.DATABASE_URL
 }
 
 if (process.env.REDIS_URL) {
