@@ -14,6 +14,9 @@ const Group     = sequelize.define( 'group', {
   name: {
     type:         Sequelize.STRING,
     allowNull:    false,
+    validate:     {
+      notEmpty: true,
+    },
     unique:       true,
     set:          function (val) {
       this.setDataValue('name', h.normalizeString( val ) )

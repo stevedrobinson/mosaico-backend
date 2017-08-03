@@ -6,7 +6,7 @@ const sequelize       = require( './db-connection' )
 const h               = require( '../helpers' )
 
 const Template        = sequelize.define( 'template', {
-  id:  {
+  id: {
     type:         Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,
     primaryKey:   true,

@@ -55,10 +55,9 @@ block content
         .mdl-card__supporting-text
           .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label(class= errors.name ? 'is-invalid' : '')
             input.mdl-textfield__input#name-field(type="text" name="name" required value=template.name)
-            //- input.mdl-textfield__input#name-field(type="text" name="name" value=template.name)
             label.mdl-textfield__label(for="name-field")=__('general.name')
             if errors.name
-              span.mdl-textfield__error= errors.name.message
+              span.mdl-textfield__error=__(errors.name.message)
           .mdl-textfield.mdl-js-textfield
             textarea.mdl-textfield__input#description-field(type="text" rows="1" name="description")=template.description
             label.mdl-textfield__label(for="description-field")=__('general.description')

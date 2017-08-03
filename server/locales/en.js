@@ -255,5 +255,9 @@
 		"created-by": "author",
 		"created": "created",
 		"last-change": "last change"
-	}
+	},
+	"name must be unique": "name must be unique",
+	"Validation notEmpty on name failed": "name can't be empty",
+	"email must be unique": "email must be unique",
+	"Validation isEmail on email failed": "the email was invalid"
 }

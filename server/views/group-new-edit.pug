@@ -42,14 +42,13 @@ block content
           .mdl-card__title
             .mdl-card__title-text=__('general.informations')
           if !group.id
-            //- Groups are a way to share a single templates among many users
             .mdl-card__supporting-text=__('admin.groups.notice')
           fieldset.mdl-card__supporting-text
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label(class= errors.name ? 'is-invalid' : '')
-              input.mdl-textfield__input#name-field(type="text" name="name" value=group.name)
+              input.mdl-textfield__input#name-field(type="text" name="name" required value=group.name)
               label.mdl-textfield__label(for="name-field")=__('general.name')
               if errors.name
-                span.mdl-textfield__error= errors.name.message
+                span.mdl-textfield__error=__(errors.name.message)
           .mdl-card__actions.mdl-card--border
             button(type="submit").mdl-button.mdl-button--accent.mdl-js-button.mdl-js-ripple-effect=__('general.save')
 

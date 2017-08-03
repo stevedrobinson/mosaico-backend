@@ -81,13 +81,13 @@ block content
               input.mdl-textfield__input#email-field(type="email" name="email" required value=user.email disabled=isAffecting)
               label.mdl-textfield__label(for="email-field")=__('general.email')
               if errors.email
-                span.mdl-textfield__error= errors.email.message
+                span.mdl-textfield__error=__(errors.email.message)
           .mdl-cell.mdl-cell--6-col
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label(class= errors.name ? 'is-invalid' : '')
               input.mdl-textfield__input#name-field(type="text" name="name" value=user.name disabled=isAffecting)
               label.mdl-textfield__label(for="name-field")=__('general.name')
               if errors.name
-                span.mdl-textfield__error= errors.name.message
+                span.mdl-textfield__error=__(errors.name.message)
 
           .mdl-cell.mdl-cell--6-col
             .mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label

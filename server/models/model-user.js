@@ -71,6 +71,9 @@ const User     = sequelize.define( 'user', {
   lang: {
     type:         Sequelize.CHAR(2),
     defaultValue: 'en',
+    validate: {
+      isIn: [['en', 'fr']],
+    },
   },
   // Session
   password: {
