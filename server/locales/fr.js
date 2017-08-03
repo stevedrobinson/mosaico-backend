@@ -260,5 +260,7 @@
 	"name must be unique": "le nom doit être unique",
 	"Validation notEmpty on name failed": "Le nom ne peut être vide",
 	"email must be unique": "l'email doit être unique",
-	"Validation isEmail on email failed": "l'adresse email est invalide"
+	"Validation isEmail on email failed": "l'adresse email est invalide",
+	"Missing credentials": "Merci de remplir les deux champs",
+	"error": "erreurs"
 }

@@ -225,6 +225,8 @@ User.prototype.setPassword = async function ( password ) {
 }
 
 User.prototype.comparePassword = function (password) {
+  const userPassword = this.getDataValue('password')
+  if (!userPassword) return false
   return bcrypt.compareSync( password, this.getDataValue('password') )
 }
 

@@ -11,10 +11,10 @@ const config        = require( './config' )
 const h             = require( './helpers' )
 const {
   connection,
-  User
+  User,
 }                   = require( './models' )
 
-var adminUser = {
+const adminUser = {
   isAdmin:  true,
   id:       config.admin.id,
   email:    config.emailOptions.from,
@@ -37,16 +37,18 @@ passport.use(new LocalStrategy(
         email:          h.normalizeString( username ),
         isDeactivated:  { $not: true },
         token:          { $eq:  null },
+        password:       { $not: null },
       },
     })
     .then( user  => {
       // TODO email should be automatically filled with the previous value
       if (!user) return done(null, false, { message: 'password.error.nouser'} )
-      var isPasswordValid = user.comparePassword(password)
+      const isPasswordValid = user.comparePassword( password )
       if (!isPasswordValid) return done(null, false, { message: 'password.error.incorrect' })
       return done(null, user)
     })
     .catch( err => {
+      console.log( err )
       return done(null, false, err)
     })
   }
@@ -90,24 +92,23 @@ function init(app) {
   app.use( passport.session() )
 }
 
-function guard(role) {
-  if (!role) role = 'user'
-  var isAdminRoute = role === 'admin'
-  return function guardRoute(req, res, next) {
-    var user = req.user
-    // connected user shouldn't acces those pages
-    if (role === 'no-session') {
-      if (user) return user.isAdmin ? res.redirect('/admin') : res.redirect('/')
-    } else {
-      // non connected user shouldn't acces those pages
-      if (!user) {
-        return isAdminRoute ? res.redirect('/admin/login') : res.redirect('/login')
-      }
-      // non admin user shouldn't acces those pages
-      if (isAdminRoute && !user.isAdmin) return next(createError(401))
+const guard = ( role = 'user' ) => (req, res, next) => {
+  const isAdminRoute  = role === 'admin'
+  const { user }      = req
+  // connected user shouldn't acces those pages
+  if (role === 'no-session') {
+    if (user) return user.isAdmin ? res.redirect('/admin') : res.redirect('/')
+  } else {
+    // non connected user shouldn't acces those pages
+    if (!user) {
+      return isAdminRoute ? res.redirect('/admin/login') : res.redirect('/login')
     }
-    next()
+    // non admin user shouldn't acces those pages
+    if (isAdminRoute && !user.isAdmin) {
+      return next( createError(401) )
+    }
   }
+  next()
 }
 
 function logout(req, res, next) {

@@ -102,7 +102,8 @@ async function userResetPassword(req, res, next) {
   const { username }  = req.body
   const reqParams     = {
     where: {
-      email: h.normalizeString( username )
+      email:    h.normalizeString( username ),
+      password: { $not: null },
     }
   }
   const user          = await User.findOne( reqParams )

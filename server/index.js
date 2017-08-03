@@ -415,6 +415,7 @@ module.exports = function () {
   app.use( (err, req, res, next) => {
 
     if ( isSequelizeError(err) ) {
+      // fromPath is used for getting the form route, instead of the action
       const { fromPath }    = req.query
       console.log( 'handle sequelize error', err.errors )
       console.log( inspect(err, {colors: true}) )

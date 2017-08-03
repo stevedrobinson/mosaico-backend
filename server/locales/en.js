@@ -259,5 +259,7 @@
 	"name must be unique": "name must be unique",
 	"Validation notEmpty on name failed": "name can't be empty",
 	"email must be unique": "email must be unique",
-	"Validation isEmail on email failed": "the email was invalid"
+	"Validation isEmail on email failed": "the email was invalid",
+	"Missing credentials": "Missing credentials",
+	"error": "error"
 }
