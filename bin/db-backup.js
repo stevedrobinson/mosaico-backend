@@ -1,6 +1,5 @@
 'use strict'
 
-const exec      = require( 'child_process' ).exec
 const c         = require( 'chalk' )
 const moment    = require( 'moment' )
 const inquirer  = require( 'inquirer' )
@@ -40,8 +39,8 @@ async function start() {
   ])
 
   function copy( tableName ) {
-    const filePath  = path.join(folderPath, `${tableName}.csv` )
     const deferred  = h.defer()
+    const filePath  = path.join(folderPath, `${tableName}.csv` )
     // quotes are needed to force respecting case
     const query     = `COPY "${tableName}" TO STDOUT CSV HEADER`
     // const query     = `COPY ${tableName} TO STDOUT WITH (FORMAT CSV, HEADER, QUOTE '"', FORCE_QUOTE *)`
@@ -58,15 +57,10 @@ async function start() {
     return deferred
   }
 
-  try {
-    await Promise.all( tables.map(copy) )
-  } catch(e) {
-    console.log( e )
-    return process.exit( 1 )
-  }
+  await Promise.all( tables.map(copy) )
   await client.end()
   console.log( c.green('backing up done'), c.grey('to'), folderPath )
   process.exit( 0 )
 }
 
-start()
+start().catch( u.logErrorAndExit )
