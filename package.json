@@ -188,8 +188,6 @@
     "sync-db": "node ./bin/db-sync.js",
     "backup-db": "node ./bin/db-backup.js",
     "local-db": "node ./bin/db-manage-local.js",
-    "db-test": "node ./bin/db-switch-to-data-test.js --set",
-    "db-test-teardown": "node ./bin/db-switch-to-data-test.js --restore",
     "backup-s3": "node ./bin/s3-backup.js",
     "sync-s3": "node ./bin/s3-sync.js",
     "tape": "tape './tests/functional/*.js' | faucet",
