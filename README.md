@@ -14,10 +14,10 @@ SCREENCAST
 ## INSTALL
 
 Pre-requisites:
- - Node.js (>=8.2.1)
- - [PostgreSQL](https://www.postgresql.org/) (>=9.6) ([postgresapp](http://postgresapp.com/) on a mac)
+ - Node.js >=8.2.1
+ - [PostgreSQL](https://www.postgresql.org/) >=9.6 ([postgresapp](http://postgresapp.com/) on a mac)
  - [Redis](https://redis.io/) (`brew install redis` on mac `redis-server` to start)
- - SMTP server (like [mailcatcher](https://mailcatcher.me/) (`brew install ruby`  `gem install mailcatcher` `mailcatcher`)
+ - SMTP server (like [mailcatcher](https://mailcatcher.me/): `brew install ruby` – restart terminal – `gem install mailcatcher` then `mailcatcher`)
 
 NB: A compiled version of [sharp](http://sharp.dimens.io/en/stable/) — which is used to resize images and declared as a dependency — should be fetched automatically by npm for your system environment. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/).
 

@@ -1,18 +1,13 @@
 'use strict'
 
-const chalk                 = require( 'chalk' )
-const createError           = require( 'http-errors' )
+const chalk       = require( 'chalk' )
+const createError = require( 'http-errors' )
 
-const config                = require( './config' )
-const h                     = require( './helpers' )
-const { handleValidatorsErrors,
-  Group,
-  User,
-  Template,
-  Mailing,
-}     = require('./models')
+const config      = require( './config' )
+const h           = require( './helpers' )
 
 async function list(req, res, next) {
+  const { Group } = req.app.get( 'models' )
   const reqParams = {
     order: [
       ['name', 'ASC'],
@@ -27,6 +22,7 @@ async function list(req, res, next) {
 async function show(req, res, next) {
   const { groupId } = req.params
   if ( !groupId ) return res.render('group-new-edit')
+  const { Group, User, Template, Mailing } = req.app.get( 'models' )
   const reqParams   = {
     where: {
       id: groupId,
@@ -71,6 +67,7 @@ async function show(req, res, next) {
 }
 
 async function update(req, res, next) {
+  const { Group }   = req.app.get( 'models' )
   const { groupId } = req.params
   const { body }    = req
   const group       = await Group.updateOrCreate( groupId, body )
@@ -79,7 +76,7 @@ async function update(req, res, next) {
 }
 
 module.exports = {
-  list:       h.asyncMiddleware( list ),
-  show:       h.asyncMiddleware( show ),
-  update:     h.asyncMiddleware( update ),
+  list:   h.asyncMiddleware( list ),
+  show:   h.asyncMiddleware( show ),
+  update: h.asyncMiddleware( update ),
 }

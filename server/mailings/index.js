@@ -9,17 +9,10 @@ const { Types }   = require( 'mongoose' )
 
 const config        = require( '../config' )
 const filemanager   = require( '../filemanager' )
-const models        = require( '../models' )
 const {
-  Template,
-  Mailing,
-  Gallery,
-  Group,
-  User,
-  Tag,
   addGroupFilter,
   addStrictGroupFilter,
-}                         = models
+}                         = require( '../models' )
 const cleanTagName        = require( '../../shared/clean-tag-name' )
 const h                   = require( '../helpers' )
 const transfer            = require( './transfer' )
@@ -44,6 +37,7 @@ const translations  = {
 const perpage = 25
 
 async function userList(req, res, next) {
+  const { Mailing, User, Template, Group, Tag } = req.app.get( 'models' )
   const { query, user}        = req
   const { isAdmin, groupId }  = user
 
@@ -251,6 +245,7 @@ async function userList(req, res, next) {
 //////
 
 async function show(req, res, next) {
+  const { Mailing, User, Template } = req.app.get( 'models' )
   const { mailingId }   = req.params
   const data            = {
     translations: translations[ res.getLocale() ],
@@ -279,6 +274,7 @@ async function show(req, res, next) {
 //////
 
 async function create(req, res, next) {
+  const { Mailing, Template } = req.app.get( 'models' )
   const { isAdmin }     = req.user
   const { templateId }  = req.query
   const reqParams       = {
@@ -314,6 +310,7 @@ function getRedirectUrl(req) {
 }
 
 async function updateLabels(req, res, next) {
+  const { Mailing, Tag } = req.app.get( 'models' )
   const { isAdmin, groupId }  = req.user
   const { body }              = req
   const tagRegex              = /^tag-/
@@ -366,6 +363,7 @@ async function updateLabels(req, res, next) {
 }
 
 async function bulkRemove(req, res, next) {
+  const { Mailing } = req.app.get( 'models' )
   const { mailings }    = req.body
   const redirectUrl     = getRedirectUrl( req )
   if (!_.isArray( mailings ) || !mailings.length ) {
@@ -388,6 +386,7 @@ async function bulkRemove(req, res, next) {
 
 async function update(req, res, next) {
   if (!req.xhr) return next( createError(501) ) // Not Implemented
+  const { Mailing, User, Template } = req.app.get( 'models' )
   const { mailingId }   = req.params
   const reqParams       = {
     where: {
@@ -414,6 +413,7 @@ async function update(req, res, next) {
 }
 
 async function duplicate(req, res, next) {
+  const { Mailing, Template, Gallery, Tag } = req.app.get( 'models' )
   const { isAdmin }   = req.user
   const { mailingId } = req.params
   const redirectUrl   = getRedirectUrl( req )

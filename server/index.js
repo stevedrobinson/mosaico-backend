@@ -1,43 +1,74 @@
 'use strict'
 
-const qs              = require('qs')
-const url             = require('url')
-const path            = require('path')
-const chalk           = require('chalk')
-const express         = require('express')
-const bodyParser      = require('body-parser')
-const methodOverride  = require('method-override')
-const compression     = require('compression')
-const morgan          = require('morgan')
-const favicon         = require('serve-favicon')
-const cookieParser    = require('cookie-parser')
-const i18n            = require('i18n')
-const moment          = require('moment')
-const { inspect }     = require('util')
-const createError     = require('http-errors')
-const helmet          = require('helmet')
-const httpShutdown    = require('http-shutdown')
-const mongoose        = require('mongoose')
+const qs              = require( 'qs' )
+const url             = require( 'url' )
+const path            = require( 'path' )
+const c               = require( 'chalk' )
+const express         = require( 'express' )
+const bodyParser      = require( 'body-parser' )
+const methodOverride  = require( 'method-override' )
+const compression     = require( 'compression' )
+const morgan          = require( 'morgan' )
+const favicon         = require( 'serve-favicon' )
+const cookieParser    = require( 'cookie-parser' )
+const i18n            = require( 'i18n' )
+const moment          = require( 'moment' )
+const {
+  inspect,
+  promisify,
+}                     = require( 'util' )
+const createError     = require( 'http-errors' )
+const helmet          = require( 'helmet' )
+const httpShutdown    = require( 'http-shutdown' )
+const Redis           = require( 'ioredis' )
+const Sequelize       = require( 'sequelize' )
+const formattor       = require( 'formattor' )
 const {
   merge,
   omit,
   floor }             = require('lodash')
 const { duration }    = moment
 
-const session         = require( './session' )
-const defer           = require( './helpers/create-promise' )
+const { defer }       = require( './helpers' )
 const mail            = require( './mail' )
 
 module.exports = function () {
 
-  const config        = require( './config' )
-  const { sequelize } = require( './models' )
+  const session             = require( './session' )
+  const config              = require( './config' )
+  console.log( c.yellow('[REQUIRE MODELS]') )
+
+  //////
+  // SERVICE CONFIG
+  //////
+
+  //----- SEQUELIZE – for PostgreSQL DB
+
+  const logging   = !config.log.db ? () => {}
+    : query => console.log( formattor(query, {method: 'sql'}) )
+  const sequelize   = new Sequelize( config.database, { logging })
+  const models      = require('./models').init( sequelize )
+
+  //----- REDIS – for sessions
+
+  const redis     = new Redis( config.redis )
+  if ( config.log.redis ) {
+    redis
+    .monitor()
+    .then( monitor => {
+      monitor.on('monitor',  (time, args, source, database) => {
+        console.log(time + ": " + util.inspect(args))
+      })
+    })
+  }
 
   //////
   // SERVER CONFIG
   //////
 
-  var app = express()
+  const app = express()
+
+  app.set('models', models)
 
   app.set( 'trust proxy', true )
   app.use( helmet() )
@@ -64,7 +95,7 @@ module.exports = function () {
 
   //----- SESSION & I18N
 
-  session.init( app )
+  session.init( app, redis )
   i18n.configure({
     locales:        ['fr', 'en',],
     defaultLocale:  'fr',
@@ -161,18 +192,18 @@ module.exports = function () {
 
   function logRequest(tokens, req, res) {
     if (/\/img\//.test(req.path)) return
-    var method  = chalk.blue(tokens.method(req, res))
+    var method  = c.blue(tokens.method(req, res))
     var ips     = getIp(req)
-    ips         = ips ? chalk.grey(`- ${ips} -`) : ''
-    var url     = chalk.grey(tokens.url(req, res))
+    ips         = ips ? c.grey(`- ${ips} -`) : ''
+    var url     = c.grey(tokens.url(req, res))
     return `${method} ${ips} ${url}`
   }
 
   function logResponse(tokens, req, res) {
-    var method      = chalk.blue(tokens.method(req, res))
+    var method      = c.blue(tokens.method(req, res))
     var ips         = getIp(req)
-    ips             = ips ? chalk.grey(`- ${ips} -`) : ''
-    var url         = chalk.grey(tokens.url(req, res))
+    ips             = ips ? c.grey(`- ${ips} -`) : ''
+    var url         = c.grey(tokens.url(req, res))
     var status      = tokens.status(req, res)
     var time        = floor( tokens['response-time'](req, res) / 1000, 2 )
     var statusColor = status >= 500
@@ -180,7 +211,7 @@ module.exports = function () {
       ? 'yellow' : status >= 300
       ? 'cyan' : 'green';
     if (/\/img\//.test(req.path) && status < 400) return
-    return `${method} ${ips} ${url} ${chalk[statusColor](status)} ${time}s`
+    return `${method} ${ips} ${url} ${c[statusColor](status)} ${time}s`
   }
   app.use(morgan(logRequest, {immediate: true}))
   app.use(morgan(logResponse))
@@ -464,12 +495,12 @@ module.exports = function () {
         throw err
       }
       console.log(
-        chalk.green('Server is listening on port'), chalk.cyan(server.address().port),
-        chalk.green('on mode'), chalk.cyan(config.NODE_ENV)
+        c.green('Server is listening on port'), c.cyan(server.address().port),
+        c.green('on mode'), c.cyan(config.NODE_ENV)
       )
 
       if ( config.debug ) {
-        console.log( chalk.yellow('[DEBUG] is on') )
+        console.log( c.yellow('[DEBUG] is on') )
       }
 
       application.resolve( server )
@@ -484,19 +515,29 @@ module.exports = function () {
     mail
     .status
     .then( () => {
-      console.log( chalk.green('[EMAIL] transport mailing – SUCCESS') )
+      console.log( c.green('[EMAIL] transport mailing – SUCCESS') )
     })
     .catch( err => {
-      console.log( chalk.red('[EMAIL] transport mailing – ERROR') )
+      console.log( c.red('[EMAIL] transport mailing – ERROR') )
       console.trace(err)
       throw err
     })
     // TODO should test storage connection if AWS
-    console.log( chalk.green(`[STORAGE] storage is`), chalk.cyan(config.storage.type) )
+    console.log( c.green(`[STORAGE] storage is`), c.cyan(config.storage.type) )
 
     // TODO should test redis connection also
     // https://stackoverflow.com/questions/24231963/check-if-redis-is-running-node-js
     // https://stackoverflow.com/questions/12038128/nodejs-using-redis-connect-redis-with-express
+
+    redis.ping()
+    .then( r => console.log(c.green('[REDIS] connection – SUCCESS')))
+    .catch( err => {
+      console.log( c.red('[REDIS] connection – ERROR') )
+      console.trace( err )
+    })
+
+    // session.redisStore.client.on('ready', e => console.log(c.green('[REDIS] connection – SUCCESS')) )
+    // session.redisStore.client.on('error', e => console.log(c.green('[REDIS] connection – ERROR')) )
 
     setTimeout( templates.startNightmare, 100 )
 
@@ -504,14 +545,14 @@ module.exports = function () {
     .authenticate()
     .then( () => sequelize.sync() )
     .then( () => {
-      console.log( chalk.green('[DATABASE] connection – SUCCESS') )
+      console.log( c.green('[DATABASE] connection – SUCCESS') )
     })
     .catch( err => {
-      console.log( chalk.red('[DATABASE] connection – ERROR') )
+      console.log( c.red('[DATABASE] connection – ERROR') )
       console.trace( err )
       throw err
     })
-  })
+  }).catch( e => {throw e})
 
   //----- TEARDOWN
   application.then( server => {
@@ -519,11 +560,18 @@ module.exports = function () {
       console.log( 'gracefully closing server…' )
       // again for being sure that while testing with tape…
       // …every process generated by the app are killed
-      const closeNightmare  = templates.nightmareInstance.end()
-      const closeDB         = sequelize.connectionManager.close()
+      redis.disconnect()
+      // see https://github.com/Raynos/leaked-handles in case of not closing
 
       Promise
-      .all( [closeNightmare, closeDB] )
+      .all([
+        templates.nightmareInstance.end(),
+        // promisify( session.redisStore.client.quit )( false ),
+        // Don't close sequelize anymore…
+        // >>  ConnectionManager.getConnection was called after the connection manager was closed
+        // sequelize.connectionManager.close(),
+        sequelize.close(),
+      ])
       .then( () => {
         console.log( '…shutdown complete' )
         server.emit( 'shutdown' )

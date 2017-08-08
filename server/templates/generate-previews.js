@@ -9,7 +9,6 @@ const sharp                   = require( 'sharp' )
 const fs                      = require( 'fs-extra' )
 
 const config                  = require( '../config' )
-const { Template }            = require( '../models' )
 const filemanager             = require( '../filemanager' )
 const slugFilename            = require( '../../shared/slug-filename' )
 const { defer,
@@ -17,6 +16,7 @@ const { defer,
 
 // used by nightmareJS to have the right html
 async function renderMarkup(req, res, next) {
+  const { Template }      = req.app.get( 'models' )
   const { templateId }    = req.params
   const reqParams         = {
     attributes: ['markup']
@@ -59,6 +59,7 @@ function startNightmare() {
 
 //
 async function generatePreviews(req, res, next) {
+  const { Template }      = req.app.get( 'models' )
   const { templateId }    = req.params
   const start             = Date.now()
   const blocksName        = []

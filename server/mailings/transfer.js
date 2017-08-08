@@ -5,15 +5,10 @@ const createError         = require( 'http-errors' )
 const h                   = require( '../helpers' )
 const { inspect }         = require( 'util' )
 
-const {
-  Mailing,
-  User,
-  Group,
-  Template,
-  addStrictGroupFilter,
-}                         = require('../models')
+const { addStrictGroupFilter }  = require('../models')
 
 async function get(req, res, next) {
+  const { Mailing, Template, Group, User } = req.app.get( 'models' )
   const { mailingId } = req.params
   const reqParams     = {
     where: {
@@ -45,10 +40,11 @@ async function get(req, res, next) {
 }
 
 async function post(req, res, next) {
-  const { userId }      = req.body
-  const { mailingId }   = req.params
-  const userQuery       = User.findById( userId )
-  const mailingQuery    = Mailing.findById( mailingId )
+  const { Mailing, User } = req.app.get( 'models' )
+  const { userId }        = req.body
+  const { mailingId }     = req.params
+  const userQuery         = User.findById( userId )
+  const mailingQuery      = Mailing.findById( mailingId )
 
   const [user, mailing] = await Promise.all( [userQuery, mailingQuery] )
   if (!user) return next( createError(404, 'no user founded') )

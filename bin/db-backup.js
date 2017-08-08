@@ -71,10 +71,12 @@ async function start() {
     return Promise.all( operations )
   }
   // make a CSV copy
+  console.log( 'generating .csv' )
   await Promise.all( tables.map(copy) )
   await client.end()
   // dump it (this will be used by `db-sync`)
   const command = `pg_dump ${dbFrom} --format=c --file=${folderPath}sql-dump.sqlc`
+  console.log( 'generating .sqlc' )
   await exec( command )
   console.log( c.green('backing up done'), c.grey('to'), folderPath )
   process.exit( 0 )

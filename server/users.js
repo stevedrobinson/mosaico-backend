@@ -5,15 +5,9 @@ const { merge }             = require( 'lodash' )
 
 const config                = require( './config' )
 const h                     = require( './helpers' )
-const {
-  handleValidatorsErrors,
-  Group,
-  User,
-  Mailing,
-  Template,
-}                           = require('./models')
 
 async function list(req, res, next) {
+  const { Group, User } = req.app.get( 'models' )
   const reqParams   = {
     order: [
       ['isDeactivated', 'DESC'],
@@ -30,6 +24,7 @@ async function list(req, res, next) {
 }
 
 async function create(req, res, next) {
+  const { Group }   = req.app.get( 'models' )
   const { groupId } = req.params
   const group       = await Group.findById( groupId )
   if ( !group ) return next( createError(404) )
@@ -37,6 +32,7 @@ async function create(req, res, next) {
 }
 
 async function show(req, res, next) {
+  const { User, Group, Mailing, Template } = req.app.get( 'models' )
   const { userId }  = req.params
   const reqParams   = {
     where: {
@@ -62,6 +58,7 @@ async function show(req, res, next) {
 }
 
 async function update( req, res, next ) {
+  const { User }    = req.app.get( 'models' )
   const { userId }  = req.params
   const { body }    = req
   const user        = await User.updateOrCreate( userId, body )
@@ -70,6 +67,7 @@ async function update( req, res, next ) {
 }
 
 async function activate( req, res, next ) {
+  const { User }      = req.app.get( 'models' )
   const { userId }    = req.params
   const { redirect }  = req.query
   const user          = await User.findById( userId )
@@ -79,6 +77,7 @@ async function activate( req, res, next ) {
 }
 
 async function deactivate(req, res, next) {
+  const { User }      = req.app.get( 'models' )
   const { userId }    = req.params
   const { redirect }  = req.query
   const user          = await User.findById( userId )
@@ -88,6 +87,7 @@ async function deactivate(req, res, next) {
 }
 
 async function adminResetPassword( req, res, next ) {
+  const { User }      = req.app.get( 'models' )
   const { userId }    = req.params
   const { redirect }  = req.query
   const user          = await User.findById( userId )
@@ -99,6 +99,7 @@ async function adminResetPassword( req, res, next ) {
 //----- USER ACTIONS
 
 async function userResetPassword(req, res, next) {
+  const { User }      = req.app.get( 'models' )
   const { username }  = req.body
   const reqParams     = {
     where: {
@@ -118,6 +119,7 @@ async function userResetPassword(req, res, next) {
 }
 
 async function setPassword(req, res, next) {
+  const { User }    = req.app.get( 'models' )
   const { token }   = req.params
   const reqParams   = {
     where: {
@@ -142,6 +144,7 @@ async function setPassword(req, res, next) {
 }
 
 async function showSetPassword(req, res, next) {
+  const { User }    = req.app.get( 'models' )
   const { token }   = req.params
   const reqParams   = {
     where: {

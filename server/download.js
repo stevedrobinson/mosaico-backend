@@ -15,7 +15,6 @@ const mail          = require('./mail')
 const config        = require('./config')
 const h             = require( './helpers' )
 const {
-  Mailing,
   addGroupFilter,
 }                   = require('./models')
 
@@ -43,6 +42,7 @@ function secureHtml(html) {
 
 async function send(req, res, next) {
   if (!req.xhr) return next(createError(501)) // Not Implemented
+  const { Mailing  }    = req.app.get( 'models' )
   const { user, body }  = req
   const { mailingId }   = req.params
   const reqParams       = {
@@ -74,6 +74,7 @@ const imagesFolder = 'images'
 // https://github.com/archiverjs/node-archiver/blob/master/examples/express.js
 
 async function zip(req, res, next) {
+  const { Mailing  }    = req.app.get( 'models' )
   const { user, body }  = req
   const { mailingId }   = req.params
   const reqParams       = {

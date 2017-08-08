@@ -36,8 +36,8 @@ test('connection fail', t => {
     .insert('#email-field', 'p@p.com')
     .insert('#password-field', 'pp')
     .click('form[action*="/login"] [type=submit]')
-    .exists('.is-invalid.is-dirty')
     .wait('dl.message.error')
+    // .exists('.is-invalid.is-dirty')
     .evaluate( () => {
       const errorEl = document.querySelector('.message.error p')
       return { errorMessage: errorEl ? errorEl.textContent : false }

@@ -2,22 +2,18 @@
 
 process.env.TEST  = true
 
-const Nightmare   = require( 'nightmare' )
-const exec        = require( 'child_process' ).exec
-const path        = require( 'path' )
-const c           = require( 'chalk' )
-const args        = require( 'yargs' ).argv
-const fs          = require( 'fs-extra' )
+const { promisify,
+inspect } = require( 'util' )
+const Nightmare     = require( 'nightmare' )
+const child_process = require( 'child_process' )
+const exec          = promisify( child_process.exec )
+const path          = require( 'path' )
+const c             = require( 'chalk' )
 
-const defer         = require('../server/helpers/create-promise')
 const config        = require('../server/config')
-const tmpFolder     = config.images.tmpDir
-const dumpFolder    = `${tmpFolder}/local-db-before-test-snapshot`
-const u             = require('../bin/_db-utils')
-const dbLocal       = config.dbConfigs.local
-const tableName     = dbLocal.folder
-const testDatas     = path.join(__dirname, './test-datas')
-const createServer  = require('../server')
+const testDatas     = path.join(__dirname, './sql-test.sqlc')
+
+const dbTest        = `postgres://localhost:5432/mosaico-backend-test`
 
 // can be usefull in some edge case
 // https://github.com/Mr0grog/nightmare-real-mouse
@@ -27,7 +23,8 @@ const createServer  = require('../server')
 ////////
 
 function createWindow(show = false) {
-  return Nightmare({ show })
+  // return Nightmare({ show })
+  return Nightmare({ show: true })
   .viewport(1280, 780)
 }
 
@@ -60,22 +57,18 @@ function connectAdmin() {
 
 //----- SETUP
 
-function setupDB() {
-  const dfd     = defer()
-  const copyCmd = `mongorestore --drop ${u.setDbParams(dbLocal)} ${testDatas}`
-  exec( copyCmd, (error, stdout, stderr) => {
-    if (error !== null) return dfd.reject( error )
-    console.log(`[DB] setup has been done`)
-    dfd.resolve()
-  })
-
-  return dfd
+async function setupDB() {
+  const command = `pg_restore --clean --if-exists --dbname=${dbTest} ${testDatas}`
+  await exec( command )
+  console.log( c.blue('[TEST]'), `DB setup has been done` )
 }
 
 function setupServer() {
   // always run the test server with a clean test db
+
+  // console.log( inspect(require.cache, {depth: 0}) )
   return setupDB()
-  .then( createServer )
+  .then( require('../server') )
   .catch( err => { throw err })
 }
 
