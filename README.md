@@ -15,9 +15,9 @@ SCREENCAST
 
 Pre-requisites:
  - Node.js (>=8.2.1)
- - MongoDB (~3.2.7)
+ - [PostgreSQL](https://www.postgresql.org/) (>=9.6) ([postgresapp](http://postgresapp.com/) on a mac)
  - [Redis](https://redis.io/) (`brew install redis` on mac `redis-server` to start)
- - SMTP server (like [MockSMTP](http://mocksmtpapp.com/) or )
+ - SMTP server (like [mailcatcher](https://mailcatcher.me/) (`brew install ruby`  `gem install mailcatcher` `mailcatcher`)
 
 NB: A compiled version of [sharp](http://sharp.dimens.io/en/stable/) — which is used to resize images and declared as a dependency — should be fetched automatically by npm for your system environment. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/).
 

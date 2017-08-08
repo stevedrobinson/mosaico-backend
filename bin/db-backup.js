@@ -1,12 +1,15 @@
 'use strict'
 
-const c         = require( 'chalk' )
-const moment    = require( 'moment' )
-const inquirer  = require( 'inquirer' )
-const path      = require( 'path' )
-const fs        = require( 'fs-extra' )
-const pg        = require( 'pg' )
-const copyTo    = require( 'pg-copy-streams' ).to
+const { promisify } = require( 'util' )
+const child_process = require( 'child_process' )
+const exec          = promisify( child_process.exec )
+const c             = require( 'chalk' )
+const moment        = require( 'moment' )
+const inquirer      = require( 'inquirer' )
+const path          = require( 'path' )
+const fs            = require( 'fs-extra' )
+const pg            = require( 'pg' )
+const copyTo        = require( 'pg-copy-streams' ).to
 
 const config      = require( '../server/config' )
 const db          = config.dbConfigs
@@ -39,26 +42,40 @@ async function start() {
   ])
 
   function copy( tableName ) {
-    const deferred  = h.defer()
-    const filePath  = path.join(folderPath, `${tableName}.csv` )
-    // quotes are needed to force respecting case
-    const query     = `COPY "${tableName}" TO STDOUT CSV HEADER`
-    // const query     = `COPY ${tableName} TO STDOUT WITH (FORMAT CSV, HEADER, QUOTE '"', FORCE_QUOTE *)`
-    fs.ensureFileSync( filePath )
-    const writeStream   = fs.createWriteStream(filePath)
-    const stream        = client.query( copyTo(query) )
-    stream
-    .pipe( writeStream )
-    .on( 'error', deferred.reject )
-    // wait for dest files to finish to be writen
-    // https://github.com/brianc/node-pg-copy-streams/issues/61#issuecomment-277010285
-    writeStream
-    .on( 'finish', deferred.resolve )
-    return deferred
-  }
+    const filePath  = path.join(folderPath, `${tableName}` )
+    const query     = `COPY "${tableName}" TO STDOUT ENCODING 'utf8'`
+    const files     = [{
+    //   query:  `${query}`,
+    //   path:   `${filePath}.txt`,
+    // }, {
+      query:  `${query} CSV HEADER`,
+      path:   `${filePath}.csv`,
+    // }, {
+    //   query:  `${query} BINARY`,
+    //   path:   filePath,
+    }]
 
+    const operations = files.map( file => {
+      const deferred    = h.defer()
+      const writeStream = fs.createWriteStream( file.path, { encoding: 'utf8' } )
+      const stream      = client.query( copyTo(file.query) )
+      .pipe( writeStream )
+      .on( 'error', deferred.reject )
+      // wait for dest files to finish to be writen
+      // https://github.com/brianc/node-pg-copy-streams/issues/61#issuecomment-277010285
+      writeStream
+      .on( 'finish', deferred.resolve )
+      return deferred
+    })
+
+    return Promise.all( operations )
+  }
+  // make a CSV copy
   await Promise.all( tables.map(copy) )
   await client.end()
+  // dump it (this will be used by `db-sync`)
+  const command = `pg_dump ${dbFrom} --format=c --file=${folderPath}sql-dump.sqlc`
+  await exec( command )
   console.log( c.green('backing up done'), c.grey('to'), folderPath )
   process.exit( 0 )
 }
