@@ -11,6 +11,7 @@ const path          = require( 'path' )
 const c             = require( 'chalk' )
 
 const config        = require('../server/config')
+const createServer  = require('../server')
 const testDatas     = path.join(__dirname, './sql-test.sqlc')
 
 const dbTest        = `postgres://localhost:5432/mosaico-backend-test`
@@ -65,10 +66,11 @@ async function setupDB() {
 
 function setupServer() {
   // always run the test server with a clean test db
-
-  // console.log( inspect(require.cache, {depth: 0}) )
+  // could have manually cleaned the cache by doing this:
+  // >> require.cache[require.resolve('./b.js')]
+  // https://stackoverflow.com/questions/9210542/node-js-require-cache-possible-to-invalidate
   return setupDB()
-  .then( require('../server') )
+  .then( createServer )
   .catch( err => { throw err })
 }
 

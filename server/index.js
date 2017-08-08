@@ -36,13 +36,17 @@ module.exports = function () {
 
   const session             = require( './session' )
   const config              = require( './config' )
-  console.log( c.yellow('[REQUIRE MODELS]') )
 
   //////
   // SERVICE CONFIG
   //////
 
   //----- SEQUELIZE – for PostgreSQL DB
+
+  // we need to initialize the connection here
+  // because tests will do many require('../server')() and then server.shutdown()
+  // connection will be disabled. Then if a model cached by nodes do any action on DB wi will have this error
+  // >>  ConnectionManager.getConnection was called after the connection manager was closed
 
   const logging   = !config.log.db ? () => {}
     : query => console.log( formattor(query, {method: 'sql'}) )
@@ -51,6 +55,7 @@ module.exports = function () {
 
   //----- REDIS – for sessions
 
+  // same goes here…
   const redis     = new Redis( config.redis )
   if ( config.log.redis ) {
     redis
@@ -68,7 +73,7 @@ module.exports = function () {
 
   const app = express()
 
-  app.set('models', models)
+  app.set( 'models', models )
 
   app.set( 'trust proxy', true )
   app.use( helmet() )
@@ -566,10 +571,6 @@ module.exports = function () {
       Promise
       .all([
         templates.nightmareInstance.end(),
-        // promisify( session.redisStore.client.quit )( false ),
-        // Don't close sequelize anymore…
-        // >>  ConnectionManager.getConnection was called after the connection manager was closed
-        // sequelize.connectionManager.close(),
         sequelize.close(),
       ])
       .then( () => {

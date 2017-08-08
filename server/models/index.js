@@ -27,6 +27,12 @@ function addStrictGroupFilter(req, dbQueryParams = {}) {
   return dbQueryParams
 }
 
+//////
+// MODELS
+//////
+
+// as written in server/index.js we need to rely on a “fresh” connection
+
 function init( sequelize ) {
 
   const Group       = require( './model-group' )( sequelize )
@@ -37,9 +43,7 @@ function init( sequelize ) {
   const Gallery     = require( './model-gallery' )( sequelize )
   const ImageCache  = require( './model-image-cache' )( sequelize )
 
-  //////
-  // RELATIONS
-  //////
+  //----- RELATIONS
 
   User.belongsTo( Group )
   User.mailings     = User.hasMany( Mailing )

@@ -37,7 +37,6 @@ npm run sync-db
 
 Run all backoffice's tests:
 
-- Open a working dev server `npm run dev`
 - run the test with `npm run tape`
 
 Run a specific test:
