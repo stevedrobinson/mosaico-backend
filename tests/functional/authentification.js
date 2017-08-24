@@ -1,68 +1,42 @@
 const test            = require('tape')
 const {
-  setup,
-  createWindow,
   connectUser,
   connectAdmin,
-  setupServer,
-  getTeardownHandlers,
+  createTest,
  }                    = require('../_utils')
 
-test('connection success', async t => {
-  const { nightmare, closeNightmare } =  await setup( false )
+const connectionSucces = async (t, nightmare, close) => {
+  const t1 = await nightmare
+    .use( connectUser() )
+  await close()
+  t.pass('user is connected')
+}
+test('connection success', createTest( connectionSucces, 1, false))
 
-  t.plan(1)
-  try {
 
-    const t1 = await nightmare.use( connectUser() )
-    await closeNightmare()
-    t.pass('user is connected')
+const connectionFail = async (t, nightmare, close) => {
+  const t1 = await nightmare
+    .goto('http://localhost:8000?lang=en')
+    .insert('#email-field', 'p@p.com')
+    .insert('#password-field', 'pp')
+    .click('form[action*="/login"] [type=submit]')
+    .wait('dl.message.error')
+    .evaluate( () => {
+      const errorEl = document.querySelector('.message.error p')
+      return { errorMessage: errorEl ? errorEl.textContent : false }
+    } )
+  await close()
+  t.equal( t1.errorMessage, 'This password is incorrect', 'user has an auth error')
+}
+test('connection fail', createTest( connectionFail, 1, false))
 
-  } catch(err) {
-    await closeNightmare()
-    t.end(err)
-  }
-})
 
-test('connection fail', async t => {
-  const { nightmare, closeNightmare } =  await setup( false )
+const adminConnection = async (t, nightmare, close) => {
+  const t1 = await nightmare
+    .use( connectAdmin() )
+    .url()
+  await close()
+  t.equal('http://localhost:8000/admin', t1, 'admin is connected')
 
-  t.plan(1)
-  try {
-
-    const t1 = await nightmare
-      .goto('http://localhost:8000?lang=en')
-      .insert('#email-field', 'p@p.com')
-      .insert('#password-field', 'pp')
-      .click('form[action*="/login"] [type=submit]')
-      .wait('dl.message.error')
-      .evaluate( () => {
-        const errorEl = document.querySelector('.message.error p')
-        return { errorMessage: errorEl ? errorEl.textContent : false }
-      } )
-    await closeNightmare()
-    t.equal( t1.errorMessage, 'This password is incorrect', 'user has an auth error')
-
-  } catch(err) {
-    await closeNightmare()
-    t.end(err)
-
-  }
-})
-
-test('admin connection – success', async t => {
-  const { nightmare, closeNightmare } =  await setup( false )
-
-  t.plan(1)
-  try {
-    const t1 = await nightmare
-      .use( connectAdmin() )
-      .url()
-    await closeNightmare()
-    t.equal('http://localhost:8000/admin', t1, 'admin is connected')
-
-  } catch(err) {
-    await closeNightmare()
-    t.end(err)
-  }
-})
+}
+test('admin connection – success', createTest( adminConnection, 1, false))

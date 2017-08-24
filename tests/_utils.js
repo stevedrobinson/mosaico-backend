@@ -52,7 +52,24 @@ async function setup(show = false)  {
 
 }
 
+const createTest = (cb, plan, showNightmare = false ) => async t => {
+  t.plan( plan )
+  const { nightmare, closeNightmare } = await setup( false )
+  try {
+    await cb(t, nightmare, closeNightmare)
+  } catch(err) {
+    await closeNightmare()
+    t.end(err)
+  }
+}
+
+// function createTest( testSuite ) {
+
+// }
+
 function createWindow(show = false) {
+  Nightmare({ show })
+  .viewport(1280, 780)
 
 }
 
@@ -153,4 +170,5 @@ module.exports = {
   connectAdmin,
   getTeardownHandlers,
   setupServer,
+  createTest,
 }
