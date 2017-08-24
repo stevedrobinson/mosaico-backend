@@ -63,6 +63,12 @@ const createTest = (plan, showNightmare = false, cb) => async t => {
   }
 }
 
+// test( T1, createTest( 1, false, async (t, nm, close) => {
+//
+//   await close()
+//
+// }))
+
 function createWindow(show = false) {
   Nightmare({ show })
   .viewport(1280, 780)
