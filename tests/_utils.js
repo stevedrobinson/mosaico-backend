@@ -52,7 +52,7 @@ async function setup(show = false)  {
 
 }
 
-const createTest = (cb, plan, showNightmare = false ) => async t => {
+const createTest = (plan, showNightmare = false, cb) => async t => {
   t.plan( plan )
   const { nightmare, closeNightmare } = await setup( false )
   try {
@@ -62,10 +62,6 @@ const createTest = (cb, plan, showNightmare = false ) => async t => {
     t.end(err)
   }
 }
-
-// function createTest( testSuite ) {
-
-// }
 
 function createWindow(show = false) {
   Nightmare({ show })
