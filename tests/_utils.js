@@ -13,8 +13,9 @@ const path          = require( 'path' )
 const c             = require( 'chalk' )
 const clearRequire  = require( 'clear-require' )
 
-const config        = require('../server/config')
-const createServer  = require('../server')
+const { defer }     = require( '../server/helpers' )
+const config        = require( '../server/config')
+const createServer  = require( '../server')
 const testDatas     = path.join( __dirname, './sql-test.sqlc' )
 
 const dbTest        = `postgres://localhost:5432/mosaico-backend-test`
@@ -26,10 +27,33 @@ realMouse( Nightmare )
 // SHARED FUNCTIONNAL THINGS
 ////////
 
+async function setup(show = false)  {
+  const nightmare = Nightmare({ show }).viewport(1280, 780)
+  const db        = await setupDB()
+
+  // because tests will do many require('../server')() and then server.shutdown()
+  // connection will be disabled. Then if a model cached by nodes do any action on DB it will have this error
+  // >>  ConnectionManager.getConnection was called after the connection manager was closed
+  // so:
+  // clean the cache!
+  // https://stackoverflow.com/questions/9210542/node-js-require-cache-possible-to-invalidate
+  clearRequire.match( /\/server\// )
+  // get the server instance so we can stop it at the end of a test
+  const server      = await createServer()
+
+  const closeNightmare = () => {
+    const dfd = defer()
+    nightmare.halt()
+    server.shutdown()
+    server.on('shutdown', dfd.resolve )
+  }
+
+  return { nightmare, closeNightmare }
+
+}
+
 function createWindow(show = false) {
-  return Nightmare({ show })
-  // return Nightmare({ show: true })
-  .viewport(1280, 780)
+
 }
 
 function connectUser(email = 'p@p.com', password = 'p' ) {
@@ -123,6 +147,7 @@ function getTeardownHandlers(t, nightmare, server) {
 ////////
 
 module.exports = {
+  setup,
   createWindow,
   connectUser,
   connectAdmin,

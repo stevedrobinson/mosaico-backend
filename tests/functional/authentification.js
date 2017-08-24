@@ -1,5 +1,6 @@
 const test            = require('tape')
 const {
+  setup,
   createWindow,
   connectUser,
   connectAdmin,
@@ -7,62 +8,61 @@ const {
   getTeardownHandlers,
  }                    = require('../_utils')
 
-test('connection success', t => {
-  const nightmare = createWindow( false )
+test('connection success', async t => {
+  const { nightmare, closeNightmare } =  await setup( false )
 
   t.plan(1)
-  setupServer().then( start )
+  try {
 
-  function start( server ) {
-    const { onEnd, onError }  = getTeardownHandlers(t, nightmare, server)
-    nightmare
-    .use( connectUser() )
-    .then( onEnd( result => t.pass('user is connected') ) )
-    .catch( onError )
+    const t1 = await nightmare.use( connectUser() )
+    await closeNightmare()
+    t.pass('user is connected')
+
+  } catch(err) {
+    await closeNightmare()
+    t.end(err)
   }
-
 })
 
-test('connection fail', t => {
-  const nightmare = createWindow( false )
+test('connection fail', async t => {
+  const { nightmare, closeNightmare } =  await setup( false )
 
   t.plan(1)
-  setupServer().then( start )
+  try {
 
-  function start(server) {
-    const { onEnd, onError }  = getTeardownHandlers(t, nightmare, server)
-    nightmare
-    .goto('http://localhost:8000?lang=en')
-    .insert('#email-field', 'p@p.com')
-    .insert('#password-field', 'pp')
-    .click('form[action*="/login"] [type=submit]')
-    .wait('dl.message.error')
-    // .exists('.is-invalid.is-dirty')
-    .evaluate( () => {
-      const errorEl = document.querySelector('.message.error p')
-      return { errorMessage: errorEl ? errorEl.textContent : false }
-    } )
-    .then( onEnd( result => {
-      t.equal(result.errorMessage, 'This password is incorrect', 'user has an auth error')
-    } ) )
-    .catch( onError )
+    const t1 = await nightmare
+      .goto('http://localhost:8000?lang=en')
+      .insert('#email-field', 'p@p.com')
+      .insert('#password-field', 'pp')
+      .click('form[action*="/login"] [type=submit]')
+      .wait('dl.message.error')
+      .evaluate( () => {
+        const errorEl = document.querySelector('.message.error p')
+        return { errorMessage: errorEl ? errorEl.textContent : false }
+      } )
+    await closeNightmare()
+    t.equal( t1.errorMessage, 'This password is incorrect', 'user has an auth error')
+
+  } catch(err) {
+    await closeNightmare()
+    t.end(err)
+
   }
-
 })
 
-test('admin connection – success', t => {
-  const nightmare = createWindow( false )
+test('admin connection – success', async t => {
+  const { nightmare, closeNightmare } =  await setup( false )
 
   t.plan(1)
-  setupServer().then( start )
+  try {
+    const t1 = await nightmare
+      .use( connectAdmin() )
+      .url()
+    await closeNightmare()
+    t.equal('http://localhost:8000/admin', t1, 'admin is connected')
 
-  function start(server) {
-    const { onEnd, onError }  = getTeardownHandlers(t, nightmare, server)
-    nightmare
-    .use( connectAdmin() )
-    .url()
-    .then( onEnd( url => t.equal('http://localhost:8000/admin', url, 'admin is connected') ) )
-    .catch( onError )
+  } catch(err) {
+    await closeNightmare()
+    t.end(err)
   }
-
 })
