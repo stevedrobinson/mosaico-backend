@@ -505,13 +505,10 @@ module.exports = function ( id ) {
         c.green('on mode'), c.cyan(config.NODE_ENV)
       )
 
-
-      if ( config.debug ) {
-        console.log( c.yellow('[DEBUG] is on') )
-      }
-
+      if ( config.debug ) console.log( c.yellow('[DEBUG] is on') )
       server.on('close', stopApplication(server) )
-
+      process.on('SIGTERM', stopApplication(server) )
+      setTimeout( templates.startNightmare, 100 )
       application.resolve( server )
 
     }) )
@@ -533,11 +530,11 @@ module.exports = function ( id ) {
     .then( () => {
       console.log( '[SERVER] …shutdown complete' )
       server.emit( 'shutdown' )
+      process.exit()
     })
   }
 
-  config
-  .setup
+  config.setup
   .then( () => {
     //----- LOG MAIN EXTERNAL SERVICES STATUS
     const mailStatus  = mail.status
@@ -559,7 +556,7 @@ module.exports = function ( id ) {
     })
 
     dbStatus
-    .then( _ => sequelize.sync() )
+    .then( sequelize.sync.bind(sequelize) )
     .then( _ => console.log( c.green('[DATABASE] connection – SUCCESS')) )
     .catch( err => {
       console.log( c.red('[DATABASE] connection – ERROR') )
