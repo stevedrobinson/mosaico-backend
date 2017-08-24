@@ -535,7 +535,7 @@ module.exports = function ( id ) {
   }
 
   config.setup
-  .then( () => {
+  .then( _ => {
     //----- LOG MAIN EXTERNAL SERVICES STATUS
     const mailStatus  = mail.status
     const redisStatus = redis.ping()
@@ -556,7 +556,7 @@ module.exports = function ( id ) {
     })
 
     dbStatus
-    .then( sequelize.sync.bind(sequelize) )
+    .then( _ => sequelize.sync() )
     .then( _ => console.log( c.green('[DATABASE] connection – SUCCESS')) )
     .catch( err => {
       console.log( c.red('[DATABASE] connection – ERROR') )
@@ -569,6 +569,7 @@ module.exports = function ( id ) {
       dbStatus,
     ])
   })
+  .then( startApplication )
 
   return application
 }
