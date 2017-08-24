@@ -69,16 +69,13 @@ if (notification) {
 
 //----- RESET
 
-const resetUsers  = document.querySelectorAll('form.js-reset-user')
-addListeners(resetUsers, 'submit', askUserReset)
+const resetUsers  = document.querySelectorAll('.js-reset-user')
+addListeners(resetUsers, 'click', askUserReset)
 function askUserReset(e) {
   e.preventDefault()
-  const form      = e.currentTarget
-  const userName  = form.dataset.name
-  confirmLink.addEventListener('click', function (e) {
-    e.preventDefault()
-    form.submit()
-  })
+  const link      = e.currentTarget
+  const userName  = link.dataset.name
+  confirmLink.setAttribute( 'href', link.getAttribute('href') )
   openDialog( {
     title:        isEnglish ? 'Reset' : 'Réinitialiser',
     description:  isEnglish ? `are you sure you want to reset ${userName} password?` : `êtes vous sûr de vouloir réinitialiser le mot de passe de  ${userName} ?`,
