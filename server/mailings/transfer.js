@@ -1,14 +1,17 @@
 'use strict'
 
 const createError         = require( 'http-errors' )
-
-const h                   = require( '../helpers' )
 const { inspect }         = require( 'util' )
 
-const { addStrictGroupFilter }  = require('../models')
+const h                   = require( '../helpers' )
+const {
+  addStrictGroupFilter,
+  Mailing,
+  Template,
+  Group,
+  User, }                 = require('../models')
 
 async function get(req, res, next) {
-  const { Mailing, Template, Group, User } = req.app.get( 'models' )
   const { mailingId } = req.params
   const reqParams     = {
     where: {
@@ -40,7 +43,6 @@ async function get(req, res, next) {
 }
 
 async function post(req, res, next) {
-  const { Mailing, User } = req.app.get( 'models' )
   const { userId }        = req.body
   const { mailingId }     = req.params
   const userQuery         = User.findById( userId )

@@ -2,13 +2,15 @@
 
 process.env.TEST  = true
 
-const { promisify,
-inspect } = require( 'util' )
+const {
+  promisify,
+  inspect }         = require( 'util' )
 const Nightmare     = require( 'nightmare' )
 const child_process = require( 'child_process' )
 const exec          = promisify( child_process.exec )
 const path          = require( 'path' )
 const c             = require( 'chalk' )
+const clearRequire  = require( 'clear-require' )
 
 const config        = require('../server/config')
 const createServer  = require('../server')
@@ -24,8 +26,8 @@ const dbTest        = `postgres://localhost:5432/mosaico-backend-test`
 ////////
 
 function createWindow(show = false) {
-  // return Nightmare({ show })
-  return Nightmare({ show: true })
+  return Nightmare({ show })
+  // return Nightmare({ show: true })
   .viewport(1280, 780)
 }
 
@@ -64,14 +66,21 @@ async function setupDB() {
   console.log( c.blue('[TEST]'), `DB setup has been done` )
 }
 
-function setupServer() {
+async function setupServer() {
   // always run the test server with a clean test db
-  // could have manually cleaned the cache by doing this:
-  // >> require.cache[require.resolve('./b.js')]
+  const db          = await setupDB()
+
+  // because tests will do many require('../server')() and then server.shutdown()
+  // connection will be disabled. Then if a model cached by nodes do any action on DB it will have this error
+  // >>  ConnectionManager.getConnection was called after the connection manager was closed
+  // so:
+  // clean the cache!
   // https://stackoverflow.com/questions/9210542/node-js-require-cache-possible-to-invalidate
-  return setupDB()
-  .then( createServer )
-  .catch( err => { throw err })
+  clearRequire.match( /\/server\// )
+
+  // get the server instance so we can stop it at the end of a test
+  const server      = await createServer()
+  return server
 }
 
 //----- TEARDOWN

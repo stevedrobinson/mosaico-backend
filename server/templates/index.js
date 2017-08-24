@@ -1,22 +1,26 @@
 'use strict'
 
-const _                       = require( 'lodash' )
-const createError             = require( 'http-errors' )
+const _               = require( 'lodash' )
+const createError     = require( 'http-errors' )
 
-const config                  = require( '../config' )
-const filemanager             = require( '../filemanager' )
-const slugFilename            = require( '../../shared/slug-filename.js' )
+const config          = require( '../config' )
+const filemanager     = require( '../filemanager' )
+const slugFilename    = require( '../../shared/slug-filename.js' )
 const {
   renderMarkup,
   generatePreviews,
   nightmareInstance,
-  startNightmare }            = require( './generate-previews' )
-const { autoUpload }          = require( './auto-upload' )
-const h                       = require( '../helpers' )
-const { addGroupFilter }      = require('../models')
+  startNightmare }    = require( './generate-previews' )
+const { autoUpload }  = require( './auto-upload' )
+const h               = require( '../helpers' )
+const {
+  addGroupFilter,
+  Template,
+  Group,
+  Mailing,
+  Gallery, }          = require( '../models' )
 
 async function list(req, res, next) {
-  const { Template, Group } = req.app.get( 'models' )
   const reqParams   = {
     order: [
       ['createdAt', 'DESC'],
@@ -30,7 +34,6 @@ async function list(req, res, next) {
 }
 
 async function create(req, res, next) {
-  const { Group } = req.app.get( 'models' )
   const { groupId } = req.params
   const group       = await Group.findById( groupId )
   if ( !group ) return next( createError(404) )
@@ -38,7 +41,6 @@ async function create(req, res, next) {
 }
 
 async function show(req, res, next) {
-  const { Template, Group } = req.app.get( 'models' )
   const { templateId }  = req.params
   const reqParams       = {
     where: {
@@ -57,7 +59,6 @@ async function show(req, res, next) {
 }
 
 async function update(req, res, next) {
-  const { Template }    = req.app.get( 'models' )
   const { templateId }  = req.params
   const isUpdate        = typeof templateId !== 'undefined'
   const parseParams     = {
@@ -82,7 +83,6 @@ async function update(req, res, next) {
 }
 
 async function remove(req, res, next) {
-  const { Template, Mailing, Gallery } = req.app.get( 'models' )
   const { templateId }  = req.params
   const { redirect }    = req.query
   const tmplParams      = {
@@ -117,7 +117,6 @@ async function remove(req, res, next) {
 //----- USER ACTIONS
 
 async function getMarkup(req, res, next) {
-  const { Template }    = req.app.get( 'models' )
   const { templateId }  = req.params
   const reqParams       = {
     where: {
@@ -137,7 +136,6 @@ async function getMarkup(req, res, next) {
 }
 
 async function userList(req, res, next) {
-  const { Template, Group }   = req.app.get( 'models' )
   const { isAdmin, groupId }  = req.user
   const reqParams             = {
     include: [{

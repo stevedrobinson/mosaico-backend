@@ -1,22 +1,22 @@
 'use strict'
 
-const Nightmare               = require( 'nightmare' )
-const createError             = require( 'http-errors' )
-const crypto                  = require( 'crypto' )
-const path                    = require( 'path' )
-const chalk                   = require( 'chalk' )
-const sharp                   = require( 'sharp' )
-const fs                      = require( 'fs-extra' )
+const Nightmare             = require( 'nightmare' )
+const createError           = require( 'http-errors' )
+const crypto                = require( 'crypto' )
+const path                  = require( 'path' )
+const chalk                 = require( 'chalk' )
+const sharp                 = require( 'sharp' )
+const fs                    = require( 'fs-extra' )
 
-const config                  = require( '../config' )
-const filemanager             = require( '../filemanager' )
-const slugFilename            = require( '../../shared/slug-filename' )
+const config                = require( '../config' )
+const filemanager           = require( '../filemanager' )
+const slugFilename          = require( '../../shared/slug-filename' )
 const { defer,
-  getTemplateImagePrefix }    = require( '../helpers' )
+  getTemplateImagePrefix }  = require( '../helpers' )
+const { Template }          = require( '../models' )
 
 // used by nightmareJS to have the right html
 async function renderMarkup(req, res, next) {
-  const { Template }      = req.app.get( 'models' )
   const { templateId }    = req.params
   const reqParams         = {
     attributes: ['markup']
@@ -59,7 +59,6 @@ function startNightmare() {
 
 //
 async function generatePreviews(req, res, next) {
-  const { Template }      = req.app.get( 'models' )
   const { templateId }    = req.params
   const start             = Date.now()
   const blocksName        = []

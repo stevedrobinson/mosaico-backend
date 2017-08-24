@@ -8,9 +8,9 @@ const RedisStore    = require( 'connect-redis' )( session )
 const createError   = require( 'http-errors' )
 const util          = require( 'util' )
 
-
 const config        = require( './config' )
 const h             = require( './helpers' )
+const { User }      = require( './models' )
 
 const adminUser = {
   isAdmin:  true,
@@ -20,8 +20,6 @@ const adminUser = {
 }
 
 function init(app, redis) {
-
-  const { User } = app.get( 'models' )
 
   passport.use(new LocalStrategy(
     function(username, password, done) {

@@ -5,9 +5,12 @@ const createError = require( 'http-errors' )
 
 const config      = require( './config' )
 const h           = require( './helpers' )
+const { Group,
+  User,
+  Template,
+  Mailing, }      = require( './models' )
 
 async function list(req, res, next) {
-  const { Group } = req.app.get( 'models' )
   const reqParams = {
     order: [
       ['name', 'ASC'],
@@ -22,7 +25,6 @@ async function list(req, res, next) {
 async function show(req, res, next) {
   const { groupId } = req.params
   if ( !groupId ) return res.render('group-new-edit')
-  const { Group, User, Template, Mailing } = req.app.get( 'models' )
   const reqParams   = {
     where: {
       id: groupId,
@@ -67,7 +69,6 @@ async function show(req, res, next) {
 }
 
 async function update(req, res, next) {
-  const { Group }   = req.app.get( 'models' )
   const { groupId } = req.params
   const { body }    = req
   const group       = await Group.updateOrCreate( groupId, body )

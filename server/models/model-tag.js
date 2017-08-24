@@ -1,28 +1,28 @@
 'use strict'
 
-const Sequelize       = require( 'sequelize' )
+const Sequelize     = require( 'sequelize' )
 
-const h               = require( '../helpers' )
-const cleanTagName    = require( '../../shared/clean-tag-name' )
+const h             = require( '../helpers' )
+const sequelize     = require( './db-connection' )
+const cleanTagName  = require( '../../shared/clean-tag-name' )
 
-module.exports = sequelize => {
-  const Tag = sequelize.define( 'tag', {
-    id:  {
-      type:         Sequelize.UUID,
-      defaultValue: Sequelize.UUIDV4,
-      primaryKey:   true,
+const Tag =   sequelize.define( 'tag', {
+  id:  {
+    type:         Sequelize.UUID,
+    defaultValue: Sequelize.UUIDV4,
+    primaryKey:   true,
+  },
+  name: {
+    type:         Sequelize.STRING,
+    set:          function ( val ) {
+      val = cleanTagName( h.normalizeString(val) )
+      this.setDataValue( 'name', val )
     },
-    name: {
-      type:         Sequelize.STRING,
-      set:          function ( val ) {
-        val = cleanTagName( h.normalizeString(val) )
-        this.setDataValue( 'name', val )
-      },
-      validate:     {
-        is:         /[^",']+/,
-        notEmpty:   true,
-      },
+    validate:     {
+      is:         /[^",']+/,
+      notEmpty:   true,
     },
-  })
-  return Tag
-}
+  },
+})
+
+module.exports = Tag

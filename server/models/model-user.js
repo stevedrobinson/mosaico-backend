@@ -12,6 +12,7 @@ const { assign }  = require( 'lodash' )
 const h           = require( '../helpers' )
 const config      = require( '../config' )
 const mail        = require( '../mail' )
+const sequelize   = require( './db-connection' )
 
 const status = {
   'deactivated': {
@@ -102,190 +103,188 @@ function getTemplateData(templateName, lang, additionalDatas) {
 // MODEL
 //////
 
-module.exports = sequelize => {
-
-  const User     = sequelize.define( 'user', {
-    id:  {
-      type:         Sequelize.UUID,
-      defaultValue: Sequelize.UUIDV4,
-      primaryKey:   true,
+const User =   sequelize.define( 'user', {
+  id:  {
+    type:         Sequelize.UUID,
+    defaultValue: Sequelize.UUIDV4,
+    primaryKey:   true,
+  },
+  email: {
+    type:         Sequelize.STRING,
+    allowNull:    false,
+    unique:       true,
+    validate: {   isEmail: true },
+    set:          function ( val ) {
+      this.setDataValue('email', h.normalizeString(val) )
     },
-    email: {
-      type:         Sequelize.STRING,
-      allowNull:    false,
-      unique:       true,
-      validate: {   isEmail: true },
-      set:          function ( val ) {
-        this.setDataValue('email', h.normalizeString(val) )
-      },
+  },
+  name: {
+    type:         Sequelize.STRING,
+    allowNull:    true,
+    set:          function ( val ) {
+      this.setDataValue( 'name', h.normalizeString(val) )
     },
-    name: {
-      type:         Sequelize.STRING,
-      allowNull:    true,
-      set:          function ( val ) {
-        this.setDataValue( 'name', h.normalizeString(val) )
-      },
+  },
+  lang: {
+    type:         Sequelize.CHAR(2),
+    defaultValue: 'en',
+    validate: {
+      isIn: [['en', 'fr']],
     },
-    lang: {
-      type:         Sequelize.CHAR(2),
-      defaultValue: 'en',
-      validate: {
-        isIn: [['en', 'fr']],
-      },
+  },
+  // Session
+  password: {
+    type:         Sequelize.STRING,
+    set:          function ( val ) {
+      this.setDataValue( 'password', encodePassword(val) )
+      this.setDataValue( 'token', null )
+      this.setDataValue( 'tokenExpire', null )
     },
-    // Session
-    password: {
-      type:         Sequelize.STRING,
-      set:          function ( val ) {
-        this.setDataValue( 'password', encodePassword(val) )
-        this.setDataValue( 'token', null )
-        this.setDataValue( 'tokenExpire', null )
-      },
-    },
-    token: {
-      type:         Sequelize.STRING,
-    },
-    tokenExpire: {
-      type:         Sequelize.DATE,
-    },
-    isDeactivated: {
-      type:         Sequelize.BOOLEAN,
-    },
-    // VIRTUALS
-    status: {
-      type: new Sequelize.VIRTUAL(Sequelize.JSON, ['isDeactivated', 'password', 'token']),
-      get: function () {
-        const currentStatus = this.get( 'isDeactivated' ) ? 'deactivated' :
-          this.get( 'password' ) ? 'confirmed' :
-          this.get( 'token' ) ? 'mail-sent' :
-          'to-be-initialized'
-        return status[ currentStatus ]
-      }
-    },
-    fullname: {
-      type: new Sequelize.VIRTUAL(Sequelize.STRING, ['name', 'email']),
-      get: function () {
-        const name  = this.get('name')
-        const email = this.get('email')
-        return name ? `${name} (${email})` : email
-      }
-    },
-    safename: {
-      type: new Sequelize.VIRTUAL(Sequelize.STRING, ['name']),
-      get: function () {
-        const name  = this.get('name')
-        return name ? name : '-'
-      }
-    },
-    isReseted: {
-      type: new Sequelize.VIRTUAL(Sequelize.BOOLEAN, ['password', 'token']),
-      get: function () {
-        if (this.get('password'))  return false
-        if (this.get('token'))     return true
-        return false
-      }
-    },
-    // for better session handling
-    isAdmin: {
-      type: new Sequelize.VIRTUAL(Sequelize.BOOLEAN),
-      get: function () {
-        return false
-      }
-    },
-    url: {
-      type: new Sequelize.VIRTUAL(Sequelize.JSON, ['id', 'groupId']),
-      get: function () {
-        const id    = this.get('id')
-        const urls  = {
-          show:       `/users/${id}`,
-          delete:     `/users/${id}?_method=DELETE`,
-          reset:      `/users/${id}/reset`,
-          activate:   `/users/${id}/activate`,
-          deactivate: `/users/${id}/deactivate`,
-          group:      `/groups/${ this.get('groupId') }`,
-        }
-        return urls
-      }
-    },
-  })
-
-  //----- MODEL METHODS
-
-  // Don't use upsert as it didn't return an instance but only a status
-  // http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
-  User.updateOrCreate = async function( id, params ) {
-    // https://medium.com/@griffinmichl/async-await-with-ternary-operators-af19f374215
-    const user = await ( id ? this.findById(id) : new User() )
-    if ( !id && !user ) return null
-    return user.update( params )
-  }
-
-  //----- INSTANCE METHODS
-
-  User.prototype.activate = function () {
-    this.setDataValue( 'isDeactivated', false )
-    return this.save()
-  }
-
-  User.prototype.deactivate = function () {
-    this.setDataValue( 'isDeactivated', true )
-    this.setDataValue( 'password',      null )
-    this.setDataValue( 'token',         null )
-    return this.save()
-  }
-
-  User.prototype.resetPassword = async function ( type ) {
-    this.setDataValue( 'password',    null )
-    this.setDataValue( 'token',       randtoken.generate(30) )
-    this.setDataValue( 'tokenExpire', moment().add(1, 'weeks') )
-
-    const user        = await this.save()
-    const lang        = user.get( 'lang' )
-    const isEn        = lang === 'en'
-    const subject     = isEn ? 'password reset' : 'réinitialisation de mot de passe'
-    const text        = isEn ? `here is the link to enter your new password` :
-      `voici le lien pour réinitialiser votre mot de passe`
-    const mailOptions = {
-      to:       user.email,
-      subject:  `${ brand.name } – ${ subject }`,
-      text:     `${ text } http://${ config.host }/password/${ user.token }`,
-      html:     tmpReset(getTemplateData('reset-password', lang, {
-        type: type,
-        url:    `http://${config.host}/password/${user.token}?lang=${lang}`,
-      })),
+  },
+  token: {
+    type:         Sequelize.STRING,
+  },
+  tokenExpire: {
+    type:         Sequelize.DATE,
+  },
+  isDeactivated: {
+    type:         Sequelize.BOOLEAN,
+  },
+  // VIRTUALS
+  status: {
+    type: new Sequelize.VIRTUAL(Sequelize.JSON, ['isDeactivated', 'password', 'token']),
+    get: function () {
+      const currentStatus = this.get( 'isDeactivated' ) ? 'deactivated' :
+        this.get( 'password' ) ? 'confirmed' :
+        this.get( 'token' ) ? 'mail-sent' :
+        'to-be-initialized'
+      return status[ currentStatus ]
     }
-    const mailStatus  = await mail.send( mailOptions )
-    return user
-  }
-
-  User.prototype.setPassword = async function ( password ) {
-    this.setDataValue( 'password',    encodePassword(password) )
-    this.setDataValue( 'token',       null )
-    this.setDataValue( 'tokenExpire', null )
-
-    const user        = await this.save()
-    const lang        = user.get( 'lang' )
-    const isEn        = lang === 'en'
-    const subject     = isEn ? 'password reset' : 'réinitialisation de mot de passe'
-    const text        = isEn ? `your password has been succesfully been reseted. connect at` :
-      `Votre mot de passe à bien été réinitialisé. Connectez-vous à l'adresse suivante :`
-    const mailOptions = {
-      to:       user.email,
-      subject:  `${ brand.name } – ${ subject }`,
-      text:     `${ text } http://${config.host}/login`,
-      html:     tmpReset(getTemplateData('reset-success', lang, {
-        type: 'admin',
-        url:  `http://${config.host}/login?lang=${lang}`,
-      })),
+  },
+  fullname: {
+    type: new Sequelize.VIRTUAL(Sequelize.STRING, ['name', 'email']),
+    get: function () {
+      const name  = this.get('name')
+      const email = this.get('email')
+      return name ? `${name} (${email})` : email
     }
-    const mailStatus  = await mail.send( mailOptions )
-    return user
-  }
+  },
+  safename: {
+    type: new Sequelize.VIRTUAL(Sequelize.STRING, ['name']),
+    get: function () {
+      const name  = this.get('name')
+      return name ? name : '-'
+    }
+  },
+  isReseted: {
+    type: new Sequelize.VIRTUAL(Sequelize.BOOLEAN, ['password', 'token']),
+    get: function () {
+      if (this.get('password'))  return false
+      if (this.get('token'))     return true
+      return false
+    }
+  },
+  // for better session handling
+  isAdmin: {
+    type: new Sequelize.VIRTUAL(Sequelize.BOOLEAN),
+    get: function () {
+      return false
+    }
+  },
+  url: {
+    type: new Sequelize.VIRTUAL(Sequelize.JSON, ['id', 'groupId']),
+    get: function () {
+      const id    = this.get('id')
+      const urls  = {
+        show:       `/users/${id}`,
+        delete:     `/users/${id}?_method=DELETE`,
+        reset:      `/users/${id}/reset`,
+        activate:   `/users/${id}/activate`,
+        deactivate: `/users/${id}/deactivate`,
+        group:      `/groups/${ this.get('groupId') }`,
+      }
+      return urls
+    }
+  },
+})
 
-  User.prototype.comparePassword = function (password) {
-    const userPassword = this.getDataValue('password')
-    if (!userPassword) return false
-    return bcrypt.compareSync( password, this.getDataValue('password') )
-  }
-  return User
+//----- MODEL METHODS
+
+// Don't use upsert as it didn't return an instance but only a status
+// http://docs.sequelizejs.com/class/lib/model.js~Model.html#static-method-upsert
+User.updateOrCreate = async function( id, params ) {
+  // https://medium.com/@griffinmichl/async-await-with-ternary-operators-af19f374215
+  const user = await ( id ? this.findById(id) : new User() )
+  if ( !id && !user ) return null
+  return user.update( params )
 }
+
+//----- INSTANCE METHODS
+
+User.prototype.activate = function () {
+  this.setDataValue( 'isDeactivated', false )
+  return this.save()
+}
+
+User.prototype.deactivate = function () {
+  this.setDataValue( 'isDeactivated', true )
+  this.setDataValue( 'password',      null )
+  this.setDataValue( 'token',         null )
+  return this.save()
+}
+
+User.prototype.resetPassword = async function ( type ) {
+  this.setDataValue( 'password',    null )
+  this.setDataValue( 'token',       randtoken.generate(30) )
+  this.setDataValue( 'tokenExpire', moment().add(1, 'weeks') )
+
+  const user        = await this.save()
+  const lang        = user.get( 'lang' )
+  const isEn        = lang === 'en'
+  const subject     = isEn ? 'password reset' : 'réinitialisation de mot de passe'
+  const text        = isEn ? `here is the link to enter your new password` :
+    `voici le lien pour réinitialiser votre mot de passe`
+  const mailOptions = {
+    to:       user.email,
+    subject:  `${ brand.name } – ${ subject }`,
+    text:     `${ text } http://${ config.host }/password/${ user.token }`,
+    html:     tmpReset(getTemplateData('reset-password', lang, {
+      type: type,
+      url:    `http://${config.host}/password/${user.token}?lang=${lang}`,
+    })),
+  }
+  const mailStatus  = await mail.send( mailOptions )
+  return user
+}
+
+User.prototype.setPassword = async function ( password ) {
+  this.setDataValue( 'password',    encodePassword(password) )
+  this.setDataValue( 'token',       null )
+  this.setDataValue( 'tokenExpire', null )
+
+  const user        = await this.save()
+  const lang        = user.get( 'lang' )
+  const isEn        = lang === 'en'
+  const subject     = isEn ? 'password reset' : 'réinitialisation de mot de passe'
+  const text        = isEn ? `your password has been succesfully been reseted. connect at` :
+    `Votre mot de passe à bien été réinitialisé. Connectez-vous à l'adresse suivante :`
+  const mailOptions = {
+    to:       user.email,
+    subject:  `${ brand.name } – ${ subject }`,
+    text:     `${ text } http://${config.host}/login`,
+    html:     tmpReset(getTemplateData('reset-success', lang, {
+      type: 'admin',
+      url:  `http://${config.host}/login?lang=${lang}`,
+    })),
+  }
+  const mailStatus  = await mail.send( mailOptions )
+  return user
+}
+
+User.prototype.comparePassword = function (password) {
+  const userPassword = this.getDataValue('password')
+  if (!userPassword) return false
+  return bcrypt.compareSync( password, this.getDataValue('password') )
+}
+
+module.exports = User

@@ -44,15 +44,8 @@ module.exports = function ( id ) {
 
   //----- SEQUELIZE – for PostgreSQL DB
 
-  // we need to initialize the connection here
-  // because tests will do many require('../server')() and then server.shutdown()
-  // connection will be disabled. Then if a model cached by nodes do any action on DB wi will have this error
-  // >>  ConnectionManager.getConnection was called after the connection manager was closed
-
-  const logging   = !config.log.db ? () => {}
-    : query => console.log( formattor(query, {method: 'sql'}) )
-  const sequelize   = new Sequelize( config.database, { logging })
-  const models      = require('./models').init( sequelize )
+  const sequelize   = require('./models/db-connection')
+  const models      = require('./models')
 
   //----- REDIS – for sessions
 
@@ -73,8 +66,6 @@ module.exports = function ( id ) {
   //////
 
   const app = express()
-
-  app.set( 'models', models )
 
   app.set( 'trust proxy', true )
   app.use( helmet() )
@@ -530,7 +521,8 @@ module.exports = function ( id ) {
     .then( () => {
       console.log( '[SERVER] …shutdown complete' )
       server.emit( 'shutdown' )
-      process.exit()
+      // Process.exit is done by tape in test
+      if ( !config.TEST ) process.exit()
     })
   }
 

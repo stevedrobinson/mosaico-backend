@@ -20,6 +20,9 @@ const {
   writeStreamFromStream,
   list,
   parseMultipart, }   = require( './filemanager' )
+const {
+  ImageCache,
+  Gallery, }          = require( './models' )
 
 console.log('[IMAGES] config.images.cache', config.images.cache)
 
@@ -61,7 +64,6 @@ const handleFileStreamError = next => err => {
 
 const onWriteResizeEnd = datas => () => {
   const { path, name, req }   = datas
-  const { ImageCache }        = req.app.get( 'models' )
   const params                = { path, name }
 
   // save in DB for cataloging
@@ -170,7 +172,6 @@ const streamImageToResponse = (req, res, next, imageName) => {
 
 function checkCache(req, res, next) {
   if (!config.images.cache) return next()
-  const { ImageCache } = req.app.get( 'models' )
 
   const { path } = req
   ImageCache
@@ -362,7 +363,6 @@ function getGalleryRelationKey( req ) {
 
 async function listImages( req, res, next ) {
   if ( !req.xhr ) return next( createError(501) ) // Not Implemented
-  const { Gallery }   = req.app.get( 'models' )
   const { postgreId } = req.params
   const relationKey   = getGalleryRelationKey( req )
   const reqParams     = {
@@ -380,7 +380,6 @@ async function listImages( req, res, next ) {
 async function upload( req, res, next ) {
   if (!req.xhr) return next( createError(501) ) // Not Implemented
   const { postgreId }     = req.params
-  const { Gallery }       = req.app.get( 'models' )
   const relationKey       = getGalleryRelationKey( req )
   const multipartOptions  = {
     prefix:     postgreId,
@@ -418,7 +417,6 @@ async function upload( req, res, next ) {
 //  - we just remove the image from the gallery table
 async function destroy(req, res, next) {
   if (!req.xhr) return next( createError(501) ) // Not Implemented
-  const { Gallery }     = req.app.get( 'models' )
   const { imageName }   = req.params
   const image           = await Gallery.findById( imageName )
   if ( !image ) return next( createError(404) )

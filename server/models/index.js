@@ -31,54 +31,40 @@ function addStrictGroupFilter(req, dbQueryParams = {}) {
 // MODELS
 //////
 
-// as written in server/index.js we need to rely on a “fresh” connection
+const Group       = require( './model-group' )
+const User        = require( './model-user' )
+const Template    = require( './model-template' )
+const Mailing     = require( './model-mailing' )
+const Tag         = require( './model-tag' )
+const Gallery     = require( './model-gallery' )
+const ImageCache  = require( './model-image-cache' )
 
-function init( sequelize ) {
+//----- RELATIONS
 
-  const Group       = require( './model-group' )( sequelize )
-  const User        = require( './model-user' )( sequelize )
-  const Template    = require( './model-template' )( sequelize )
-  const Mailing     = require( './model-mailing' )( sequelize )
-  const Tag         = require( './model-tag' )( sequelize )
-  const Gallery     = require( './model-gallery' )( sequelize )
-  const ImageCache  = require( './model-image-cache' )( sequelize )
+User.belongsTo( Group )
+User.mailings     = User.hasMany( Mailing )
 
-  //----- RELATIONS
+Template.belongsTo( Group )
+Template.gallery  = Template.hasMany( Gallery )
+Template.mailings = Template.hasMany( Mailing )
 
-  User.belongsTo( Group )
-  User.mailings     = User.hasMany( Mailing )
+Mailing.belongsTo( Group )
+Mailing.belongsTo( User )
+Mailing.belongsTo( Template )
+Mailing.tags      = Mailing.belongsToMany( Tag, {through: 'MailingTag'} )
+Mailing.gallery   = Mailing.hasMany( Gallery )
 
-  Template.belongsTo( Group )
-  Template.gallery  = Template.hasMany( Gallery )
-  Template.mailings = Template.hasMany( Mailing )
+Tag.belongsTo( Group )
+Tag.belongsToMany( Mailing, {through: 'MailingTag'})
 
-  Mailing.belongsTo( Group )
-  Mailing.belongsTo( User )
-  Mailing.belongsTo( Template )
-  Mailing.tags      = Mailing.belongsToMany( Tag, {through: 'MailingTag'} )
-  Mailing.gallery   = Mailing.hasMany( Gallery )
+Group.users       = Group.hasMany( User )
+Group.templates   = Group.hasMany( Template )
+Group.mailings    = Group.hasMany( Mailing )
+Group.tags        = Group.hasMany( Tag )
 
-  Tag.belongsTo( Group )
-  Tag.belongsToMany( Mailing, {through: 'MailingTag'})
+Gallery.belongsTo( Mailing )
+Gallery.belongsTo( Template )
 
-  Group.users       = Group.hasMany( User )
-  Group.templates   = Group.hasMany( Template )
-  Group.mailings    = Group.hasMany( Mailing )
-  Group.tags        = Group.hasMany( Tag )
-
-  Gallery.belongsTo( Mailing )
-  Gallery.belongsTo( Template )
-
-  return {
-    Group,
-    User,
-    Template,
-    Mailing,
-    Tag,
-    Gallery,
-    ImageCache,
-  }
-}
 
 //////
 // EXPORTS
@@ -89,5 +75,11 @@ module.exports    = {
   addGroupFilter,
   addStrictGroupFilter,
   // Models
-  init,
+  Group,
+  User,
+  Template,
+  Mailing,
+  Tag,
+  Gallery,
+  ImageCache,
 }
