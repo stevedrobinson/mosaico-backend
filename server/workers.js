@@ -5,13 +5,13 @@ if (!/^8\./.test(process.versions.node)) {
 }
 
 // https://devcenter.heroku.com/articles/node-concurrency
-var throng  = require('throng')
+const throng      = require('throng')
 
-var WORKERS = process.env.WEB_CONCURRENCY || 1
-var start   = require('./index')
+const WORKERS     = process.env.WEB_CONCURRENCY || 1
+const startWorker = require('./index')
 
 throng({
-  start:    start,
+  start:    startWorker,
   workers:  WORKERS,
   lifetime: Infinity,
 })
