@@ -157,6 +157,7 @@
     "main-bower-files": "^2.13.1",
     "merge-stream": "^1.0.1",
     "mockery": "^2.1.0",
+    "nightmare-real-mouse": "^1.0.0",
     "nodemon": "^1.11.0",
     "parallelshell": "^3.0.1",
     "pg-copy-streams": "^1.2.0",

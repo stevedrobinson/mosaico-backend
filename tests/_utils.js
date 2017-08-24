@@ -6,6 +6,7 @@ const {
   promisify,
   inspect }         = require( 'util' )
 const Nightmare     = require( 'nightmare' )
+const realMouse     = require('nightmare-real-mouse')
 const child_process = require( 'child_process' )
 const exec          = promisify( child_process.exec )
 const path          = require( 'path' )
@@ -14,12 +15,12 @@ const clearRequire  = require( 'clear-require' )
 
 const config        = require('../server/config')
 const createServer  = require('../server')
-const testDatas     = path.join(__dirname, './sql-test.sqlc')
+const testDatas     = path.join( __dirname, './sql-test.sqlc' )
 
 const dbTest        = `postgres://localhost:5432/mosaico-backend-test`
 
-// can be usefull in some edge case
-// https://github.com/Mr0grog/nightmare-real-mouse
+// found that it is less prone to errors
+realMouse( Nightmare )
 
 ////////
 // SHARED FUNCTIONNAL THINGS

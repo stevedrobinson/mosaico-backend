@@ -2,6 +2,7 @@ import dialogPolyfill from 'dialog-polyfill'
 
 const lang      = document.querySelector('html').getAttribute('lang')
 const isEnglish = lang === 'en'
+const raf       = window.requestAnimationFrame
 
 //////
 // DIALOG
@@ -32,7 +33,7 @@ function resetDialog() {
 function openDialog( datas ) {
   title.textContent       = datas.title
   description.textContent = datas.description
-  dialog.showModal()
+  raf( _ => dialog.showModal() )
 }
 
 //////
