@@ -3,6 +3,8 @@
 const util        = require( 'util' )
 const chalk       = require( 'chalk' )
 
+const sequelize   = require( './db-connection' )
+
 //////
 // HELPERS
 //////
@@ -71,6 +73,7 @@ Gallery.belongsTo( Template )
 //////
 
 module.exports    = {
+  sequelize,
   // helpers
   addGroupFilter,
   addStrictGroupFilter,
