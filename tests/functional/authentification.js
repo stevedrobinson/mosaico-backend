@@ -1,8 +1,10 @@
+'use strict'
+
 const test      = require('tape')
 const {
   connectUser,
   connectAdmin,
-  createTest, } = require('../_utils')
+  createTest, } = require('../_test-utils')
 
 test('connection success', createTest( 1, false, async (t, nm, close) => {
   const t1 = await nm.use( connectUser() )

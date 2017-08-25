@@ -1,8 +1,10 @@
+'use strict'
+
 const test      = require('tape')
 const {
   connectUser,
   connectAdmin,
-  createTest, } = require('../_utils')
+  createTest, } = require('../_test-utils')
 
 const WAIT_TIME           = 1
 const data                = {

@@ -375,7 +375,7 @@ async function listImages( req, res, next ) {
 }
 
 // upload & update gallery
-// `pg` node_module has to be downgraded to 6for solving this issue:
+// `pg` node_module has to be downgraded to 6 for solving this issue:
 // https://github.com/sequelize/sequelize/issues/7999#issue-244898237
 async function upload( req, res, next ) {
   if (!req.xhr) return next( createError(501) ) // Not Implemented
