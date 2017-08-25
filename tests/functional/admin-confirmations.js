@@ -25,6 +25,10 @@ function getDialogTitle() {
   }
 }
 
+//////
+// USERS
+//////
+
 const T1 = 'admin - confirmation popup – user listing'
 test( T1, createTest( 3, false, async (t, nm, close) => {
   await Promise.all( [serverReady, resetDB()] )
@@ -165,6 +169,10 @@ test( T3, createTest( 3, false, async (t, nm, close) => {
   t.equal( t3.title, 'Activate', 'group card - user activation dialog')
 
 }))
+
+//////
+// TEMPLATES
+//////
 
 const T4 = 'admin - confirmation popup – template listing'
 test( T4, createTest( 1, false, async (t, nm, close) => {
