@@ -33,34 +33,6 @@ test('duplicate', t => {
 
 })
 
-test('rename from home', t => {
-  const nightmare           = createWindow(false)
-  const renameTestMailingTitle = 'new name'
-
-  t.plan( 1 )
-  setupServer().then( start )
-
-  function start(server) {
-    const { onEnd, onError }  = getTeardownHandlers(t, nightmare, server)
-    nightmare
-    .use( connectUser() )
-    .click('.js-tbody-selection tr:nth-child(2) .js-rename')
-    .insert('#rename-field', false)
-    .insert('#rename-field', 'new name')
-    .click('.js-dialog-rename .js-post')
-    .wait(300)
-    .evaluate( () => {
-      const name  = document.querySelector('.js-tbody-selection tr:nth-child(2) > td:nth-child(2) > a').textContent
-      return { name }
-    })
-    .then( onEnd( result => {
-      t.equal(result.name, renameTestMailingTitle)
-    } ) )
-    .catch( onError )
-  }
-
-})
-
 test('batch deletion', t => {
   const nightmare           = createWindow( false )
   const waitTime            = 20

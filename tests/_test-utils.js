@@ -73,25 +73,21 @@ const createTest = (plan, showNightmare = false, cb) => async t => {
   }
 }
 
-function connectUser(email = 'p@p.com', password = 'p' ) {
-  return nightmare => {
-    return nightmare
-    .goto( `http://${ config.host }?lang=en` )
-    .insert( '#email-field', email )
-    .insert( '#password-field', password )
-    .realClick( 'form[action*="/login"] [type=submit]' )
-    .wait( '.js-filter' )
-  }
+const connectUser = (email = 'p@p.com', password = 'p' ) => nightmare => {
+  return nightmare
+  .goto( `http://${ config.host }?lang=en` )
+  .insert( '#email-field', email )
+  .insert( '#password-field', password )
+  .realClick( 'form[action*="/login"] [type=submit]' )
+  .wait( '.js-filter' )
 }
 
-function connectAdmin() {
-  return nightmare => {
-    return nightmare
-    .goto( `http://${ config.host }/admin?lang=en` )
-    .insert('#password-field', 'admin')
-    .realClick('form[action*="/login"] [type=submit]')
-    .wait('.js-admin-home')
-  }
+const connectAdmin = _ => nightmare => {
+  return nightmare
+  .goto( `http://${ config.host }/admin?lang=en` )
+  .insert('#password-field', 'admin')
+  .realClick('form[action*="/login"] [type=submit]')
+  .wait('.js-admin-home')
 }
 
 ////////

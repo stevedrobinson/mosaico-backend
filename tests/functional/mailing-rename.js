@@ -11,7 +11,8 @@ const { serverReady, stopServer } = setupServer()
 test.onFinish( async _ => await stopServer() )
 
 const data      = {
-  MAILING_ID:     '88e776cb-8062-4933-9589-6c24e1ec8e8c'
+  MAILING_ID: '88e776cb-8062-4933-9589-6c24e1ec8e8c',
+  TEST_NAME:  'mosaico-backend email',
 }
 const rename          = {
   nameSelector:   `#toolbar > div.mailing-name > p > span`,
@@ -49,16 +50,15 @@ const T1 = 'rename from editor – can rename'
 test( T1, createTest( 1, false, async (t, nm, close) => {
   await Promise.all( [serverReady, resetDB()] )
 
-  const renameTestMailingTitle = 'new mailing name'
   const t1 = await nm
     .use( connectUser() )
     .use( gotToEditor )
-    .insert( rename.inputSelector, renameTestMailingTitle )
+    .insert( rename.inputSelector, data.TEST_NAME )
     .use( checkName )
 
   await close()
 
-  t.equal( t1.name, renameTestMailingTitle )
+  t.equal( t1.name, data.TEST_NAME )
 
 }))
 
@@ -99,17 +99,16 @@ const T4 = 'rename from editor – admin can do it on a user mailing'
 test( T4, createTest( 1, false, async (t, nm, close) => {
   await Promise.all( [serverReady, resetDB()] )
 
-  const renameTestMailingTitle  = 'admin name'
   const t1 = await nm
     .use( connectAdmin() )
     .use( gotToEditor )
-    .insert( rename.inputSelector, renameTestMailingTitle )
+    .insert( rename.inputSelector, data.TEST_NAME )
     .wait()
     .use( checkName )
 
   await close()
 
-  t.equal( t1.name, renameTestMailingTitle)
+  t.equal( t1.name, data.TEST_NAME )
 
 }))
 
@@ -117,4 +116,25 @@ test( T4, createTest( 1, false, async (t, nm, close) => {
 // HOME
 //////
 
-// TBD
+const T5 = 'rename from home'
+test( T5, createTest( 1, false, async (t, nm, close) => {
+  await Promise.all( [serverReady, resetDB()] )
+
+  const t1 =  await nm
+    .use( connectUser() )
+    .realClick( `.js-rename[data-href="/mailings/${ data.MAILING_ID }"]` )
+    .insert( '#rename-field', false )
+    .insert( '#rename-field', data.TEST_NAME )
+    .realClick( '.js-dialog-rename .js-post' )
+    .wait( 300 )
+    .evaluate( data => {
+      const selector  = `.js-name[href="/mailings/${ data.MAILING_ID }"]`
+      const name      = document.querySelector( selector ).textContent
+      return { name }
+    }, data)
+
+  await close()
+
+  t.equal( t1.name, data.TEST_NAME )
+
+}))
