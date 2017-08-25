@@ -7,6 +7,7 @@ const flash         = require( 'express-flash' )
 const RedisStore    = require( 'connect-redis' )( session )
 const createError   = require( 'http-errors' )
 const util          = require( 'util' )
+const c             = require( 'chalk' )
 
 const config        = require( './config' )
 const h             = require( './helpers' )
@@ -19,67 +20,76 @@ const adminUser = {
   name:     'admin',
 }
 
-function init(app, redis) {
-
-  passport.use(new LocalStrategy(
-    function(username, password, done) {
-      // admin
-      if (username === config.admin.username) {
-        if (password === config.admin.password) {
-          return done(null , adminUser)
-        }
-        return done(null, false, { message: 'password.error.incorrect' })
-      }
-      // user
-      User
-      .findOne({
-        where: {
-          email:          h.normalizeString( username ),
-          isDeactivated:  { $not: true },
-          token:          { $eq:  null },
-          password:       { $not: null },
-        },
-      })
-      .then( user  => {
-        // TODO email should be automatically filled with the previous value
-        if (!user) return done(null, false, { message: 'password.error.nouser'} )
-        const isPasswordValid = user.comparePassword( password )
-        if (!isPasswordValid) return done(null, false, { message: 'password.error.incorrect' })
-        return done(null, user)
-      })
-      .catch( err => {
-        console.log( err )
-        return done(null, false, err)
-      })
+const connectUser = async (username, password, done) => {
+  // admin
+  if (username === config.admin.username) {
+    if (password === config.admin.password) {
+      return done(null , adminUser)
     }
-  ))
+    return done(null, false, { message: 'password.error.incorrect' })
+  }
+  // user
+  try {
+    const user = await User.findOne({
+      where: {
+        email:          h.normalizeString( username ),
+        isDeactivated:  { $not: true },
+        token:          { $eq:  null },
+        password:       { $not: null },
+      },
+    })
+    // TODO email should be automatically filled with the previous value
+    if (!user) return done(null, false, { message: 'password.error.nouser'} )
+    const isPasswordValid = user.comparePassword( password )
+    if (!isPasswordValid) return done(null, false, { message: 'password.error.incorrect' })
+    return done(null, user)
+  } catch( err ) {
+    console.log( c.red('[SESSION] use find one – error') )
+    console.log( err )
+    return done(null, false, err)
+  }
+}
 
-  passport.serializeUser( (user, done) => {
-    done(null, user.id)
-  })
+const serializeUser = (user, done) => {
+  if (!user.isAdmin) {
+    console.log( c.magenta('[SESSION] serialize user', user.id) )
+  }
+  done(null, user.id)
+}
 
-  passport.deserializeUser( (id, done) => {
-    if (id === config.admin.id) return done(null, adminUser)
-    User
-    .findOne({
+const deserializeUser = async (id, done) => {
+  if (id === config.admin.id) return done(null, adminUser)
+  console.log( c.magenta('[SESSION] deserialize user', id) )
+  try {
+    const user = await User.findOne({
       where: {
         id:            id,
         isDeactivated:  { $not: true },
         token:          { $eq:  null },
+        password:       { $not: null },
       },
     })
-    .then( user  => done(null, user) )
-    .catch( err => done(null, false, err) )
-  })
+    done(null, user)
+  } catch( err ) {
+    console.log('[PASSPORT] fail to deserialize User')
+    console.trace( err )
+    done(null, false, err)
+  }
+}
 
-  const redisStore    = new RedisStore( {client: redis} )
+function init(app, redis) {
 
-  app.use(session({
+  passport.use( new LocalStrategy(connectUser) )
+  passport.serializeUser( serializeUser )
+  passport.deserializeUser( deserializeUser )
+
+  const redisStore = new RedisStore( {client: redis} )
+  app.use( session({
     secret:             'keyboard cat',
     resave:             false,
     saveUninitialized:  false,
     store:              redisStore,
-  }))
+  }) )
 
   // https://www.npmjs.com/package/connect-redis#how-do-i-handle-lost-connections-to-redis
   app.use( function (req, res, next) {
@@ -113,17 +123,21 @@ const guard = ( role = 'user' ) => (req, res, next) => {
 }
 
 function logout(req, res, next) {
-  var isAdmin = req.user.isAdmin
+  const { isAdmin } = req.user
   req.logout()
   res.redirect(isAdmin ? '/admin' : '/')
+  // https://stackoverflow.com/questions/13758207/why-is-passportjs-in-node-not-removing-session-on-logout
+  // req.session.destroy(function (err) {
+  //   res.redirect('/'); //Inside a callback… bulletproof!
+  // });
 }
 
 module.exports = {
-  init:         init,
-  session:      session,
-  passport:     passport,
+  init,
+  session,
+  passport,
   // without bind, passport is failing
   authenticate: passport.authenticate.bind(passport),
-  guard:        guard,
-  logout:       logout,
+  guard,
+  logout,
 }

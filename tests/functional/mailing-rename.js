@@ -4,7 +4,11 @@ const test      = require('tape')
 const {
   connectUser,
   connectAdmin,
+  setupServer,
+  resetDB,
   createTest, } = require('../_test-utils')
+const { serverReady, stopServer } = setupServer()
+test.onFinish( async _ => await stopServer() )
 
 const data      = {
   MAILING_ID:     '88e776cb-8062-4933-9589-6c24e1ec8e8c'
@@ -43,6 +47,7 @@ function checkName(nm) {
 
 const T1 = 'rename from editor – can rename'
 test( T1, createTest( 1, false, async (t, nm, close) => {
+  await Promise.all( [serverReady, resetDB()] )
 
   const renameTestMailingTitle = 'new mailing name'
   const t1 = await nm
@@ -59,6 +64,7 @@ test( T1, createTest( 1, false, async (t, nm, close) => {
 
 const T2 = 'rename from editor – empty rename get default title'
 test( T2, createTest( 1, false, async (t, nm, close) => {
+  await Promise.all( [serverReady, resetDB()] )
 
   const t1 = await nm
     .use( connectUser() )
@@ -74,7 +80,8 @@ test( T2, createTest( 1, false, async (t, nm, close) => {
 }))
 
 const T3 = 'rename from editor – name of 1 space behave like empty'
-test.skip( T3, createTest( 1, false, async (t, nm, close) => {
+test( T3, createTest( 1, false, async (t, nm, close) => {
+  await Promise.all( [serverReady, resetDB()] )
 
   const t1 = await nm
     .use( connectUser() )
@@ -89,13 +96,13 @@ test.skip( T3, createTest( 1, false, async (t, nm, close) => {
 }))
 
 const T4 = 'rename from editor – admin can do it on a user mailing'
-test.skip( T4, createTest( 1, false, async (t, nm, close) => {
+test( T4, createTest( 1, false, async (t, nm, close) => {
+  await Promise.all( [serverReady, resetDB()] )
 
   const renameTestMailingTitle  = 'admin name'
   const t1 = await nm
     .use( connectAdmin() )
     .use( gotToEditor )
-    .use( activateRename )
     .insert( rename.inputSelector, renameTestMailingTitle )
     .wait()
     .use( checkName )

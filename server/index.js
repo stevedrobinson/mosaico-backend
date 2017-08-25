@@ -32,8 +32,7 @@ const { duration }    = moment
 const { defer }       = require( './helpers' )
 const mail            = require( './mail' )
 
-// id is given by throng
-module.exports = function ( id ) {
+module.exports = _ => {
 
   const session = require( './session' )
   const config  = require( './config' )
@@ -89,19 +88,6 @@ module.exports = function ( id ) {
   app.use( compression() )
   app.use( favicon(path.join(__dirname, '../res/favicon.png')) )
   app.use( cookieParser() )
-
-  //----- SESSION & I18N
-
-  session.init( app, redis )
-  i18n.configure({
-    locales:        ['fr', 'en',],
-    defaultLocale:  'fr',
-    extension:      '.js',
-    cookie:         'mosaicobackend',
-    objectNotation: true,
-    directory:      path.join( __dirname, './locales'),
-  })
-  app.use(i18n.init)
 
   //----- TEMPLATES
 
@@ -173,6 +159,20 @@ module.exports = function ( id ) {
   app.use( '/lib/skins', express.static( path.join(__dirname,'../res/vendor/skins') ) )
   app.use( express.static( path.join(__dirname, '../node_modules/material-design-lite') ) )
   app.use( express.static( path.join(__dirname, '../node_modules/material-design-icons-iconfont/dist') ) )
+
+  //----- SESSION & I18N
+  // no sessions needed for assets
+
+  session.init( app, redis )
+  i18n.configure({
+    locales:        ['fr', 'en',],
+    defaultLocale:  'fr',
+    extension:      '.js',
+    cookie:         'mosaicobackend',
+    objectNotation: true,
+    directory:      path.join( __dirname, './locales'),
+  })
+  app.use( i18n.init )
 
   //////
   // LOGGING
@@ -526,12 +526,14 @@ module.exports = function ( id ) {
     })
   }
 
-  config.setup
-  .then( _ => {
-    //----- LOG MAIN EXTERNAL SERVICES STATUS
-    const mailStatus  = mail.status
-    const redisStatus = redis.ping()
-    const dbStatus    = sequelize.authenticate().then( _ => sequelize.sync() )
+  //----- WAIT FOR MAIN EXTERNAL SERVICES BEFORE BOOTING
+
+  config.setup.then( _ => {
+
+    const mailStatus    = mail.status
+    const redisStatus   = redis.ping()
+    const dbConnection  = sequelize.authenticate()
+    const dbSync        = sequelize.sync()
 
     mailStatus
     .then( _ => console.log(c.green('[EMAIL] transport mailing – SUCCESS')) )
@@ -547,17 +549,25 @@ module.exports = function ( id ) {
       throw( err )
     })
 
-    dbStatus
+    dbConnection
     .then( _ => console.log( c.green('[DATABASE] connection – SUCCESS')) )
     .catch( err => {
       console.log( c.red('[DATABASE] connection – ERROR') )
       throw( err )
     })
 
+    dbSync
+    .then( _ => console.log( c.green('[DATABASE] sync – SUCCESS')) )
+    .catch( err => {
+      console.log( c.red('[DATABASE] sync – ERROR') )
+      throw( err )
+    })
+
     return Promise.all([
       mailStatus,
       redisStatus,
-      dbStatus,
+      dbConnection,
+      dbSync,
     ])
   })
   .then( startApplication )
