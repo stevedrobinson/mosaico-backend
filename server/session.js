@@ -51,15 +51,11 @@ const connectUser = async (username, password, done) => {
 }
 
 const serializeUser = (user, done) => {
-  if (!user.isAdmin) {
-    console.log( c.magenta('[SESSION] serialize user', user.id) )
-  }
   done(null, user.id)
 }
 
 const deserializeUser = async (id, done) => {
   if (id === config.admin.id) return done(null, adminUser)
-  console.log( c.magenta('[SESSION] deserialize user', id) )
   try {
     const user = await User.findOne({
       where: {
