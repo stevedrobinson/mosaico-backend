@@ -56,7 +56,7 @@ module.exports = function ( id ) {
     .monitor()
     .then( monitor => {
       monitor.on('monitor',  (time, args, source, database) => {
-        console.log(time + ": " + util.inspect(args))
+        console.log(time + ": " + inspect(args))
       })
     })
   }
@@ -520,7 +520,7 @@ module.exports = function ( id ) {
     ])
     .then( () => {
       console.log( '[SERVER] …shutdown complete' )
-      server.emit( 'shutdown' )
+      if (server) setTimeout( _ =>  server.emit( 'shutdown' ), 1000 )
       // Process.exit is done by tape in test
       if ( !config.TEST ) process.exit()
     })
@@ -531,7 +531,7 @@ module.exports = function ( id ) {
     //----- LOG MAIN EXTERNAL SERVICES STATUS
     const mailStatus  = mail.status
     const redisStatus = redis.ping()
-    const dbStatus    = sequelize.authenticate()
+    const dbStatus    = sequelize.authenticate().then( _ => sequelize.sync() )
 
     mailStatus
     .then( _ => console.log(c.green('[EMAIL] transport mailing – SUCCESS')) )
@@ -548,7 +548,6 @@ module.exports = function ( id ) {
     })
 
     dbStatus
-    .then( _ => sequelize.sync() )
     .then( _ => console.log( c.green('[DATABASE] connection – SUCCESS')) )
     .catch( err => {
       console.log( c.red('[DATABASE] connection – ERROR') )
@@ -562,6 +561,7 @@ module.exports = function ( id ) {
     ])
   })
   .then( startApplication )
+  .catch( stopApplication() )
 
   return application
 }
