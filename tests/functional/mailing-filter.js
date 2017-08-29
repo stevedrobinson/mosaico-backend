@@ -36,6 +36,41 @@ const updateFilter = nightmare => {
 //////
 
 const T1 = 'mailing – filter by name'
+test( T1, createTest( 4, false, async (t, nm, close) => {
+
+  const SEARCH   = 'pouic'
+
+  const getNames = (SEARCH) => {
+    const names       = document.querySelectorAll( `tbody tr td:nth-child(2)` )
+    const countAll    = names.length
+    const search      = new RegExp( SEARCH )
+    const withPouic   = [...names].filter( n => search.test( n.textContent ) )
+    const countPouic  = withPouic.length
+    const searchSummary = document.querySelector( `.be-table-header__summary dd` )
+    const summary       = searchSummary ? searchSummary.textContent : false
+    return {countAll, countPouic, summary}
+  }
+
+  const initialState = await nm
+    .use( connectUser() )
+    .use( allMailings )
+    .evaluate( getNames, SEARCH )
+
+  const t1 = await nm
+    .type( '#name-field' , 'pouic')
+    .wait( WAIT )
+    .use( updateFilter )
+    .evaluate(  getNames, SEARCH )
+
+  t.notEqual( t1.countAll, initialState.countAll, `name filter – a filtering has been done` )
+  t.equal( t1.countAll, initialState.countPouic, `name filter – it's the right count` )
+  t.equal( t1.countAll, t1.countPouic, `name filter – it all countains the right string` )
+
+  await close()
+
+  t.equal( t1.summary, SEARCH, `name filter – summary is the right one` )
+
+}))
 
 //////
 // TEMPLATES
@@ -101,7 +136,7 @@ test( T2, createTest( 4, false, async (t, nm, close) => {
 //////
 
 const T3 = 'mailing – filter author'
-test.only( T3, createTest( 4, false, async (t, nm, close) => {
+test( T3, createTest( 4, false, async (t, nm, close) => {
   await serverReady
   await resetDB()
 
