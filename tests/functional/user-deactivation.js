@@ -63,7 +63,7 @@ test( T1, createTest( 3, false, async (t, nm) => {
       return { errorMessage: errorEl ? errorEl.textContent : false }
     })
 
-  t.equal(t3.errorMessage, `${T1} – This account doens't exist or hasn't been activated`, `user can't connect anymore`)
+  t.equal(t3.errorMessage, `This account doens't exist or hasn't been activated`, `${T1} – user can't connect anymore`)
 
 }))
 

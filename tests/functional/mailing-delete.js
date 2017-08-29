@@ -47,7 +47,7 @@ test( T1, createTest( 3, false, async (t, nm) => {
 
   const t3 = await nm
     .realClick( `button.js-delete-confirm` )
-    .wait( WAIT )
+    .wait( WAIT + 100 )
     .evaluate( getMailingCount )
 
   t.equal( t3, inititalMailingCount - 2, `${T1} - mailings have been deleted`)
