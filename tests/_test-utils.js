@@ -97,6 +97,7 @@ const data = {
   NEW_USER_ID:        'e1d8af49-63c2-4638-a288-7e9461b516da',
   TEMPLATE_ID:        'b109c93c-679e-4a7c-8f84-9de3a13c1b38',
   GROUP_ID:           'c40dce03-7549-49f3-968a-8c77a7177425',
+  ADMIN_MAILING_ID:   '4fe4a47a-2d78-4561-8912-3832f41de389',
 }
 
 const connectUser = (email = data.ACTIVE_USER_EMAIL, password = data.ACTIVE_USER_PASS ) => {
