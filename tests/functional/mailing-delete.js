@@ -10,9 +10,7 @@ const {
 const { serverReady, stopServer } = setupServer()
 test.onFinish( async _ => await stopServer() )
 
-const data = {
-  WAIT: 300,
-}
+const WAIT  = 2}
 
 const T1 = 'batch deletion'
 test( T1, createTest( 3, false, async (t, nm, close) => {
@@ -24,13 +22,13 @@ test( T1, createTest( 3, false, async (t, nm, close) => {
   const inititalMailingCount = await nm
   .use( connectUser() )
   .goto( `http://localhost:8000/?page=1&limit=1000`)
-  .wait( data.WAIT )
+  .wait( WAIT )
   .evaluate( getMailingCount )
 
   const t1 = await nm
     .check( `tbody tr:nth-child(1) input` )
     .check( `tbody tr:nth-child(2) input` )
-    .wait( data.WAIT )
+    .wait( WAIT )
     .evaluate( () => {
       const title   = document.querySelector( `.js-selection-count` )
       const text    = title ? title.textContent : ''
@@ -42,14 +40,14 @@ test( T1, createTest( 3, false, async (t, nm, close) => {
 
   const t2 = await nm
     .realClick( `button.js-delete-mailings` )
-    .wait( data.WAIT )
+    .wait( WAIT )
     .evaluate( () => document.querySelectorAll( `.js-delete-selection-list li` ).length )
 
   t.equal( t2, 2, 'batch deletion - selection is counted correctly on the dialog')
 
   const t3 = await nm
     .realClick( `button.js-delete-confirm` )
-    .wait( data.WAIT )
+    .wait( WAIT )
     .evaluate( getMailingCount )
 
   await close()
