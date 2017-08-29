@@ -85,13 +85,29 @@ const createTest = (plan, showNightmare = false, cb) => async t => {
   }
 }
 
-const connectUser = (email = 'p@p.com', password = 'p' ) => nightmare => {
-  return nightmare
-  .goto( `http://${ config.host }?lang=en` )
-  .insert( '#email-field', email )
-  .insert( '#password-field', password )
-  .realClick( 'form[action*="/login"] [type=submit]' )
-  .wait( '.js-filter' )
+////////
+// NIGHTMARE COMMON ROUTINES & DATAS
+////////
+
+const data = {
+  ACTIVE_USER_EMAIL:  'p@p.com',
+  ACTIVE_USER_PASS:   'p',
+  ACTIVE_USER_ID:     'f30e44d8-7a54-41c9-8814-113a90e02f6e',
+  UNACTIVE_USER_ID:   '98540149-8bac-4576-b03c-a06e66196b02',
+  NEW_USER_ID:        'e1d8af49-63c2-4638-a288-7e9461b516da',
+  TEMPLATE_ID:        'b109c93c-679e-4a7c-8f84-9de3a13c1b38',
+  GROUP_ID:           'c40dce03-7549-49f3-968a-8c77a7177425',
+}
+
+const connectUser = (email = data.ACTIVE_USER_EMAIL, password = data.ACTIVE_USER_PASS ) => {
+  return nightmare => {
+    return nightmare
+    .goto( `http://${ config.host }?lang=en` )
+    .insert( '#email-field', email )
+    .insert( '#password-field', password )
+    .realClick( 'form[action*="/login"] [type=submit]' )
+    .wait( '.js-filter' )
+  }
 }
 
 const connectAdmin = _ => nightmare => {
@@ -102,6 +118,8 @@ const connectAdmin = _ => nightmare => {
   .wait('.js-admin-home')
 }
 
+
+
 ////////
 // EXPORTS
 ////////
@@ -110,7 +128,8 @@ module.exports = {
   setupServer,
   resetDB,
   createTest,
-  // nightmare common routines
+  // nightmare common routines & datas
+  data,
   connectUser,
   connectAdmin,
 }

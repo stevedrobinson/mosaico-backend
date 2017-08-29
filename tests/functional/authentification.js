@@ -10,7 +10,7 @@ const {
 const { serverReady, stopServer } = setupServer()
 test.onFinish( async _ => await stopServer() )
 
-test('connection success', createTest( 1, false, async (t, nm, close) => {
+test('connection – user success', createTest( 1, false, async (t, nm, close) => {
   await serverReady
   await resetDB()
 
@@ -22,7 +22,7 @@ test('connection success', createTest( 1, false, async (t, nm, close) => {
 
 }))
 
-test.only('connection fail', createTest( 1, false, async (t, nm, close) => {
+test('connection – user success', createTest( 1, false, async (t, nm, close) => {
   await serverReady
   await resetDB()
 
