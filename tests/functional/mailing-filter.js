@@ -62,13 +62,13 @@ test( T1, createTest( 4, false, async (t, nm, close) => {
     .use( updateFilter )
     .evaluate(  getNames, SEARCH )
 
-  t.notEqual( t1.countAll, initialState.countAll, `name filter – a filtering has been done` )
-  t.equal( t1.countAll, initialState.countPouic, `name filter – it's the right count` )
-  t.equal( t1.countAll, t1.countPouic, `name filter – it all countains the right string` )
+  t.notEqual( t1.countAll, initialState.countAll, `${T1} – a filtering has been done` )
+  t.equal( t1.countAll, initialState.countPouic, `${T1} – it's the right count` )
+  t.equal( t1.countAll, t1.countPouic, `${T1} – it all countains the right string` )
 
   await close()
 
-  t.equal( t1.summary, SEARCH, `name filter – summary is the right one` )
+  t.equal( t1.summary, SEARCH, `${T1} – summary is the right one` )
 
 }))
 
@@ -98,7 +98,7 @@ test( T2, createTest( 4, false, async (t, nm, close) => {
     .use( allMailings )
     .evaluate( getTemplates )
 
-  t.ok( initialState.count > 1, `we have more than one template to begin with` )
+  t.ok( initialState.count > 1, `${T2} – we have more than one template to begin with` )
 
   // Has to do this in order to have a multiple selection…
   const setSelection = await nm
@@ -122,12 +122,12 @@ test( T2, createTest( 4, false, async (t, nm, close) => {
     .use( updateFilter )
     .evaluate( getTemplates )
 
-  t.equal( t1.count, 1, `templates filter – only selected template is left` )
-  t.equal( t1.names.join(''), data.VERSAFIX_NAME, `templates filter – it's the right one` )
+  t.equal( t1.count, 1, `${T2} – only selected template is left` )
+  t.equal( t1.names.join(''), data.VERSAFIX_NAME, `${T2} – it's the right one` )
 
   await close()
 
-  t.equal( t1.summary, data.VERSAFIX_NAME, `templates filter – summary is the right one` )
+  t.equal( t1.summary, data.VERSAFIX_NAME, `${T2} – summary is the right one` )
 
 }))
 
@@ -163,12 +163,12 @@ test( T3, createTest( 4, false, async (t, nm, close) => {
     .use( updateFilter )
     .evaluate( getAuthors )
 
-  t.equal( t1.count, 1, `author filter – only one author is left` )
-  t.equal( t1.names[0], data.ACTIVE_USER_NAME, `author filter – it's the right one` )
+  t.equal( t1.count, 1, `${T3} – only one author is left` )
+  t.equal( t1.names[0], data.ACTIVE_USER_NAME, `${T3} – it's the right one` )
 
   await close()
 
-  t.equal( t1.summary, data.ACTIVE_USER_NAME, `author filter – summary is the right one` )
+  t.equal( t1.summary, data.ACTIVE_USER_NAME, `${T3} – summary is the right one` )
 
 }))
 
