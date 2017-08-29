@@ -93,18 +93,13 @@ config.isAws   = config.storage.type === 'aws'
 //----- TEST SPECIFICS
 
 if (config.TEST) {
-  config.NODE_ENV         = 'development'
-  config.host             = 'localhost:8000'
-  config.PORT             = 8000
-  config.storage.type     = 'local'
-  config.images.uploadDir = 'uploads-test'
-  config.dbConfigs        = {
-    local: {
-      host:   'localhost:27017',
-      folder: 'mosaico-backend-test',
-    },
-  }
-  console.log( chalk.green('[SERVER] running in TEST mode') )
+  console.log( chalk.keyword('orange')('[SERVER] running in TEST mode') )
+  config.NODE_ENV       = 'development'
+  config.host           = 'localhost:8000'
+  config.PORT           = 8000
+  config.storage.type   = 'local'
+  // config.images.uploadDir = 'uploads-test'
+  config.database       = 'postgres://localhost:5432/mosaico-backend-test'
 }
 
 //----- HEROKU ADDONS OVERRIDES

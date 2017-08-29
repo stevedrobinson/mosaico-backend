@@ -2,13 +2,11 @@
 
 process.env.TEST  = true
 
-const {
-  promisify,
-  inspect, }        = require( 'util' )
+const { inspect }   = require( 'util' )
 const Nightmare     = require( 'nightmare' )
 const realMouse     = require( 'nightmare-real-mouse' )
 const child_process = require( 'child_process' )
-const exec          = promisify( child_process.exec )
+const { exec }      = child_process
 const path          = require( 'path' )
 const c             = require( 'chalk' )
 
@@ -24,6 +22,26 @@ realMouse( Nightmare )
 ////////
 // SHARED FUNCTIONNAL THINGS
 ////////
+
+const resetDB = async _ => {
+  const dfd = defer()
+  const command = `pg_restore --clean --dbname=${dbTest} ${testDatas}`
+  const result  = exec( command, (err, stdout, stderr) => {
+    if ( err ) {
+      console.error(`exec error: ${err}`)
+      return dfd.reject()
+    }
+    if ( stderr ) {
+      console.error(`stderr error`)
+      console.log(stderr)
+      return dfd.reject()
+    }
+    console.log( c.blue('[TEST]'), `DB setup has been done` )
+    dfd.resolve()
+  })
+  return dfd
+}
+
 
 const setupServer = _ => {
   const server      = require( '../server')()
@@ -41,12 +59,6 @@ const setupServer = _ => {
     serverReady: server,
     stopServer,
   }
-}
-
-async function resetDB() {
-  const command = `pg_restore --clean --if-exists --dbname=${dbTest} ${testDatas}`
-  await exec( command )
-  console.log( c.blue('[TEST]'), `DB setup has been done` )
 }
 
 function setupNightmare(show = false)  {

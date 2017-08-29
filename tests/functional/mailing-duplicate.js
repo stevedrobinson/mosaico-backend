@@ -12,7 +12,8 @@ test.onFinish( async _ => await stopServer() )
 
 const T1 = 'duplicate mailing'
 test( T1, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const t1 = await nm
     .use( connectUser() )

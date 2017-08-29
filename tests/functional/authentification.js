@@ -11,7 +11,8 @@ const { serverReady, stopServer } = setupServer()
 test.onFinish( async _ => await stopServer() )
 
 test('connection success', createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const t1 = await nm.use( connectUser() )
 
@@ -21,8 +22,9 @@ test('connection success', createTest( 1, false, async (t, nm, close) => {
 
 }))
 
-test('connection fail', createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+test.only('connection fail', createTest( 1, false, async (t, nm, close) => {
+  await serverReady
+  await resetDB()
 
   const t1 = await nm
     .goto( 'http://localhost:8000?lang=en' )
@@ -42,7 +44,8 @@ test('connection fail', createTest( 1, false, async (t, nm, close) => {
 }))
 
 test('admin connection – success', createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const t1 = await nm
     .use( connectAdmin() )

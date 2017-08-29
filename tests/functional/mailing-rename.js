@@ -48,7 +48,8 @@ function checkName(nm) {
 
 const T1 = 'rename from editor – can rename'
 test( T1, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const t1 = await nm
     .use( connectUser() )
@@ -64,7 +65,8 @@ test( T1, createTest( 1, false, async (t, nm, close) => {
 
 const T2 = 'rename from editor – empty rename get default title'
 test( T2, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const t1 = await nm
     .use( connectUser() )
@@ -81,7 +83,8 @@ test( T2, createTest( 1, false, async (t, nm, close) => {
 
 const T3 = 'rename from editor – name of 1 space behave like empty'
 test( T3, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const t1 = await nm
     .use( connectUser() )
@@ -97,7 +100,8 @@ test( T3, createTest( 1, false, async (t, nm, close) => {
 
 const T4 = 'rename from editor – admin can do it on a user mailing'
 test( T4, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const t1 = await nm
     .use( connectAdmin() )
@@ -118,7 +122,8 @@ test( T4, createTest( 1, false, async (t, nm, close) => {
 
 const T5 = 'rename from home'
 test( T5, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const t1 =  await nm
     .use( connectUser() )

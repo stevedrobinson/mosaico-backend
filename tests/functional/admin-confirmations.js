@@ -31,7 +31,8 @@ function getDialogTitle() {
 
 const T1 = 'admin - confirmation popup – user listing'
 test( T1, createTest( 3, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   await nm
     .use( connectAdmin() )
@@ -77,7 +78,8 @@ test( T1, createTest( 3, false, async (t, nm, close) => {
 
 const T2  = 'admin - confirmation popup – user card'
 test( T2, createTest( 3, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   await nm
     .use( connectAdmin() )
@@ -125,7 +127,8 @@ test( T2, createTest( 3, false, async (t, nm, close) => {
 
 const T3 = 'admin - confirmation popup – group card (user)'
 test( T3, createTest( 3, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   await nm
     .use( connectAdmin() )
@@ -176,7 +179,8 @@ test( T3, createTest( 3, false, async (t, nm, close) => {
 
 const T4 = 'admin - confirmation popup – template listing'
 test( T4, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   await nm
     .use( connectAdmin() )
@@ -198,7 +202,8 @@ test( T4, createTest( 1, false, async (t, nm, close) => {
 
 const T5 = 'admin - confirmation popup – template card'
 test( T5, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   await nm
     .use( connectAdmin() )
@@ -220,7 +225,8 @@ test( T5, createTest( 1, false, async (t, nm, close) => {
 
 const T6 = 'admin - confirmation popup – group card (template)'
 test( T6, createTest( 1, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   await nm
     .use( connectAdmin() )

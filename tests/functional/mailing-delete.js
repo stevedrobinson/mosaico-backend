@@ -16,7 +16,8 @@ const data = {
 
 const T1 = 'batch deletion'
 test( T1, createTest( 3, false, async (t, nm, close) => {
-  await Promise.all( [serverReady, resetDB()] )
+  await serverReady
+  await resetDB()
 
   const getMailingCount = () => document.querySelectorAll( `.js-name` ).length
 
