@@ -75,10 +75,16 @@ function setupNightmare(show = false)  {
 }
 
 const createTest = (plan, showNightmare = false, cb) => async t => {
-  t.plan( plan )
+  // add one more test for waiting nightmare to close…
+  // …before getting to the next test
+  t.plan( plan + 1 )
   const { nightmare, closeNightmare } = setupNightmare( showNightmare )
   try {
-    await cb(t, nightmare, closeNightmare)
+    await cb(t, nightmare)
+    await closeNightmare()
+    // TODO should finish manually here
+    // t.end()
+    t.pass( 'end' )
   } catch(err) {
     await closeNightmare()
     t.end(err)

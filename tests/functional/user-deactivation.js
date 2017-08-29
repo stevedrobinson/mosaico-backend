@@ -13,8 +13,8 @@ test.onFinish( async _ => await stopServer() )
 
 const WAIT  = 2
 
-const T1 = `user – deactivate & can't connect anymore`
-test( T1, createTest( 3, false, async (t, nm, close) => {
+const T1 = `USER – deactivate & can't connect anymore`
+test( T1, createTest( 3, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -29,7 +29,7 @@ test( T1, createTest( 3, false, async (t, nm, close) => {
       return { icon }
     })
 
-  t.equal( t1.icon, 'check', 'user is active to begin with' )
+  t.equal( t1.icon, 'check', `${T1} – user is active to begin with` )
 
   const t2 = await nm
     .realClick( `a[href="/users"]` )
@@ -45,7 +45,7 @@ test( T1, createTest( 3, false, async (t, nm, close) => {
       return { status }
   }, data.ACTIVE_USER_ID )
 
-  t.equal( t2.status, 'deactivated', 'user link deactivated in user listing')
+  t.equal( t2.status, 'deactivated', `${T1} – user link deactivated in user listing` )
 
   const t3 = await nm
     .realClick( `a[href="/logout"]` )
@@ -63,14 +63,12 @@ test( T1, createTest( 3, false, async (t, nm, close) => {
       return { errorMessage: errorEl ? errorEl.textContent : false }
     })
 
-  await close()
-
-  t.equal(t3.errorMessage, `This account doens't exist or hasn't been activated`, `user can't connect anymore`)
+  t.equal(t3.errorMessage, `${T1} – This account doens't exist or hasn't been activated`, `user can't connect anymore`)
 
 }))
 
-const T2 = 'user – deactivate & reactivate'
-test( T2, createTest( 3, false, async (t, nm, close) => {
+const T2 = 'USER – deactivate & reactivate'
+test( T2, createTest( 3, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -88,7 +86,7 @@ test( T2, createTest( 3, false, async (t, nm, close) => {
       return { icon }
     })
 
-  t.equal( t1.icon, 'airline_seat_individual_suite', 'user is unactive to begin with' )
+  t.equal( t1.icon, 'airline_seat_individual_suite', `${T2} – user is unactive to begin with` )
 
   const t2 = await nm
     .realClick( `a[href^="/users/${ data.ACTIVE_USER_ID }/activate"]` )
@@ -101,7 +99,7 @@ test( T2, createTest( 3, false, async (t, nm, close) => {
       return { icon }
     })
 
-  t.equal( t2.icon, 'report_problem', 'user link deactivated in user card' )
+  t.equal( t2.icon, 'report_problem', `${T2} – user link deactivated in user card` )
 
   const t3 = await nm
     .goto( `http://localhost:8000/groups/${ data.GROUP_ID }` )
@@ -116,8 +114,6 @@ test( T2, createTest( 3, false, async (t, nm, close) => {
       return { status }
     }, data.ACTIVE_USER_ID )
 
-  await close()
-
-  t.equal( t3.status, 'to be initialized', `user is reseted` )
+  t.equal( t3.status, 'to be initialized', `${T2} – user is reseted` )
 
 }))

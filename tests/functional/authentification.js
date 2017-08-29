@@ -10,19 +10,19 @@ const {
 const { serverReady, stopServer } = setupServer()
 test.onFinish( async _ => await stopServer() )
 
-test('connection – user success', createTest( 1, false, async (t, nm, close) => {
+const T1 = 'connection – user success'
+test( T1, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
   const t1 = await nm.use( connectUser() )
 
-  await close()
-
-  t.pass('user is connected')
+  t.pass(`${T1} – user is connected`)
 
 }))
 
-test('connection – user success', createTest( 1, false, async (t, nm, close) => {
+const T2 = 'connection – user success'
+test( T2, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -37,13 +37,12 @@ test('connection – user success', createTest( 1, false, async (t, nm, close) 
       return { errorMessage: errorEl ? errorEl.textContent : false }
     })
 
-  await close()
-
-  t.equal( t1.errorMessage, 'This password is incorrect', 'user has an auth error' )
+  t.equal( t1.errorMessage, 'This password is incorrect', `${T2} – user has an auth error` )
 
 }))
 
-test('admin connection – success', createTest( 1, false, async (t, nm, close) => {
+const T3 = 'admin connection – success'
+test( T3, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -51,8 +50,6 @@ test('admin connection – success', createTest( 1, false, async (t, nm, close)
     .use( connectAdmin() )
     .url()
 
-  await close()
-
-  t.equal('http://localhost:8000/admin', t1, 'admin is connected')
+  t.equal('http://localhost:8000/admin', t1, `${T3} – admin is connected`)
 
 }))

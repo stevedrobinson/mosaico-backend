@@ -30,7 +30,7 @@ function getDialogTitle() {
 //////
 
 const T1 = 'admin - confirmation popup – user listing'
-test( T1, createTest( 3, false, async (t, nm, close) => {
+test( T1, createTest( 3, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -70,14 +70,12 @@ test( T1, createTest( 3, false, async (t, nm, close) => {
     .wait( WAIT_TIME )
     .evaluate( getDialogTitle )
 
-  await close()
-
   t.equal( t3.title, 'Activate', 'user listing - user activation dialog')
 
 }))
 
 const T2  = 'admin - confirmation popup – user card'
-test( T2, createTest( 3, false, async (t, nm, close) => {
+test( T2, createTest( 3, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -119,14 +117,12 @@ test( T2, createTest( 3, false, async (t, nm, close) => {
     .wait( WAIT_TIME )
     .evaluate( getDialogTitle )
 
-  await close()
-
   t.equal( t3.title, 'Activate', 'user card - user activation dialog')
 
 }))
 
 const T3 = 'admin - confirmation popup – group card (user)'
-test( T3, createTest( 3, false, async (t, nm, close) => {
+test( T3, createTest( 3, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -167,8 +163,6 @@ test( T3, createTest( 3, false, async (t, nm, close) => {
     .wait( WAIT_TIME )
     .evaluate( getDialogTitle )
 
-  await close()
-
   t.equal( t3.title, 'Activate', 'group card - user activation dialog')
 
 }))
@@ -178,7 +172,7 @@ test( T3, createTest( 3, false, async (t, nm, close) => {
 //////
 
 const T4 = 'admin - confirmation popup – template listing'
-test( T4, createTest( 1, false, async (t, nm, close) => {
+test( T4, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -194,14 +188,12 @@ test( T4, createTest( 1, false, async (t, nm, close) => {
     .wait( WAIT_TIME )
     .evaluate( getDialogTitle )
 
-  await close()
-
   t.equal( t1.title, 'Delete template', 'template listing - delete dialog')
 
 }))
 
 const T5 = 'admin - confirmation popup – template card'
-test( T5, createTest( 1, false, async (t, nm, close) => {
+test( T5, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -217,14 +209,12 @@ test( T5, createTest( 1, false, async (t, nm, close) => {
     .wait( WAIT_TIME )
     .evaluate( getDialogTitle )
 
-  await close()
-
   t.equal( t1.title, 'Delete template', 'template listing - delete dialog')
 
 }))
 
 const T6 = 'admin - confirmation popup – group card (template)'
-test( T6, createTest( 1, false, async (t, nm, close) => {
+test( T6, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -239,8 +229,6 @@ test( T6, createTest( 1, false, async (t, nm, close) => {
     .wait( `dialog[open]` )
     .wait( WAIT_TIME )
     .evaluate( getDialogTitle )
-
-  await close()
 
   t.equal( t1.title, 'Delete template', 'template listing - delete dialog')
 

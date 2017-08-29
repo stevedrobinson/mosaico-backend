@@ -13,8 +13,8 @@ test.onFinish( async _ => await stopServer() )
 
 const WAIT  = 2
 
-const T1 = `mailing – transfer a mailing from admin to user`
-test( T1, createTest( 2, false, async (t, nm, close) => {
+const T1 = `MAILING – transfer a mailing from admin to user`
+test( T1, createTest( 2, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -34,15 +34,13 @@ test( T1, createTest( 2, false, async (t, nm, close) => {
     .wait( WAIT )
     .exists( `a[href="/mailings/${data.ADMIN_MAILING_ID}/transfer"]` )
 
-  t.notOk( t1, 'no more links to this mailing in admin' )
+  t.notOk( t1, `${T1} – no more links to this mailing in admin` )
 
   const t2 = await nm
     .goto(`http://localhost:8000/users/${userId}`)
     .wait( WAIT )
     .exists(`a[href="/mailings/${data.ADMIN_MAILING_ID}"]`)
 
-  await close()
-
-  t.ok(t2, `transfered mailing is owned by the right user`)
+  t.ok(t2, `${T1} – transfered mailing is owned by the right user`)
 
 }))

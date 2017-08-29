@@ -10,10 +10,10 @@ const {
 const { serverReady, stopServer } = setupServer()
 test.onFinish( async _ => await stopServer() )
 
-const WAIT  = 2}
+const WAIT  = 2
 
-const T1 = 'batch deletion'
-test( T1, createTest( 3, false, async (t, nm, close) => {
+const T1 = 'MAILING – batch deletion'
+test( T1, createTest( 3, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -36,22 +36,20 @@ test( T1, createTest( 3, false, async (t, nm, close) => {
       return number ? ~~number[1] : false
     })
 
-  t.equal( t1, 2, 'batch deletion - selection is counted correctly on the header')
+  t.equal( t1, 2, `${T1} - selection is counted correctly on the dialog`)
 
   const t2 = await nm
     .realClick( `button.js-delete-mailings` )
     .wait( WAIT )
     .evaluate( () => document.querySelectorAll( `.js-delete-selection-list li` ).length )
 
-  t.equal( t2, 2, 'batch deletion - selection is counted correctly on the dialog')
+  t.equal( t2, 2, `${T1} - selection is counted correctly on the dialog`)
 
   const t3 = await nm
     .realClick( `button.js-delete-confirm` )
     .wait( WAIT )
     .evaluate( getMailingCount )
 
-  await close()
-
-  t.equal( t3, inititalMailingCount - 2, 'batch deletion - mailings have been deleted')
+  t.equal( t3, inititalMailingCount - 2, `${T1} - mailings have been deleted`)
 
 }))

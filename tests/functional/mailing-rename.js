@@ -46,8 +46,8 @@ function checkName(nm) {
 // EDITOR
 //////
 
-const T1 = 'rename from editor – can rename'
-test( T1, createTest( 1, false, async (t, nm, close) => {
+const T1 = 'MAILING – rename from editor – can rename'
+test( T1, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -57,14 +57,12 @@ test( T1, createTest( 1, false, async (t, nm, close) => {
     .insert( rename.inputSelector, data.TEST_NAME )
     .use( checkName )
 
-  await close()
-
   t.equal( t1.name, data.TEST_NAME )
 
 }))
 
-const T2 = 'rename from editor – empty rename get default title'
-test( T2, createTest( 1, false, async (t, nm, close) => {
+const T2 = 'MAILING – rename from editor – empty rename get default title'
+test( T2, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -75,14 +73,12 @@ test( T2, createTest( 1, false, async (t, nm, close) => {
     .type( rename.inputSelector, '\u0008' )
     .use( checkName )
 
-  await close()
-
   t.equal( t1.name, 'untitled' )
 
 }))
 
-const T3 = 'rename from editor – name of 1 space behave like empty'
-test( T3, createTest( 1, false, async (t, nm, close) => {
+const T3 = 'MAILING – rename from editor – name of 1 space behave like empty'
+test( T3, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -92,14 +88,12 @@ test( T3, createTest( 1, false, async (t, nm, close) => {
     .insert( rename.inputSelector, ' ' )
     .use( checkName )
 
-  await close()
-
   t.equal( t1.name, 'untitled' )
 
 }))
 
-const T4 = 'rename from editor – admin can do it on a user mailing'
-test( T4, createTest( 1, false, async (t, nm, close) => {
+const T4 = 'MAILING – rename from editor – admin can do it on a user mailing'
+test( T4, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -110,8 +104,6 @@ test( T4, createTest( 1, false, async (t, nm, close) => {
     .wait()
     .use( checkName )
 
-  await close()
-
   t.equal( t1.name, data.TEST_NAME )
 
 }))
@@ -120,8 +112,8 @@ test( T4, createTest( 1, false, async (t, nm, close) => {
 // HOME
 //////
 
-const T5 = 'rename from home'
-test( T5, createTest( 1, false, async (t, nm, close) => {
+const T5 = 'MAILING – rename from home'
+test( T5, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -137,8 +129,6 @@ test( T5, createTest( 1, false, async (t, nm, close) => {
       const name      = document.querySelector( selector ).textContent
       return { name }
     }, data)
-
-  await close()
 
   t.equal( t1.name, data.TEST_NAME )
 

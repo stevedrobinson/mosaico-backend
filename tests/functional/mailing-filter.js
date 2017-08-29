@@ -49,8 +49,8 @@ const selectMultiple = (selectQuery, value) => {
 // NAME
 //////
 
-const T1 = 'mailing – filter by name'
-test( T1, createTest( 4, false, async (t, nm, close) => {
+const T1 = 'MAILING – filter by name'
+test( T1, createTest( 4, false, async (t, nm) => {
 
   const SEARCH   = 'pouic'
 
@@ -79,9 +79,6 @@ test( T1, createTest( 4, false, async (t, nm, close) => {
   t.notEqual( t1.countAll, initialState.countAll, `${T1} – a filtering has been done` )
   t.equal( t1.countAll, initialState.countPouic, `${T1} – it's the right count` )
   t.equal( t1.countAll, t1.countPouic, `${T1} – it all countains the right string` )
-
-  await close()
-
   t.equal( t1.summary, SEARCH, `${T1} – summary is the right one` )
 
 }))
@@ -90,8 +87,8 @@ test( T1, createTest( 4, false, async (t, nm, close) => {
 // TEMPLATES
 //////
 
-const T2 = 'mailing – filter templates'
-test( T2, createTest( 4, false, async (t, nm, close) => {
+const T2 = 'MAILING – filter templates'
+test( T2, createTest( 4, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -126,9 +123,6 @@ test( T2, createTest( 4, false, async (t, nm, close) => {
 
   t.equal( t1.count, 1, `${T2} – only selected template is left` )
   t.equal( t1.names.join(''), data.VERSAFIX_NAME, `${T2} – it's the right one` )
-
-  await close()
-
   t.equal( t1.summary, data.VERSAFIX_NAME, `${T2} – summary is the right one` )
 
 }))
@@ -137,8 +131,8 @@ test( T2, createTest( 4, false, async (t, nm, close) => {
 // AUTHORS
 //////
 
-const T3 = 'mailing – filter author'
-test( T3, createTest( 4, false, async (t, nm, close) => {
+const T3 = 'MAILING – filter author'
+test( T3, createTest( 4, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -167,9 +161,6 @@ test( T3, createTest( 4, false, async (t, nm, close) => {
 
   t.equal( t1.count, 1, `${T3} – only one author is left` )
   t.equal( t1.names[0], data.ACTIVE_USER_NAME, `${T3} – it's the right one` )
-
-  await close()
-
   t.equal( t1.summary, data.ACTIVE_USER_NAME, `${T3} – summary is the right one` )
 
 }))
@@ -178,8 +169,8 @@ test( T3, createTest( 4, false, async (t, nm, close) => {
 // TAGS
 //////
 
-const T4 = 'mailing – filter by tags'
-test.only( T4, createTest( 13, false, async (t, nm, close) => {
+const T4 = 'MAILING – filter by tags'
+test( T4, createTest( 13, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -236,9 +227,6 @@ test.only( T4, createTest( 13, false, async (t, nm, close) => {
   t.equal( t3.noTag, 0, `${T4} – mailings without tags are skipped` )
   t.equal( initialState[TAGS[2]], t3[TAGS[2]], `${T4} – third tag is preserved` )
   t.equal( initialState[TAGS[1]], t3[TAGS[1]], `${T4} – second selected tag is preserved` )
-
-  await close()
-
   t.equal( initialState[TAGS[0]], t3[TAGS[0]], `${T4} – first selected is preserved` )
 
 }))

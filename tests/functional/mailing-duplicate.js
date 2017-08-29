@@ -10,8 +10,8 @@ const {
 const { serverReady, stopServer } = setupServer()
 test.onFinish( async _ => await stopServer() )
 
-const T1 = 'duplicate mailing'
-test( T1, createTest( 1, false, async (t, nm, close) => {
+const T1 = 'MAILING – duplicate'
+test( T1, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -25,9 +25,7 @@ test( T1, createTest( 1, false, async (t, nm, close) => {
       return { originalName, copyName }
     })
 
-  await close()
-
   const { originalName,  copyName } = t1
-  t.equal(copyName, `${originalName} copy`, 'same name + copy suffix')
+  t.equal(copyName, `${originalName} copy`, `${T1} – same name + copy suffix`)
 
 }))

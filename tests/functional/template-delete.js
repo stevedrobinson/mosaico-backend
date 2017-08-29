@@ -13,8 +13,8 @@ test.onFinish( async _ => await stopServer() )
 
 const WAIT  = 2
 
-const T1 = 'delete one'
-test( T1, createTest( 2, false, async (t, nm, close) => {
+const T1 = 'TEMPLATE – delete one'
+test( T1, createTest( 2, false, async (t, nm) => {
   await serverReady
   await resetDB()
 
@@ -31,7 +31,7 @@ test( T1, createTest( 2, false, async (t, nm, close) => {
     .wait( WAIT )
     .evaluate( findTemplateLink, data)
 
-  t.equal( t1.templateCount > 1 , true, 'template is present found and has mailings')
+  t.equal( t1.templateCount > 1 , true, `${T1} – template is present found and has mailings`)
 
   const t2 = await nm
     .goto(`http://localhost:8000/templates/${ data.TEMPLATE_ID }`)
@@ -42,8 +42,6 @@ test( T1, createTest( 2, false, async (t, nm, close) => {
     .wait( `a[href="#template-panel"]` )
     .evaluate( findTemplateLink, data )
 
-  await close()
-
-  t.equal( t2.templateCount < 1, true, 'template is nowhere to be found anymore')
+  t.equal( t2.templateCount < 1, true, `${T1} – template is nowhere to be found anymore`)
 
 }))
