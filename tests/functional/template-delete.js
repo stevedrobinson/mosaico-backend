@@ -2,6 +2,7 @@
 
 const test      = require('tape')
 const {
+  data,
   connectUser,
   connectAdmin,
   setupServer,
@@ -10,11 +11,7 @@ const {
 const { serverReady, stopServer } = setupServer()
 test.onFinish( async _ => await stopServer() )
 
-const data = {
-  WAIT:         1,
-  TEMPLATE_ID:  'b109c93c-679e-4a7c-8f84-9de3a13c1b38',
-  GROUP_ID:     'c40dce03-7549-49f3-968a-8c77a7177425',
-}
+const WAIT  = 2
 
 const T1 = 'delete one'
 test( T1, createTest( 2, false, async (t, nm, close) => {
@@ -29,9 +26,9 @@ test( T1, createTest( 2, false, async (t, nm, close) => {
 
   const t1 = await nm
     .use( connectAdmin() )
-    .wait( data.WAIT )
+    .wait( WAIT )
     .goto(`http://localhost:8000/groups/${ data.GROUP_ID} `)
-    .wait( data.WAIT )
+    .wait( WAIT )
     .evaluate( findTemplateLink, data)
 
   t.equal( t1.templateCount > 1 , true, 'template is present found and has mailings')
@@ -39,9 +36,9 @@ test( T1, createTest( 2, false, async (t, nm, close) => {
   const t2 = await nm
     .goto(`http://localhost:8000/templates/${ data.TEMPLATE_ID }`)
     .click( 'a.js-delete-template' )
-    .wait( data.WAIT )
+    .wait( WAIT )
     .click( `a.js-dialog-confirm` )
-    .wait( data.WAIT )
+    .wait( WAIT )
     .wait( `a[href="#template-panel"]` )
     .evaluate( findTemplateLink, data )
 
