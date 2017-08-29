@@ -21,7 +21,7 @@ test( T1, createTest( 1, false, async (t, nm) => {
 
 }))
 
-const T2 = 'connection – user success'
+const T2 = 'connection – user error'
 test( T2, createTest( 1, false, async (t, nm) => {
   await serverReady
   await resetDB()
