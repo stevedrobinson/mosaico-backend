@@ -54,7 +54,7 @@ const testEnv = (show = true) => {
     //   mainly because of DB connection from sequelize
     clearRequire.match( /\/server\// )
     // clean also passport:
-    //   he will retain an old DB connection in deserialize user :()
+    //   he will retain an old DB connection in deserialize user :(
     clearRequire.match( /\/passport\// )
 
     resetDB()
@@ -81,14 +81,11 @@ const testEnv = (show = true) => {
 
 }
 
-
 // tape callback wrapper
 // we could have wrapped the whole tape function but we would have lost:
 //  - test.skip
 //  - test.only
 const createTest = (showNightmare = true, cb) => async t => {
-  // add one more test for waiting nightmare to close…
-  // …before getting to the next test
   const { start, stop } = testEnv( showNightmare )
   let nightmare
 

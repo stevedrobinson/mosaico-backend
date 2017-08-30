@@ -93,7 +93,6 @@ config.isAws   = config.storage.type === 'aws'
 //----- TEST SPECIFICS
 
 if (config.TEST) {
-  console.log( chalk.keyword('orange')('[SERVER] running in TEST mode') )
   config.NODE_ENV       = 'development'
   config.host           = 'localhost:8000'
   config.PORT           = 8000

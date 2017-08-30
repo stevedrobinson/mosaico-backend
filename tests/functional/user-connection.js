@@ -8,7 +8,9 @@ const {
   connectAdmin,
   createTest  } = require('../_test-utils')
 
-const T1 = 'connection – user success'
+const WAIT      = 2
+
+const T1 = 'USER – connection success'
 test( T1, createTest( false, async (t, nm) => {
 
   const t1 = await nm.use( connectUser() )
@@ -17,14 +19,14 @@ test( T1, createTest( false, async (t, nm) => {
 
 }))
 
-const T2 = 'connection – user error'
+const T2 = 'USER – connection error'
 test( T2, createTest( false, async (t, nm) => {
 
   const t1 = await nm
     .goto( 'http://localhost:8000?lang=en' )
     .insert( '#email-field', 'p@p.com' )
     .insert( '#password-field', 'pp' )
-    .click( 'form[action*="/login"] [type=submit]' )
+    .realClick( 'form[action*="/login"] [type=submit]' )
     .wait( 'dl.message.error' )
     .evaluate( () => {
       const errorEl = document.querySelector('.message.error p')
@@ -35,13 +37,15 @@ test( T2, createTest( false, async (t, nm) => {
 
 }))
 
-const T3 = 'admin connection – success'
+const T3 = 'USER – deconnection success'
 test( T3, createTest( false, async (t, nm) => {
 
   const t1 = await nm
-    .use( connectAdmin() )
+    .use( connectUser() )
+    .realClick( `a[href="/logout"]` )
+    .wait( WAIT )
     .url()
 
-  t.equal('http://localhost:8000/admin', t1, `${T3} – admin is connected`)
+  t.equal(t1, `http://localhost:8000/login`, `${T1} – user is back to login`)
 
 }))

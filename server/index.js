@@ -491,6 +491,7 @@ module.exports = _ => {
         application.reject( err )
         throw err
       }
+      if ( config.TEST ) console.log( c.keyword('orange')('[SERVER] running in TEST mode') )
       console.log(
         c.green('[SERVER] listening on port'), c.cyan(server.address().port),
         c.green('on mode'), c.cyan(config.NODE_ENV)
