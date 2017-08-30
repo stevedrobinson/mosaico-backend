@@ -11,6 +11,7 @@ const {
 data.MAILING_ID = '88e776cb-8062-4933-9589-6c24e1ec8e8c'
 data.TEST_NAME  = 'mosaico-backend email'
 
+const WAIT      = 2
 
 const rename          = {
   nameSelector:   `#toolbar > div.mailing-name > p > span`,
@@ -50,7 +51,9 @@ test( T1, createTest( false, async (t, nm) => {
   const t1 = await nm
     .use( connectUser() )
     .use( gotToEditor )
+    .wait( WAIT )
     .insert( rename.inputSelector, data.TEST_NAME )
+    .wait( WAIT )
     .use( checkName )
 
   t.equal( t1.name, data.TEST_NAME )
@@ -111,7 +114,7 @@ test( T5, createTest( false, async (t, nm) => {
     .insert( '#rename-field', false )
     .insert( '#rename-field', data.TEST_NAME )
     .realClick( '.js-dialog-rename .js-post' )
-    .wait( 300 )
+    .wait( WAIT + 300 )
     .evaluate( data => {
       const selector  = `.js-name[href="/mailings/${ data.MAILING_ID }"]`
       const name      = document.querySelector( selector ).textContent
