@@ -4,13 +4,6 @@ const util        = require( 'util' )
 const chalk       = require( 'chalk' )
 
 const sequelize   = require( './db-connection' )
-const Group       = require( './model-group' )
-const User        = require( './model-user' )
-const Template    = require( './model-template' )
-const Mailing     = require( './model-mailing' )
-const Tag         = require( './model-tag' )
-const Gallery     = require( './model-gallery' )
-const ImageCache  = require( './model-image-cache' )
 
 //////
 // HELPERS
@@ -37,8 +30,18 @@ function addStrictGroupFilter(req, dbQueryParams = {}) {
 }
 
 //////
-// RELATIONS
+// MODELS
 //////
+
+const Group       = require( './model-group' )
+const User        = require( './model-user' )
+const Template    = require( './model-template' )
+const Mailing     = require( './model-mailing' )
+const Tag         = require( './model-tag' )
+const Gallery     = require( './model-gallery' )
+const ImageCache  = require( './model-image-cache' )
+
+//----- RELATIONS
 
 User.belongsTo( Group )
 User.mailings     = User.hasMany( Mailing )
@@ -63,6 +66,7 @@ Group.tags        = Group.hasMany( Tag )
 
 Gallery.belongsTo( Mailing )
 Gallery.belongsTo( Template )
+
 
 //////
 // EXPORTS

@@ -1,28 +1,26 @@
 'use strict'
 
-const _           = require( 'lodash' )
-const qs          = require( 'qs' )
-const { inspect } = require( 'util' )
-const createError = require( 'http-errors' )
-const moment      = require( 'moment' )
-const { Types }   = require( 'mongoose' )
+const _             = require( 'lodash' )
+const qs            = require( 'qs' )
+const { inspect }   = require( 'util' )
+const createError   = require( 'http-errors' )
+const moment        = require( 'moment' )
+const { Types }     = require( 'mongoose' )
 
 const config        = require( '../config' )
 const filemanager   = require( '../filemanager' )
-const models        = require( '../models' )
 const {
-  Template,
-  Mailing,
-  Gallery,
-  Group,
-  User,
-  Tag,
   addGroupFilter,
   addStrictGroupFilter,
-}                         = models
-const cleanTagName        = require( '../../shared/clean-tag-name' )
-const h                   = require( '../helpers' )
-const transfer            = require( './transfer' )
+  Mailing,
+  User,
+  Template,
+  Group,
+  Gallery,
+  Tag, }            = require( '../models' )
+const cleanTagName  = require( '../../shared/clean-tag-name' )
+const h             = require( '../helpers' )
+const transfer      = require( './transfer' )
 
 const translations  = {
   en: JSON.stringify(_.assign(

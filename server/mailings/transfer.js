@@ -1,17 +1,15 @@
 'use strict'
 
 const createError         = require( 'http-errors' )
-
-const h                   = require( '../helpers' )
 const { inspect }         = require( 'util' )
 
+const h                   = require( '../helpers' )
 const {
-  Mailing,
-  User,
-  Group,
-  Template,
   addStrictGroupFilter,
-}                         = require('../models')
+  Mailing,
+  Template,
+  Group,
+  User, }                 = require('../models')
 
 async function get(req, res, next) {
   const { mailingId } = req.params
@@ -45,10 +43,10 @@ async function get(req, res, next) {
 }
 
 async function post(req, res, next) {
-  const { userId }      = req.body
-  const { mailingId }   = req.params
-  const userQuery       = User.findById( userId )
-  const mailingQuery    = Mailing.findById( mailingId )
+  const { userId }        = req.body
+  const { mailingId }     = req.params
+  const userQuery         = User.findById( userId )
+  const mailingQuery      = Mailing.findById( mailingId )
 
   const [user, mailing] = await Promise.all( [userQuery, mailingQuery] )
   if (!user) return next( createError(404, 'no user founded') )

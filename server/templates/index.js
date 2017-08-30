@@ -1,26 +1,24 @@
 'use strict'
 
-const _                       = require( 'lodash' )
-const createError             = require( 'http-errors' )
+const _               = require( 'lodash' )
+const createError     = require( 'http-errors' )
 
-const config                  = require( '../config' )
-const filemanager             = require( '../filemanager' )
-const slugFilename            = require( '../../shared/slug-filename.js' )
+const config          = require( '../config' )
+const filemanager     = require( '../filemanager' )
+const slugFilename    = require( '../../shared/slug-filename.js' )
 const {
   renderMarkup,
   generatePreviews,
   nightmareInstance,
-  startNightmare }            = require( './generate-previews' )
-const { autoUpload }          = require( './auto-upload' )
-const h                       = require( '../helpers' )
+  startNightmare }    = require( './generate-previews' )
+const { autoUpload }  = require( './auto-upload' )
+const h               = require( '../helpers' )
 const {
-  formatErrors,
-  Group,
-  Template,
-  Mailing,
-  Gallery,
   addGroupFilter,
-}                             = require('../models')
+  Template,
+  Group,
+  Mailing,
+  Gallery, }          = require( '../models' )
 
 async function list(req, res, next) {
   const reqParams   = {

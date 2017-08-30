@@ -2,10 +2,10 @@
 
 const Sequelize   = require( 'sequelize' )
 
-const sequelize   = require( './db-connection' )
 const h           = require( '../helpers' )
+const sequelize   = require( './db-connection' )
 
-const Gallery     = sequelize.define( 'gallery', {
+const Gallery = sequelize.define( 'gallery', {
   name: {
     type:         Sequelize.STRING,
     primaryKey:   true,
@@ -30,4 +30,3 @@ const Gallery     = sequelize.define( 'gallery', {
 })
 
 module.exports = Gallery
-

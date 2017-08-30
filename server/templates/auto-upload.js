@@ -6,11 +6,11 @@ const fs                      = require( 'fs-extra' )
 const crypto                  = require( 'crypto' )
 const createError             = require( 'http-errors' )
 
-const { Template }            = require( '../models' )
 const defer                   = require( '../helpers/create-promise' )
 const getTemplateImagePrefix  = require( '../helpers/get-template-image-prefix' )
 const slugFilename            = require( '../../shared/slug-filename' )
 const filemanager             = require( '../filemanager' )
+const { Template }            = require( '../models' )
 
 const tmplsRootPath = path.join( __dirname, '../../templates' )
 const tmplsPath     = {
@@ -62,8 +62,8 @@ function getAllFiles( basePath ) {
 async function autoUpload( req, res, next ) {
   const {
     templateId,
-    templateName }  = req.params
-  const redirectUrl = `/templates/${templateId}`
+    templateName }    = req.params
+  const redirectUrl   = `/templates/${templateId}`
   if (!templateName in tmplsPath) return res.redirect( redirectUrl )
 
   const tmplPath      = tmplsPath[templateName]

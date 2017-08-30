@@ -1,10 +1,10 @@
 'use strict'
 
-const Sequelize       = require( 'sequelize' )
-const { inspect }     = require( 'util' )
+const Sequelize   = require( 'sequelize' )
+const { inspect } = require( 'util' )
 
-const sequelize       = require( './db-connection' )
-const h               = require( '../helpers' )
+const h           = require( '../helpers' )
+const sequelize   = require( './db-connection' )
 
 function templateLoadingUrl(templateId) {
   return `/templates/${templateId}/markup`
@@ -22,7 +22,7 @@ function mailingUrls(mailingId, templateId) {
   }
 }
 
-const Mailing        = sequelize.define( 'mailing', {
+const Mailing =   sequelize.define( 'mailing', {
   id:  {
     type:         Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,

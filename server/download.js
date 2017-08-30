@@ -15,10 +15,8 @@ const mail          = require('./mail')
 const config        = require('./config')
 const h             = require( './helpers' )
 const {
-  Mailing,
   addGroupFilter,
-}                   = require('./models')
-
+  Mailing, }        = require('./models')
 
 //----- UTILS
 

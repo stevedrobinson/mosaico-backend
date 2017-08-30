@@ -15,6 +15,8 @@ block content
             if _config.debug
               th.mdl-data-table__cell--non-numeric id
             th.mdl-data-table__cell--non-numeric=__('general.group-name')
+            th=__('general.templates')
+            th=__('general.users')
             th.mdl-data-table__cell--non-numeric=__('general.created-at')
             //- th.mdl-data-table__cell--action delete
         tbody
@@ -23,6 +25,8 @@ block content
               if _config.debug
                 td.mdl-data-table__cell--non-numeric= group._id
               td.mdl-data-table__cell--non-numeric: a(href=group.url.show)= group.name
+              td= group.templates.length
+              td= group.users.length
               td.mdl-data-table__cell--non-numeric= formatDate(group.createdAt)
               //- td.mdl-data-table__cell--action: form(action=group.url.delete method="post")
               //-   button.mdl-button.mdl-js-button.mdl-button--icon.mdl-button--accent(type="submit")

@@ -2,6 +2,7 @@ import dialogPolyfill from 'dialog-polyfill'
 
 const lang      = document.querySelector('html').getAttribute('lang')
 const isEnglish = lang === 'en'
+const raf       = window.requestAnimationFrame
 
 //////
 // DIALOG
@@ -32,7 +33,7 @@ function resetDialog() {
 function openDialog( datas ) {
   title.textContent       = datas.title
   description.textContent = datas.description
-  dialog.showModal()
+  raf( _ => dialog.showModal() )
 }
 
 //////
@@ -69,16 +70,13 @@ if (notification) {
 
 //----- RESET
 
-const resetUsers  = document.querySelectorAll('form.js-reset-user')
-addListeners(resetUsers, 'submit', askUserReset)
+const resetUsers  = document.querySelectorAll('.js-reset-user')
+addListeners(resetUsers, 'click', askUserReset)
 function askUserReset(e) {
   e.preventDefault()
-  const form      = e.currentTarget
-  const userName  = form.dataset.name
-  confirmLink.addEventListener('click', function (e) {
-    e.preventDefault()
-    form.submit()
-  })
+  const link      = e.currentTarget
+  const userName  = link.dataset.name
+  confirmLink.setAttribute( 'href', link.getAttribute('href') )
   openDialog( {
     title:        isEnglish ? 'Reset' : 'Réinitialiser',
     description:  isEnglish ? `are you sure you want to reset ${userName} password?` : `êtes vous sûr de vouloir réinitialiser le mot de passe de  ${userName} ?`,

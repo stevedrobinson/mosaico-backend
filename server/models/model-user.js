@@ -46,7 +46,64 @@ function encodePassword(password) {
   return bcrypt.hashSync(password, 10)
 }
 
-const User     = sequelize.define( 'user', {
+//////
+// DEFINING mailing groups
+//////
+
+const { brand } = config
+
+tmpl.load       = function (id) {
+  var filename = path.join( __dirname, `/../views/${id}.html` )
+  return fs.readFileSync( filename, 'utf8' )
+}
+
+// put in cache
+const tmpReset = tmpl( 'reset-password' )
+const tmplI18n = {
+  'reset-password': {
+    fr: {
+      title:  `Bienvenue sur l'email builder de ${ brand.name }`,
+      desc:   `Cliquez sur le bouton ci-dessous pour initialiser votre mot de passe, ou copiez l'url suivante dans votre navigateur:`,
+      reset:  `INITIALISER MON MOT DE PASSE`,
+
+    },
+    en: {
+      title:  `Welcome to the  ${ brand.name }'s email builder`,
+      desc:   `Click the button below to reset your password, or copy the following URL into your browser:`,
+      reset:  `RESET MY PASSWORD`,
+    }
+  },
+  'reset-success': {
+    fr: {
+      title:  `Votre mot de passe a bien été réinitialisé`,
+      desc:   `Cliquez sur le bouton ci-dessous pour vous connecter, ou copiez l'url suivante dans votre navigateur:`,
+      reset:  `SE CONNECTER`,
+
+    },
+    en: {
+      title:  `Your password has been succesfully setted`,
+      desc:   `Click the button below to login, or copy the following URL into your browser:`,
+      reset:  `LOGIN`,
+    }
+  }
+}
+
+function getTemplateData(templateName, lang, additionalDatas) {
+  const t         = tmplI18n[ templateName ][ lang ]
+  const branding  = {
+    name:             brand.name,
+    primary:          brand['color-primary'],
+    primaryContrast:  brand['color-primary-contrast'],
+  }
+
+  return assign( {}, { t, branding }, additionalDatas )
+}
+
+//////
+// MODEL
+//////
+
+const User =   sequelize.define( 'user', {
   id:  {
     type:         Sequelize.UUID,
     defaultValue: Sequelize.UUIDV4,
@@ -228,59 +285,6 @@ User.prototype.comparePassword = function (password) {
   const userPassword = this.getDataValue('password')
   if (!userPassword) return false
   return bcrypt.compareSync( password, this.getDataValue('password') )
-}
-
-//////
-// DEFINING mailing groups
-//////
-
-const { brand } = config
-
-tmpl.load       = function (id) {
-  var filename = path.join( __dirname, `/../views/${id}.html` )
-  return fs.readFileSync( filename, 'utf8' )
-}
-
-// put in cache
-const tmpReset = tmpl( 'reset-password' )
-const tmplI18n = {
-  'reset-password': {
-    fr: {
-      title:  `Bienvenue sur l'email builder de ${ brand.name }`,
-      desc:   `Cliquez sur le bouton ci-dessous pour initialiser votre mot de passe, ou copiez l'url suivante dans votre navigateur:`,
-      reset:  `INITIALISER MON MOT DE PASSE`,
-
-    },
-    en: {
-      title:  `Welcome to the  ${ brand.name }'s email builder`,
-      desc:   `Click the button below to reset your password, or copy the following URL into your browser:`,
-      reset:  `RESET MY PASSWORD`,
-    }
-  },
-  'reset-success': {
-    fr: {
-      title:  `Votre mot de passe a bien été réinitialisé`,
-      desc:   `Cliquez sur le bouton ci-dessous pour vous connecter, ou copiez l'url suivante dans votre navigateur:`,
-      reset:  `SE CONNECTER`,
-
-    },
-    en: {
-      title:  `Your password has been succesfully setted`,
-      desc:   `Click the button below to login, or copy the following URL into your browser:`,
-      reset:  `LOGIN`,
-    }
-  }
-}
-
-function getTemplateData(templateName, lang, additionalDatas) {
-  const t         = tmplI18n[ templateName ][ lang ]
-  const branding  = {
-    name:             brand.name,
-    primary:          brand['color-primary'],
-    primaryContrast:  brand['color-primary-contrast'],
-  }
-
-  return assign( {}, { t, branding }, additionalDatas )
 }
 
 module.exports = User

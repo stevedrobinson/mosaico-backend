@@ -76,28 +76,11 @@
   //////
 
   "dbConfigs": {
-    "local": {
-      "host": "localhost:27017",
-      "folder": "mosaico-backend"
-    },
-    "dev": {
-      "host": "localhost:27017",
-      "folder": "mosaico-backend_copy",
-      "user": "####",
-      "password": "####"
-    },
-    "stage": {
-      "host": "localhost:27017",
-      "folder": "mosaico-backend_copy",
-      "user": "####",
-      "password": "####"
-    },
-    "production": {
-      "host": "localhost:27017",
-      "folder": "mosaico-backend_copy",
-      "user": "####",
-      "password": "####"
-    }
+    "local": "postgres://localhost:5432/mosaico-backend",
+    "test": "postgres://localhost:5432/mosaico-backend-test"
+    // "dev": …
+    // "stage": …
+    // "production": …
   }
 
   //////

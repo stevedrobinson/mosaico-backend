@@ -22,8 +22,7 @@ const {
   parseMultipart, }   = require( './filemanager' )
 const {
   ImageCache,
-  Gallery,
-}                     = require( './models' )
+  Gallery, }          = require( './models' )
 
 console.log('[IMAGES] config.images.cache', config.images.cache)
 
@@ -64,8 +63,8 @@ const handleFileStreamError = next => err => {
 }
 
 const onWriteResizeEnd = datas => () => {
-  const { path, name }  = datas
-  const params          = { path, name }
+  const { path, name, req }   = datas
+  const params                = { path, name }
 
   // save in DB for cataloging
   ImageCache
@@ -129,7 +128,7 @@ const handleGifStream = (req, res, next, gifProcessor) => {
   const name              = getResizedImageName( path )
 
   writeStreamFromStream( streamForSave, name )
-  .then( onWriteResizeEnd({path, name}) )
+  .then( onWriteResizeEnd({path, name, req}) )
   .catch( onWriteResizeError(path) )
 
 }
@@ -335,7 +334,7 @@ function placeholder(req, res, next) {
   const name      = getResizedImageName( req.path )
 
   writeStreamFromStream( pipeline.clone(), name )
-  .then( onWriteResizeEnd({ path, name }) )
+  .then( onWriteResizeEnd({ path, name, req }) )
   .catch( onWriteResizeError(path) )
 }
 
@@ -376,7 +375,7 @@ async function listImages( req, res, next ) {
 }
 
 // upload & update gallery
-// `pg` node_module has to be downgraded to 6for solving this issue:
+// `pg` node_module has to be downgraded to 6 for solving this issue:
 // https://github.com/sequelize/sequelize/issues/7999#issue-244898237
 async function upload( req, res, next ) {
   if (!req.xhr) return next( createError(501) ) // Not Implemented

@@ -261,5 +261,8 @@
 	"email must be unique": "email must be unique",
 	"Validation isEmail on email failed": "the email was invalid",
 	"Missing credentials": "Missing credentials",
-	"error": "error"
+	"error": "error",
+	"ConnectionManager": {
+		"getConnection was called after the connection manager was closed!": "ConnectionManager.getConnection was called after the connection manager was closed!"
+	}
 }

@@ -1,22 +1,40 @@
 'use strict'
 
-const chalk                 = require( 'chalk' )
-const createError           = require( 'http-errors' )
+const chalk       = require( 'chalk' )
+const createError = require( 'http-errors' )
 
-const config                = require( './config' )
-const h                     = require( './helpers' )
-const { handleValidatorsErrors,
+const config      = require( './config' )
+const h           = require( './helpers' )
+const {
   Group,
   User,
   Template,
-  Mailing,
-}     = require('./models')
+  Mailing, }      = require( './models' )
 
 async function list(req, res, next) {
   const reqParams = {
     order: [
       ['name', 'ASC'],
     ],
+    attributes: [
+      'id',
+      'name',
+      'createdAt',
+      'updatedAt',
+    ],
+    include: [{
+      model: User,
+      attributes: [
+        'id',
+      ],
+      required: false,
+    }, {
+      model: Template,
+      attributes: [
+        'id',
+      ],
+      required: false,
+    }],
   }
   const groups = await Group.findAll( reqParams )
   res.render('group-list', {
@@ -79,7 +97,7 @@ async function update(req, res, next) {
 }
 
 module.exports = {
-  list:       h.asyncMiddleware( list ),
-  show:       h.asyncMiddleware( show ),
-  update:     h.asyncMiddleware( update ),
+  list:   h.asyncMiddleware( list ),
+  show:   h.asyncMiddleware( show ),
+  update: h.asyncMiddleware( update ),
 }

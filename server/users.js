@@ -1,17 +1,15 @@
 'use strict'
 
-const createError           = require( 'http-errors' )
-const { merge }             = require( 'lodash' )
+const createError = require( 'http-errors' )
+const { merge }   = require( 'lodash' )
 
-const config                = require( './config' )
-const h                     = require( './helpers' )
+const config      = require( './config' )
+const h           = require( './helpers' )
 const {
-  handleValidatorsErrors,
-  Group,
   User,
+  Group,
   Mailing,
-  Template,
-}                           = require('./models')
+  Template, }     = require( './models' )
 
 async function list(req, res, next) {
   const reqParams   = {

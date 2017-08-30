@@ -19,8 +19,19 @@ function logErrorAndExit(error, message) {
   return process.exit(1)
 }
 
+const tables = [
+  'galleries',
+  'groups',
+  'mailings',
+  'MailingTag',
+  'tags',
+  'templates',
+  'users',
+]
+
 module.exports = {
   setDbParams:      setDbParams,
   logData:          logData,
   logErrorAndExit:  logErrorAndExit,
+  tables,
 }

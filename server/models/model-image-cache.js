@@ -1,11 +1,11 @@
 'use strict'
 
-const Sequelize = require( 'sequelize' )
+const Sequelize   = require( 'sequelize' )
 
-const sequelize = require( './db-connection' )
-const h         = require( '../helpers' )
+const h           = require( '../helpers' )
+const sequelize   = require( './db-connection' )
 
-const ImageCache  = sequelize.define( 'imageCache', {
+const ImageCache = sequelize.define( 'imageCache', {
   path: {
     type:         Sequelize.STRING,
     allowNull:    false,
@@ -27,4 +27,4 @@ const ImageCache  = sequelize.define( 'imageCache', {
   timestamps: false,
 })
 
-module.exports = ImageCache
+module.exports =ImageCache

@@ -1,43 +1,70 @@
 'use strict'
 
-const qs              = require('qs')
-const url             = require('url')
-const path            = require('path')
-const chalk           = require('chalk')
-const express         = require('express')
-const bodyParser      = require('body-parser')
-const methodOverride  = require('method-override')
-const compression     = require('compression')
-const morgan          = require('morgan')
-const favicon         = require('serve-favicon')
-const cookieParser    = require('cookie-parser')
-const i18n            = require('i18n')
-const moment          = require('moment')
-const { inspect }     = require('util')
-const createError     = require('http-errors')
-const helmet          = require('helmet')
-const httpShutdown    = require('http-shutdown')
-const mongoose        = require('mongoose')
+const qs              = require( 'qs' )
+const url             = require( 'url' )
+const path            = require( 'path' )
+const c               = require( 'chalk' )
+const express         = require( 'express' )
+const bodyParser      = require( 'body-parser' )
+const methodOverride  = require( 'method-override' )
+const compression     = require( 'compression' )
+const morgan          = require( 'morgan' )
+const favicon         = require( 'serve-favicon' )
+const cookieParser    = require( 'cookie-parser' )
+const i18n            = require( 'i18n' )
+const moment          = require( 'moment' )
+const {
+  inspect,
+  promisify,
+}                     = require( 'util' )
+const createError     = require( 'http-errors' )
+const helmet          = require( 'helmet' )
+const httpShutdown    = require( 'http-shutdown' )
+const Redis           = require( 'ioredis' )
+const Sequelize       = require( 'sequelize' )
+const formattor       = require( 'formattor' )
 const {
   merge,
   omit,
   floor }             = require('lodash')
 const { duration }    = moment
 
-const session         = require( './session' )
-const defer           = require( './helpers/create-promise' )
+const { defer }       = require( './helpers' )
 const mail            = require( './mail' )
 
-module.exports = function () {
+module.exports = _ => {
 
-  const config        = require( './config' )
-  const { sequelize } = require( './models' )
+  const session = require( './session' )
+  const config  = require( './config' )
+
+  //////
+  // SERVICE CONFIG
+  //////
+
+  //----- SEQUELIZE – for PostgreSQL DB
+
+  const sequelize   = require('./models/db-connection')
+  const models      = require('./models')
+
+  //----- REDIS – for sessions
+
+  // same goes here…
+  const redis     = new Redis( config.redis )
+  if ( config.log.redis ) {
+    redis
+    .monitor()
+    .then( monitor => {
+      monitor.on('monitor',  (time, args, source, database) => {
+        console.log(time + ": " + inspect(args))
+      })
+    })
+  }
 
   //////
   // SERVER CONFIG
   //////
 
-  var app = express()
+  const app = express()
 
   app.set( 'trust proxy', true )
   app.use( helmet() )
@@ -61,19 +88,6 @@ module.exports = function () {
   app.use( compression() )
   app.use( favicon(path.join(__dirname, '../res/favicon.png')) )
   app.use( cookieParser() )
-
-  //----- SESSION & I18N
-
-  session.init( app )
-  i18n.configure({
-    locales:        ['fr', 'en',],
-    defaultLocale:  'fr',
-    extension:      '.js',
-    cookie:         'mosaicobackend',
-    objectNotation: true,
-    directory:      path.join( __dirname, './locales'),
-  })
-  app.use(i18n.init)
 
   //----- TEMPLATES
 
@@ -146,6 +160,36 @@ module.exports = function () {
   app.use( express.static( path.join(__dirname, '../node_modules/material-design-lite') ) )
   app.use( express.static( path.join(__dirname, '../node_modules/material-design-icons-iconfont/dist') ) )
 
+  //----- DYNAMIC IMAGES
+  // put before sessions
+
+  const images = require( './images' )
+
+  app.param(['placeholderSize'], (req, res, next, placeholderSize) => {
+    if ( /(\d+)x(\d+)\.png/.test(placeholderSize) ) return next()
+    console.log('placeholder format INVALID', placeholderSize)
+    next( createError(404) )
+  })
+
+  app.get('/img/:imageName',                  images.read )
+  app.get('/placeholder/:placeholderSize',    images.checkCache, images.placeholder )
+  app.get('/resize/:sizes/:imageName',        images.checkCache, images.checkSizes, images.resize )
+  app.get('/cover/:sizes/:imageName',         images.checkCache, images.checkSizes, images.cover )
+
+  //----- SESSION & I18N
+  // no sessions needed for assets
+
+  session.init( app, redis )
+  i18n.configure({
+    locales:        ['fr', 'en',],
+    defaultLocale:  'fr',
+    extension:      '.js',
+    cookie:         'mosaicobackend',
+    objectNotation: true,
+    directory:      path.join( __dirname, './locales'),
+  })
+  app.use( i18n.init )
+
   //////
   // LOGGING
   //////
@@ -161,18 +205,18 @@ module.exports = function () {
 
   function logRequest(tokens, req, res) {
     if (/\/img\//.test(req.path)) return
-    var method  = chalk.blue(tokens.method(req, res))
+    var method  = c.blue(tokens.method(req, res))
     var ips     = getIp(req)
-    ips         = ips ? chalk.grey(`- ${ips} -`) : ''
-    var url     = chalk.grey(tokens.url(req, res))
+    ips         = ips ? c.grey(`- ${ips} -`) : ''
+    var url     = c.grey(tokens.url(req, res))
     return `${method} ${ips} ${url}`
   }
 
   function logResponse(tokens, req, res) {
-    var method      = chalk.blue(tokens.method(req, res))
+    var method      = c.blue(tokens.method(req, res))
     var ips         = getIp(req)
-    ips             = ips ? chalk.grey(`- ${ips} -`) : ''
-    var url         = chalk.grey(tokens.url(req, res))
+    ips             = ips ? c.grey(`- ${ips} -`) : ''
+    var url         = c.grey(tokens.url(req, res))
     var status      = tokens.status(req, res)
     var time        = floor( tokens['response-time'](req, res) / 1000, 2 )
     var statusColor = status >= 500
@@ -180,7 +224,7 @@ module.exports = function () {
       ? 'yellow' : status >= 300
       ? 'cyan' : 'green';
     if (/\/img\//.test(req.path) && status < 400) return
-    return `${method} ${ips} ${url} ${chalk[statusColor](status)} ${time}s`
+    return `${method} ${ips} ${url} ${c[statusColor](status)} ${time}s`
   }
   app.use(morgan(logRequest, {immediate: true}))
   app.use(morgan(logResponse))
@@ -195,7 +239,6 @@ module.exports = function () {
   const templates       = require( './templates' )
   const mailings        = require( './mailings' )
 
-  const images          = require( './images' )
   const download        = require( './download' )
 
   const guard           = session.guard
@@ -303,12 +346,6 @@ module.exports = function () {
     next( createError(404) )
   })
 
-  app.param(['placeholderSize'], (req, res, next, placeholderSize) => {
-    if ( /(\d+)x(\d+)\.png/.test(placeholderSize) ) return next()
-    console.log('placeholder format INVALID', placeholderSize)
-    next( createError(404) )
-  })
-
   // connection
   app.post('/admin/login', session.authenticate('local', {
     successRedirect: '/admin',
@@ -359,13 +396,9 @@ module.exports = function () {
   app.post('/password/:token',              guard('no-session'), users.setPassword)
   app.get('/logout',                        guard('user'), session.logout )
 
-  //----- IMAGES
+  //----- MORE IMAGES
 
-  app.get('/img/:imageName',                  images.read)
   app.delete('/img/:imageName',               guard('user'), images.destroy)
-  app.get('/placeholder/:placeholderSize',    images.checkCache, images.placeholder)
-  app.get('/resize/:sizes/:imageName',        images.checkCache, images.checkSizes, images.resize)
-  app.get('/cover/:sizes/:imageName',         images.checkCache, images.checkSizes, images.cover)
 
   //----- UPLOADS
 
@@ -452,7 +485,7 @@ module.exports = function () {
 
   const application = defer()
 
-  config.setup.then(function endSetup() {
+  function startApplication() {
     // use httpShutdown for being sure that every connection are removed
     // https://github.com/thedillonb/http-shutdown
     // It's important for testing as we need to be sure every process are done…
@@ -463,65 +496,88 @@ module.exports = function () {
         application.reject( err )
         throw err
       }
+      if ( config.TEST ) console.log( c.keyword('orange')('[SERVER] running in TEST mode') )
       console.log(
-        chalk.green('Server is listening on port'), chalk.cyan(server.address().port),
-        chalk.green('on mode'), chalk.cyan(config.NODE_ENV)
+        c.green('[SERVER] listening on port'), c.cyan(server.address().port),
+        c.green('on mode'), c.cyan(config.NODE_ENV)
       )
 
-      if ( config.debug ) {
-        console.log( chalk.yellow('[DEBUG] is on') )
-      }
-
-      //----- LOG MAIN EXTERNAL SERVICES STATUS
-
-      mail
-      .status
-      .then( () => {
-        console.log( chalk.green('[EMAIL] transport mailing – SUCCESS') )
-      })
-      .catch( err => {
-        console.log( chalk.red('[EMAIL] transport mailing – ERROR') )
-        console.trace(err)
-        throw err
-      })
-      // TODO should test storage connection if AWS
-      console.log( chalk.green(`[STORAGE] storage is`), chalk.cyan(config.storage.type) )
-
-      // TODO should test redis connection also
-      // https://stackoverflow.com/questions/24231963/check-if-redis-is-running-node-js
-      // https://stackoverflow.com/questions/12038128/nodejs-using-redis-connect-redis-with-express
-
+      if ( config.debug ) console.log( c.yellow('[DEBUG] is on') )
+      server.on('close', stopApplication(server) )
+      process.on('SIGTERM', stopApplication(server) )
       setTimeout( templates.startNightmare, 100 )
-
-      sequelize
-      .authenticate()
-      .then( () => sequelize.sync() )
-      .then( () => {
-        console.log( chalk.green('[DATABASE] connection – SUCCESS') )
-      })
-      .catch( err => {
-        console.log( chalk.red('[DATABASE] connection – ERROR') )
-        console.trace( err )
-        throw err
-      })
-
       application.resolve( server )
+
     }) )
+  }
 
-    //----- TEARDOWN
-    server.on('close', () => {
-      // again for being sure that while testing with tape…
-      // …every process generated by the app are killed
-      const closeNightmare  = templates.nightmareInstance.end()
-      const closeDB         = sequelize.connectionManager.close()
+  const stopApplication = server => () => {
+    console.log( '[SERVER] gracefully closing server…' )
+    // again for being sure that while testing with tape…
+    // …every process generated by the app are killed
+    redis.disconnect()
+    // see https://github.com/Raynos/leaked-handles in case of not closing
 
-      Promise
-      .all( [closeNightmare, closeDB] )
-      .then( () => {
-        server.emit( 'shutdown' )
-      })
+    Promise
+    .all([
+      templates.nightmareInstance.end(),
+      sequelize.close(),
+      mail.transporter.close(),
+    ])
+    .then( () => {
+      console.log( '[SERVER] …shutdown complete' )
+      if (server) server.emit( 'shutdown' )
+      // Process.exit is done by tape in test
+      if ( !config.TEST ) process.exit()
     })
+  }
+
+  //----- WAIT FOR MAIN EXTERNAL SERVICES BEFORE BOOTING
+
+  config.setup.then( _ => {
+
+    const mailStatus    = mail.status
+    const redisStatus   = redis.ping()
+    const dbConnection  = sequelize.authenticate()
+    const dbSync        = sequelize.sync()
+
+    mailStatus
+    .then( _ => console.log(c.green('[EMAIL] transport mailing – SUCCESS')) )
+    .catch( err => {
+      console.log( c.red('[EMAIL] transport mailing – ERROR') )
+      throw( err )
+    })
+
+    redisStatus
+    .then( _ => console.log(c.green('[REDIS] connection – SUCCESS')))
+    .catch( err => {
+      console.log( c.red('[REDIS] connection – ERROR') )
+      throw( err )
+    })
+
+    dbConnection
+    .then( _ => console.log( c.green('[DATABASE] connection – SUCCESS')) )
+    .catch( err => {
+      console.log( c.red('[DATABASE] connection – ERROR') )
+      throw( err )
+    })
+
+    dbSync
+    .then( _ => console.log( c.green('[DATABASE] sync – SUCCESS')) )
+    .catch( err => {
+      console.log( c.red('[DATABASE] sync – ERROR') )
+      throw( err )
+    })
+
+    return Promise.all([
+      mailStatus,
+      redisStatus,
+      dbConnection,
+      dbSync,
+    ])
   })
+  .then( startApplication )
+  .catch( stopApplication() )
 
   return application
 }
