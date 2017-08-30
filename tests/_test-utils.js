@@ -43,32 +43,23 @@ const resetDB = async _ => {
   return dfd
 }
 
-const testEnv = (show = true) => {
+const testEnv = _ => {
 
   let server, nightmare
 
-  const start = () => {
-    const dfd = defer()
-
+  const start = async _ => {
     // reset all server cache:
     //   mainly because of DB connection from sequelize
     clearRequire.match( /\/server\// )
     // clean also passport:
     //   he will retain an old DB connection in deserialize user :(
     clearRequire.match( /\/passport\// )
-
-    resetDB()
-    .then( _ => require( '../server')() )
-    .then( app => {
-      server    = app
-      dfd.resolve( )
-    })
-    .catch( dfd.reject )
-
-    return dfd
+    await resetDB()
+    const app = await require( '../server')()
+    server    = app
   }
 
-  const stop = () => {
+  const stop = _ => {
     const dfd = defer()
     if (server && server.shutdown) {
       server.on( 'shutdown', dfd.resolve )
@@ -87,18 +78,20 @@ const testEnv = (show = true) => {
 //  - test.only
 const createTest = (showNightmare = true, cb) => async t => {
   const { start, stop } = testEnv( showNightmare )
-  let nightmare
+  let nm
 
   try {
     await start()
-    nightmare = Nightmare({ show: false, waitTimeout: 10000}).viewport(1280, 780)
-    await cb(t, nightmare)
+    // for a strange reason I can't put nightmare in start
+    // if done, return value is `undefined` ¬_¬'
+    nm = Nightmare({ show: showNightmare, waitTimeout: 10000}).viewport(1280, 780)
+    await cb(t, nm)
     await stop()
-    if (nightmare && nightmare.halt) nightmare.halt()
+    if (nm && nm.halt) nm.halt()
     t.end()
   } catch(err) {
     await stop()
-    if (nightmare && nightmare.halt) nightmare.halt()
+    if (nm && nm.halt) nm.halt()
     t.end(err)
   }
 }

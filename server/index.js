@@ -521,7 +521,7 @@ module.exports = _ => {
     ])
     .then( () => {
       console.log( '[SERVER] …shutdown complete' )
-      if (server) setTimeout( _ =>  server.emit( 'shutdown' ), 1000 )
+      if (server) server.emit( 'shutdown' )
       // Process.exit is done by tape in test
       if ( !config.TEST ) process.exit()
     })
