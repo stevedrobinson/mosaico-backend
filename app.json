@@ -41,6 +41,12 @@
     },
     {
       "plan": "heroku-redis:hobby-dev"
+    },
+    {
+      "plan": "logentries:le_tryit"
+    },
+    {
+      "plan": "newrelic:wayne"
     }
   ],
   "buildpacks": [

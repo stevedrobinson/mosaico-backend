@@ -35,7 +35,7 @@ Pre-requisites:
 
 **requirements**: `pg_dump` & `pg_restore` installed and present on PATH
 
-`.badsenderrc` should be provided with *dbConfigs* infos. See `.badsenderrc-example` for more informations
+`.backendrc` should be provided with *dbConfigs* infos. See `.backendrc-example` for more informations
 
 #### backup-db: backing up to a local folder
 
