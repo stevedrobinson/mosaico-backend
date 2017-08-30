@@ -1,22 +1,17 @@
 'use strict'
 
 const test      = require('tape')
+
 const {
   data,
   connectUser,
   connectAdmin,
-  setupServer,
-  resetDB,
-  createTest, } = require('../_test-utils')
-const { serverReady, stopServer } = setupServer()
-test.onFinish( async _ => await stopServer() )
+  createTest  } = require('../_test-utils')
 
-const WAIT  = 2
+const WAIT      = 2
 
 const T1 = 'TEMPLATE – delete one'
-test( T1, createTest( 2, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T1, createTest( false, async (t, nm) => {
 
   const findTemplateLink = data => {
     const selector      = `a[href="/templates/${data.TEMPLATE_ID}"]`

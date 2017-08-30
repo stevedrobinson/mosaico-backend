@@ -1,22 +1,17 @@
 'use strict'
 
 const test      = require('tape')
+
 const {
   data,
   connectUser,
   connectAdmin,
-  setupServer,
-  resetDB,
-  createTest, } = require('../_test-utils')
-const { serverReady, stopServer } = setupServer()
-test.onFinish( async _ => await stopServer() )
+  createTest  } = require('../_test-utils')
 
-const WAIT  = 2
+const WAIT      = 2
 
 const T1 = `USER – deactivate & can't connect anymore`
-test( T1, createTest( 3, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T1, createTest( false, async (t, nm) => {
 
   const t1 = await nm
     .use( connectAdmin() )
@@ -68,9 +63,7 @@ test( T1, createTest( 3, false, async (t, nm) => {
 }))
 
 const T2 = 'USER – deactivate & reactivate'
-test( T2, createTest( 3, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T2, createTest( false, async (t, nm) => {
 
   const t1 = await nm
     .use( connectAdmin() )

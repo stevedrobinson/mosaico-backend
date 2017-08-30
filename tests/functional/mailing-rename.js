@@ -1,19 +1,17 @@
 'use strict'
 
 const test      = require('tape')
+
 const {
+  data,
   connectUser,
   connectAdmin,
-  setupServer,
-  resetDB,
-  createTest, } = require('../_test-utils')
-const { serverReady, stopServer } = setupServer()
-test.onFinish( async _ => await stopServer() )
+  createTest  } = require('../_test-utils')
 
-const data      = {
-  MAILING_ID: '88e776cb-8062-4933-9589-6c24e1ec8e8c',
-  TEST_NAME:  'mosaico-backend email',
-}
+data.MAILING_ID = '88e776cb-8062-4933-9589-6c24e1ec8e8c'
+data.TEST_NAME  = 'mosaico-backend email'
+
+
 const rename          = {
   nameSelector:   `#toolbar > div.mailing-name > p > span`,
   inputSelector:  `#toolbar > form > input[type="text"]`,
@@ -47,9 +45,7 @@ function checkName(nm) {
 //////
 
 const T1 = 'MAILING – rename from editor – can rename'
-test( T1, createTest( 1, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T1, createTest( false, async (t, nm) => {
 
   const t1 = await nm
     .use( connectUser() )
@@ -62,9 +58,7 @@ test( T1, createTest( 1, false, async (t, nm) => {
 }))
 
 const T2 = 'MAILING – rename from editor – empty rename get default title'
-test( T2, createTest( 1, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T2, createTest( false, async (t, nm) => {
 
   const t1 = await nm
     .use( connectUser() )
@@ -78,9 +72,7 @@ test( T2, createTest( 1, false, async (t, nm) => {
 }))
 
 const T3 = 'MAILING – rename from editor – name of 1 space behave like empty'
-test( T3, createTest( 1, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T3, createTest( false, async (t, nm) => {
 
   const t1 = await nm
     .use( connectUser() )
@@ -93,9 +85,7 @@ test( T3, createTest( 1, false, async (t, nm) => {
 }))
 
 const T4 = 'MAILING – rename from editor – admin can do it on a user mailing'
-test( T4, createTest( 1, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T4, createTest( false, async (t, nm) => {
 
   const t1 = await nm
     .use( connectAdmin() )
@@ -113,9 +103,7 @@ test( T4, createTest( 1, false, async (t, nm) => {
 //////
 
 const T5 = 'MAILING – rename from home'
-test( T5, createTest( 1, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T5, createTest( false, async (t, nm) => {
 
   const t1 =  await nm
     .use( connectUser() )

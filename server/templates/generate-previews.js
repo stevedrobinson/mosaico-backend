@@ -53,7 +53,6 @@ function startNightmare() {
     console.log( chalk.red(`[PREVIEWS] cannot connect to the server`) )
     console.log( err )
     connected.reject( err )
-    throw err
   })
 }
 

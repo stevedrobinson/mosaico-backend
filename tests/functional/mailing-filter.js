@@ -1,15 +1,12 @@
 'use strict'
 
 const test      = require('tape')
+
 const {
   data,
   connectUser,
   connectAdmin,
-  setupServer,
-  resetDB,
-  createTest, } = require('../_test-utils')
-const { serverReady, stopServer } = setupServer()
-test.onFinish( async _ => await stopServer() )
+  createTest  } = require('../_test-utils')
 
 const WAIT      = 2
 const selector  = {
@@ -50,7 +47,7 @@ const selectMultiple = (selectQuery, value) => {
 //////
 
 const T1 = 'MAILING – filter by name'
-test( T1, createTest( 4, false, async (t, nm) => {
+test( T1, createTest( false, async (t, nm) => {
 
   const SEARCH   = 'pouic'
 
@@ -88,9 +85,7 @@ test( T1, createTest( 4, false, async (t, nm) => {
 //////
 
 const T2 = 'MAILING – filter templates'
-test( T2, createTest( 4, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T2, createTest( false, async (t, nm) => {
 
   const getTemplates = () => {
     const templates  = document.querySelectorAll( `tbody tr td:nth-child(3)` )
@@ -132,9 +127,7 @@ test( T2, createTest( 4, false, async (t, nm) => {
 //////
 
 const T3 = 'MAILING – filter author'
-test( T3, createTest( 4, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T3, createTest( false, async (t, nm) => {
 
   const getAuthors = () => {
     const mailings  = document.querySelectorAll( `tbody tr td:nth-child(4)` )
@@ -170,9 +163,7 @@ test( T3, createTest( 4, false, async (t, nm) => {
 //////
 
 const T4 = 'MAILING – filter by tags'
-test( T4, createTest( 13, false, async (t, nm) => {
-  await serverReady
-  await resetDB()
+test( T4, createTest( false, async (t, nm) => {
 
   const TAGS = ['silver', 'copper', 'gold']
 
