@@ -160,6 +160,22 @@ module.exports = _ => {
   app.use( express.static( path.join(__dirname, '../node_modules/material-design-lite') ) )
   app.use( express.static( path.join(__dirname, '../node_modules/material-design-icons-iconfont/dist') ) )
 
+  //----- DYNAMIC IMAGES
+  // put before sessions
+
+  const images = require( './images' )
+
+  app.param(['placeholderSize'], (req, res, next, placeholderSize) => {
+    if ( /(\d+)x(\d+)\.png/.test(placeholderSize) ) return next()
+    console.log('placeholder format INVALID', placeholderSize)
+    next( createError(404) )
+  })
+
+  app.get('/img/:imageName',                  images.read )
+  app.get('/placeholder/:placeholderSize',    images.checkCache, images.placeholder )
+  app.get('/resize/:sizes/:imageName',        images.checkCache, images.checkSizes, images.resize )
+  app.get('/cover/:sizes/:imageName',         images.checkCache, images.checkSizes, images.cover )
+
   //----- SESSION & I18N
   // no sessions needed for assets
 
@@ -223,7 +239,6 @@ module.exports = _ => {
   const templates       = require( './templates' )
   const mailings        = require( './mailings' )
 
-  const images          = require( './images' )
   const download        = require( './download' )
 
   const guard           = session.guard
@@ -331,12 +346,6 @@ module.exports = _ => {
     next( createError(404) )
   })
 
-  app.param(['placeholderSize'], (req, res, next, placeholderSize) => {
-    if ( /(\d+)x(\d+)\.png/.test(placeholderSize) ) return next()
-    console.log('placeholder format INVALID', placeholderSize)
-    next( createError(404) )
-  })
-
   // connection
   app.post('/admin/login', session.authenticate('local', {
     successRedirect: '/admin',
@@ -387,13 +396,9 @@ module.exports = _ => {
   app.post('/password/:token',              guard('no-session'), users.setPassword)
   app.get('/logout',                        guard('user'), session.logout )
 
-  //----- IMAGES
+  //----- MORE IMAGES
 
-  app.get('/img/:imageName',                  images.read)
   app.delete('/img/:imageName',               guard('user'), images.destroy)
-  app.get('/placeholder/:placeholderSize',    images.checkCache, images.placeholder)
-  app.get('/resize/:sizes/:imageName',        images.checkCache, images.checkSizes, images.resize)
-  app.get('/cover/:sizes/:imageName',         images.checkCache, images.checkSizes, images.cover)
 
   //----- UPLOADS
 
