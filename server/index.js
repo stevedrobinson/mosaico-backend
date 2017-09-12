@@ -534,14 +534,15 @@ module.exports = _ => {
 
   //----- WAIT FOR MAIN EXTERNAL SERVICES BEFORE BOOTING
 
-  config.setup.then( _ => {
+  config
+  .setup
+  .then( _ => {
 
-    const mailStatus    = mail.status
     const redisStatus   = redis.ping()
     const dbConnection  = sequelize.authenticate()
     const dbSync        = sequelize.sync()
 
-    mailStatus
+    const mailStatus    = mail.status()
     .then( _ => console.log(c.green('[EMAIL] transport mailing – SUCCESS')) )
     .catch( err => {
       console.log( c.red('[EMAIL] transport mailing – ERROR') )

@@ -38,5 +38,5 @@ function send(options) {
 module.exports = {
   transporter,
   send,
-  status: transporter.verify()
+  status: transporter.verify,
 }
