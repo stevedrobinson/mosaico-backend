@@ -21,11 +21,11 @@ function send(options) {
   return new Promise(function (resolve, reject) {
     transporter
     .sendMail(mailOptions)
-    .then(function (info) {
+    .then( info => {
       console.log(chalk.green('email send to', info.accepted))
       resolve(info)
     })
-    .catch(function (err) {
+    .catch( err => {
       console.log(chalk.red('email error'))
       const message = err.code === 'ECONNREFUSED' ?
       'smtp connection failed'

@@ -8,10 +8,14 @@ if (!/^8\./.test(process.versions.node)) {
 const throng      = require('throng')
 
 const WORKERS     = process.env.WEB_CONCURRENCY || 1
-const startWorker = require('./index')
+const startServer = require('./index')
 
 throng({
-  start:    startWorker,
+  start(id) {
+    startServer().catch( e => console.log('issue at server init', e)  )
+  },
   workers:  WORKERS,
-  lifetime: Infinity,
+  // ms to keep cluster alive (Infinity)
+  // don't keep to infinity so it can close on error :D
+  lifetime: 0,
 })
