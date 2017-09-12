@@ -1,7 +1,8 @@
 {
   "name": "Mosaico Backend",
-  "description": "Mosaico Backend",
+  "description": "Ready to go backend for Mosaico editor",
   "repository": "https://github.com/goodenough/mosaico-backend",
+  "logo": "https://mosaicobackend-prod.herokuapp.com/",
   "keywords": [
   ],
   "stack": "cedar-14",
