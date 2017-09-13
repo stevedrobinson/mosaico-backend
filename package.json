@@ -186,6 +186,7 @@
     "prod": "npm run build && npm start",
     "dev": "gulp dev --dev",
     "release": "./bin/dist.sh",
+    "release-test": "./bin/release-test.sh",
     "deploy": "npm run release",
     "build-release": "npm run build && gulp bump",
     "backup-db": "node ./bin/db-backup.js",
