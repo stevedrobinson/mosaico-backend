@@ -491,6 +491,11 @@ module.exports = _ => {
     // It's important for testing as we need to be sure every process are done…
     // …in order for tape to end properly
     const server = httpShutdown( app.listen(config.PORT, err => {
+      const stop = (err = null) => {
+        stopApplication(err, {
+          mail,
+          redis,
+          sequelize,
           server,
         })
       }
