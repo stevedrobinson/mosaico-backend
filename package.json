@@ -196,7 +196,6 @@
     "tape": "tape './tests/functional/*.js' | faucet",
     "test-back": "npm run tape",
     "toc": "gulp toc",
-    "heroku-prebuild": "heroku config:set NPM_CONFIG_PRODUCTION=false",
     "heroku-postbuild": "npm run build"
   },
   "engines": {
