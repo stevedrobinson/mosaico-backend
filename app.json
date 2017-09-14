@@ -12,6 +12,7 @@
         "description": "copy and paste the name you've given to your application",
         "required": true
     },
+    "NPM_CONFIG_PRODUCTION": "false",
     "backend_admin__password": {
       "description": "The password to access the admin",
       "required": true
