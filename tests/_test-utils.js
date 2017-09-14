@@ -64,6 +64,8 @@ const testEnv = _ => {
     if (server && server.shutdown) {
       server.on( 'shutdown', dfd.resolve )
       server.shutdown()
+    } else {
+      dfd.resolve()
     }
     return dfd
   }
@@ -91,8 +93,9 @@ const createTest = (showNightmare = true, cb) => async t => {
     t.end()
   } catch(err) {
     await stop()
+    console.log( 'server has stopped' )
     if (nm && nm.halt) nm.halt()
-    t.end(err)
+    t.end( err )
   }
 }
 

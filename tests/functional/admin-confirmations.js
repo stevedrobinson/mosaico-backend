@@ -43,6 +43,7 @@ test( T1, createTest( false, async (t, nm) => {
   // RESET
   const t2 = await nm
     .realClick('button.js-dialog-cancel')
+    .wait( `.js-dialog-title:empty` )
     .realClick( `a[href^="/users/${ data.ACTIVE_USER_ID }/reset"]`)
     .wait( WAIT )
     .wait( `dialog[open]` )
@@ -85,6 +86,7 @@ test( T2, createTest( false, async (t, nm) => {
   // RESET
   const t2 = await nm
     .realClick('button.js-dialog-cancel')
+    .wait( `.js-dialog-title:empty` )
     .realClick( `.js-reset-user`)
     .wait( WAIT )
     .wait( `dialog[open]` )
@@ -132,6 +134,7 @@ test( T3, createTest( false, async (t, nm) => {
   // RESET
   const t2 = await nm
     .realClick('button.js-dialog-cancel')
+    .wait( `.js-dialog-title:empty` )
     .realClick( `a[href^="/users/${ data.ACTIVE_USER_ID }/reset"]`)
     .wait( WAIT )
     .wait( `dialog[open]` )
@@ -143,6 +146,7 @@ test( T3, createTest( false, async (t, nm) => {
   // ACTIVATION
   const t3 =  await nm
     .realClick('button.js-dialog-cancel')
+    .wait( `.js-dialog-title:empty` )
     .realClick( `a[href="/users/${ data.NEW_USER_ID }/activate"]` )
     .wait( WAIT )
     .wait( `dialog[open]` )
