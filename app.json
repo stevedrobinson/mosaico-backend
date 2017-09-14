@@ -47,7 +47,7 @@
       "plan": "logentries:le_tryit"
     },
     {
-      "plan": "newrelic:wayne"
+      "plan": "librato:development"
     }
   ],
   "buildpacks": [
