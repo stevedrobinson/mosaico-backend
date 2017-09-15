@@ -196,7 +196,7 @@
     "tape": "tape './tests/functional/*.js' | faucet",
     "test-back": "npm run tape",
     "toc": "gulp toc",
-    "heroku-prebuild": "export NODE_ENV=development; export NPM_CONFIG_PRODUCTION=false;",
+    "heroku-prebuild": "node ./bin/merge-dependencies.js",
     "heroku-postbuild": "npm run build"
   },
   "engines": {
