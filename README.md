@@ -11,7 +11,7 @@ Main features are:
 - upload templates for Mosaico editor
 - manage users
 
-SCREENCAST: https://youtu.be/ZfOzqXnVjP8
+SCREENCAST: https://youtu.be/ZfwDaVN7UX4
 
 ## INSTALL
 
