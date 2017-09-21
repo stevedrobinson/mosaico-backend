@@ -3,6 +3,8 @@
 * Live demo: https://mosaicobackend-prod.herokuapp.com
 * Heroku button page: https://elements.heroku.com/buttons/goodenough/mosaico-backend
 
+SCREENCAST: https://youtu.be/HqUT2et0FnM
+
 # Mosaico backend
 
 Ready to go backend for [Mosaico](http://mosaico.io) editor.
@@ -11,7 +13,7 @@ Main features are:
 - upload templates for Mosaico editor
 - manage users
 
-SCREENCAST: https://youtu.be/ZfwDaVN7UX4
+SCREENCAST: https://youtu.be/sLzZq3cXDi0
 
 ## INSTALL
 
