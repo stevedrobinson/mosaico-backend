@@ -1,9 +1,9 @@
-[![herokubtn](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/goodenough/mosaico-backend/tree/release)
+[![herokubtn](https://www.herokucdn.com/deploy/button.svg)](asd)
 
 * Live demo: https://mosaicobackend-prod.herokuapp.com
 * Heroku button page: https://elements.heroku.com/buttons/goodenough/mosaico-backend
 
-SCREENCAST: https://youtu.be/HqUT2et0FnM
+[![screencast](https://imgur.com/download/Z8UWIki)](https://youtu.be/HqUT2et0FnM)
 
 # Mosaico backend
 
