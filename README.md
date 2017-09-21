@@ -3,7 +3,7 @@
 * Live demo: https://mosaicobackend-prod.herokuapp.com
 * Heroku button page: https://elements.heroku.com/buttons/goodenough/mosaico-backend
 
-[![screencast](https://imgur.com/download/Z8UWIki)](https://youtu.be/HqUT2et0FnM)
+[![screencast](https://drive.google.com/uc?export=view&id=0BwQNm5fx5y30SXpSMWI4U1Z3b0E)](https://youtu.be/HqUT2et0FnM)
 
 # Mosaico backend
 
