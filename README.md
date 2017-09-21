@@ -10,15 +10,16 @@
 Ready to go backend for [Mosaico](http://mosaico.io) editor.
 
 Main features are:
-- upload templates for Mosaico editor
-- manage users
-
-SCREENCAST: https://youtu.be/sLzZq3cXDi0
+- upload templates and images for Mosaico editor
+- persist mailings into DB
+- manage users/groups
+- download ZIP archives of mailings
+- sending mailings by email for testing purpose
 
 ## INSTALL
 
 Pre-requisites:
- - Node.js >=8.2.1
+ - Node.js >=8.5.0
  - [PostgreSQL](https://www.postgresql.org/) >=9.6 ([postgresapp](http://postgresapp.com/) on a mac)
  - [Redis](https://redis.io/) (`brew install redis` on mac `redis-server` to start)
  - SMTP server (like [mailcatcher](https://mailcatcher.me/): `brew install ruby` – restart terminal – `gem install mailcatcher` then `mailcatcher`)
@@ -34,7 +35,7 @@ Then go to: [http://localhost:3000](http://localhost:3000)
 
 ## Quick start
 
-TODO
+See the screencast https://youtu.be/sLzZq3cXDi0
 
 ## Configuration
 
