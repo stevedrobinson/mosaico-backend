@@ -21,10 +21,10 @@ RUN echo "export PATH=\"/app/heroku/node/bin:/app/user/node_modules/.bin:\$PATH\
 RUN node --version
 
 #
-# libvips (see: https://github.com/marcbachmann/dockerfile-libvips/blob/master/Dockerfile)
+# Install libvips from heroku-buildpack-vips (see: https://github.com/alex88/heroku-buildpack-vips/blob/master/bin/compile)
 #
 
-ADD vips-install.sh /tmp/vips-install.sh
+ADD bin/vips-install.sh /tmp/vips-install.sh
 RUN cd /tmp && ./vips-install.sh
 
 
