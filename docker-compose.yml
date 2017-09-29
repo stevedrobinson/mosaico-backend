@@ -1,14 +1,17 @@
 version: "2"
 services:
   web:
-    build: .
-    image: "node:8.4.0"
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
-      - NODE_ENV=development
+#      - NODE_ENV=development
+      - backend_database=postgres://postgres:5432/mosaico-backend
+      - backend_redis=redis://redis:6379
     volumes:
-      - ./:/usr/src/app
-    working_dir: /usr/src/app
-    command: sh -c 'npm run build; node server/workers.js'
+      - .:/app/user
+    working_dir: /app/user
+    command: bash -c 'npm start'
     ports:
       - "3000:3000"
     depends_on:
@@ -16,15 +19,15 @@ services:
       - redis
       - mailcatcher
   postgres:
-    image: postgres:latest
+    image: postgres:9.6.1
     ports:
       - "5432:5432"
   redis:
-    image: redis:latest
+    image: redis:3.2.4
     ports:
       - "6379:6379"
   mailcatcher:
-    image: rylwin/mailcatcher
+    image: djfarrelly/maildev
     ports:
-      - "1025:1025"
-      - "1080:1080"
+      - "1025:25"
+      - "1080:80"
