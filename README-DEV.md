@@ -3,10 +3,10 @@
 
 Pre-requisites:
 
- - Node.js >=8.3.0
- - [PostgreSQL](https://www.postgresql.org/) >=9.6 ([postgresapp](http://postgresapp.com/) on a mac)
- - [Redis](https://redis.io/) (`brew install redis` on mac `redis-server` to start)
- - SMTP server (like [mailcatcher](https://mailcatcher.me/): `brew install ruby` – restart terminal – `gem install mailcatcher` then `mailcatcher`)
+- Node.js >=8.3.0
+- [PostgreSQL](https://www.postgresql.org/) >=9.6 ([postgresapp](http://postgresapp.com/) on a mac)
+- [Redis](https://redis.io/) (`brew install redis` on mac `redis-server` to start)
+- SMTP server (like [mailcatcher](https://mailcatcher.me/): `brew install ruby` – restart terminal – `gem install mailcatcher` then `mailcatcher`)
 
 ## commands
 
@@ -56,7 +56,7 @@ npm run sync-db
 ### S3 notes
 
 There is some script to backup a bucket or sync a bucket from a backup.  
-This is mostly use for developement purpose.
+This is mostly use for development purpose.
 
 #### requirements
 
