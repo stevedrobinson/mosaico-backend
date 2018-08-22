@@ -200,7 +200,7 @@
     "heroku-postbuild": "npm run build"
   },
   "engines": {
-    "node": "8.5.0",
-    "npm": "5.3.0"
+    "node": "8.11.4",
+    "npm": "5.6.0"
   }
 }
