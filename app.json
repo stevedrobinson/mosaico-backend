@@ -52,7 +52,7 @@
   ],
   "buildpacks": [
     {
-       "url": "https://github.com/alex88/heroku-buildpack-vips.git"
+      "url": "https://github.com/alex88/heroku-buildpack-vips.git"
     },
     {
       "url": "https://github.com/heroku/heroku-buildpack-apt"
