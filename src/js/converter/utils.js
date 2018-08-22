@@ -12,7 +12,7 @@ jsep.addBinaryOp("gt", 7);
 jsep.addBinaryOp("gte", 7);
 
 var addSlashes = function(str) {
-  return str.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+  return str.replace(/[\\"'\r\n\t\v\f\b]/g, '\\$&').replace(/\u0000/g, '\\0');
 };
 
 var removeStyle = function(style, startPos, endPos, skipRows, startOffset, endOffset, insert) {
@@ -56,7 +56,7 @@ var expressionGenerator = function(node, bindingProvider, defVal) {
   function gen(node, bindingProvider, lookupmember, defVal) {
     if (typeof lookupmember == 'undefined') lookupmember = true;
 
-    if (typeof defVal !== 'undefined' && node.type !== "Identifier" && node.type !== "MemberExpression") console.log("Cannot apply default value to variable when using expressions");
+    if (typeof defVal !== 'undefined' && node.type !== "Identifier" && node.type !== "MemberExpression") if (typeof console.debug == 'function') console.debug("Cannot apply default value to variable when using expressions");
 
     if (node.type === "BinaryExpression" || node.type === "LogicalExpression") {
       return '(' + gen(node.left, bindingProvider, lookupmember) + ' ' + mapOperator(node.operator) + ' ' + gen(node.right, bindingProvider, lookupmember) + ')';

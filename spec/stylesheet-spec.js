@@ -3,12 +3,12 @@
 
 var mockery = require('mockery');
 mockery.enable();
-mockery.registerAllowables(['../src/js/converter/declarations.js', 'console', './utils.js', './domutils.js', 'console', '../bower_components/mensch'])
+mockery.registerAllowables(['../src/js/converter/declarations.js', 'console', './utils.js', './domutils.js', 'console', '../node_modules/mensch'])
 
 mockery.registerMock('jquery', require('cheerio'));
 
 mockery.registerMock('mensch/lib/parser.js', function() {
-  var parse = require('../bower_components/mensch').parse;
+  var parse = require('../node_modules/mensch').parse;
   return parse.apply(parse, arguments);
 });
 var processStylesheetRules = require('../src/js/converter/stylesheet.js');
@@ -158,6 +158,15 @@ describe('Stylesheet declaration processor', function() {
     var blockDefsUpdater = jasmine.createSpy("blockDefsUpdater");
     result = processStylesheetRules('@supports -ko-blockdefs { color { } }', undefined, mockedWithBindingProvider, blockDefsUpdater, undefined, '.', 'template', 'block');
     expect(blockDefsUpdater).toHaveBeenCalledWith('color', '', {});
+    expect(result).toEqual("");
+    // console.log("BBB", blockDefsUpdater.calls);
+  });
+
+  it('should parse -ko-blockdefs definitions, even quoted values', function() {
+    var result;
+    var blockDefsUpdater = jasmine.createSpy("blockDefsUpdater");
+    result = processStylesheetRules('@supports -ko-blockdefs { color { label: "esc\'aped" } }', undefined, mockedWithBindingProvider, blockDefsUpdater, undefined, '.', 'template', 'block');
+    expect(blockDefsUpdater).toHaveBeenCalledWith('color', '', { name: 'esc\'aped' });
     expect(result).toEqual("");
     // console.log("BBB", blockDefsUpdater.calls);
   });

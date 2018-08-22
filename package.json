@@ -1,7 +1,8 @@
 {
   "name": "mosaico",
-  "version": "0.16.0",
-  "description": "Free Email Template Editor",
+  "version": "0.17.4",
+  "description": "Mosaico - OpenSource Email Template Editor",
+  "main": "./server/workers.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/Hiswe/mosaico-backend.git"
@@ -10,23 +11,31 @@
     "Stefano Bagnara",
     "Yannick Aivayan <yannick@goodenough.agency> (https://github.com/hiswe)"
   ],
-  "main": "./server/workers.js",
   "directories": {
     "test": "test"
   },
+  "browserify": {
+    "transform": [
+      "aliasify",
+      "browserify-shim",
+      "browserify-versionify",
+      "uglifyify"
+    ]
+  },
   "aliasify": {
     "aliases": {
-      "console": "console-browserify/index.js",
-      "jsep": "jsep/src/jsep.js",
-      "knockoutjs-reactor": "knockoutjs-reactor/src/knockout.reactor.js"
+      "console": "console-browserify",
+      "knockoutjs-reactor": "ko-reactor/dist/ko-reactor.min.js",
+      "tinycolor": "tinycolor2"
     }
   },
   "browserify-shim": {
     "jquery": "global:jQuery",
-    "jquery-ui/sortable": "global:jQuery.ui.sortable",
-    "jquery-ui/draggable": "global:jQuery.ui.draggable",
-    "jquery-ui/spinner": "global:jQuery.ui.spinner",
-    "jquery-ui/tabs": "global:jQuery.ui.tabs",
+    "jquery-ui/ui/widgets/sortable": "global:jQuery.ui.sortable",
+    "jquery-ui/ui/widgets/draggable": "global:jQuery.ui.draggable",
+    "jquery-ui/ui/widgets/droppable": "global:jQuery.ui.droppable",
+    "jquery-ui/ui/widgets/spinner": "global:jQuery.ui.spinner",
+    "jquery-ui/ui/widgets/tabs": "global:jQuery.ui.tabs",
     "knockout": "global:ko",
     "knockout-jqueryui": "global:kojqui",
     "tinymce": "global:tinymce"
@@ -178,6 +187,7 @@
   },
   "author": "Stefano Bagnara",
   "license": "GPL-3.0",
+  "licenseurl": "https://www.gnu.org/licenses/gpl-3.0.en.html",
   "scripts": {
     "deps": "export NODE_ENV=development && npm install && bower -V --allow-root install",
     "test": "grunt jasmine_node",

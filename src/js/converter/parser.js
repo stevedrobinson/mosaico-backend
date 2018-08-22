@@ -98,7 +98,7 @@ var processBlock = function(element, defs, themeUpdater, blockPusher, templateUr
   // Urls in these attributes needs "relativization"
   var urlattrs = ['href', 'src', 'data-ko-placeholder-src', 'background'];
   for (var i = 0; i < urlattrs.length; i++) {
-    // faccio il bind per non definire funzioni in un loop (jshint)
+    // Use bind so to not define functions in a loop (jshint)
     var func = _fixRelativePath.bind(undefined, urlattrs[i], templateUrlConverter);
     $('[' + urlattrs[i] + ']', element).each(func);
   }
@@ -127,7 +127,7 @@ var processBlock = function(element, defs, themeUpdater, blockPusher, templateUr
       if (newStyle.trim() !== '') {
         var tmpName = templateCreator(newStyle);
         domutils.setAttribute(element, 'data-bind', 'template: { name: \'' + tmpName + '\' }');
-        // ho creato il template quindi posso svuotare il sorgente.
+        // template have been created, let's empty the source content.
         domutils.setContent(element, '');
       } else {
         // remove empty styles blocks
@@ -288,7 +288,7 @@ var processBlock = function(element, defs, themeUpdater, blockPusher, templateUr
       var containerBind = '{ width: ' + width;
       if (align == 'left') containerBind += ', float: \'left\'';
       else if (align == 'right') containerBind += ', float: \'right\'';
-      else if (align == 'center') console.log('non so cosa fa align=center su una img e quindi non so come simularne l\'editing');
+      else if (align == 'center') if (typeof console.debug == 'function') console.debug('Ignoring align=center on an img tag: we don\'t know how to emulate this alignment in the editor!');
       else if (align == 'top') containerBind += ', verticalAlign: \'top\'';
       else if (align == 'middle') containerBind += ', verticalAlign: \'middle\'';
       else if (align == 'bottom') containerBind += ', verticalAlign: \'bottom\'';
@@ -403,7 +403,9 @@ var translateTemplate = function(templateName, html, templateUrlConverter, templ
   var replacedHtml = conditional_replace(html.replace(/(<[^>]+\s)(style|http-equiv)(="[^"]*"[^>]*>)/gi, function(match, p1, p2, p3) {
     return p1 + 'replaced' + p2 + p3;
   }));
-  var content = $(replacedHtml);
+  // Use parseHTML to avoid placing the dom in the docuemnt and prevent resources from being downloaded beforehand
+  // This only works correctly when using jquery3 because previous versions of jQuery will not create a new document when passed a "context = false" argument.
+  var content = typeof $.parseHTML == 'function' ? $($.parseHTML(replacedHtml, false)) : $(replacedHtml);
   var element = content[0];
 
   var blocks = []; // {rootName, blockName, containerName}
