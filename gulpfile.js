@@ -9,9 +9,9 @@ const lazypipe = require('lazypipe')
 const del = require('del')
 const merge = require('merge-stream')
 const args = require('yargs').argv
-const mainBowerFiles = require('main-bower-files')
 const _ = require('lodash')
 const { cyan, magenta } = require('chalk')
+const Vinyl = require(`vinyl`)
 
 const isDev = args.dev === true
 const isBuild = !isDev
@@ -20,22 +20,21 @@ const env = isDev ? 'development' : 'build'
 const buildDir = 'dist'
 
 function onError(err) {
-  $.util.beep()
   if (err.annotated) {
-    $.util.log(err.annotated)
+    console.log(err.annotated)
   } else if (err.message) {
-    $.util.log(err.message)
+    console.log(err.message)
   } else {
-    $.util.log(err)
+    console.log(err)
   }
   return this.emit('end')
 }
 
-$.util.log('environment is', magenta(env))
+console.log('environment is', magenta(env))
 
 function bump() {
   return gulp
-    .src(['package.json', 'bower.json'])
+    .src(`package.json`)
     .pipe(
       $.bump({
         version: args.pkg,
@@ -43,7 +42,7 @@ function bump() {
     )
     .pipe(gulp.dest('./'))
 }
-bump.description = `Bump versions on package.json and bower.json. Used only in release script`
+bump.description = `Bump versions on package.json. Used only in release script`
 
 const unDevName = lazypipe().pipe(
   $.rename,
@@ -83,6 +82,8 @@ function cssEditor() {
     .pipe($.if(isBuild, cssProd()))
     .pipe($.if(isBuild, gulp.dest(buildDir)))
 }
+cssEditor.description = `build CSS for mosaico editor`
+exports[`css:mosaico`] = cssEditor
 
 function cssApp() {
   return gulp
@@ -114,6 +115,8 @@ function cssApp() {
     .pipe($.if(isBuild, cssProd()))
     .pipe($.if(isBuild, gulp.dest(buildDir)))
 }
+cssApp.description = `build CSS for the backend`
+exports[`css:backend`] = cssApp
 
 const css = gulp.series(cleanCss, gulp.parallel(cssEditor, cssApp))
 css.description = `Build CSS for the mosaico editor and the app`
@@ -129,76 +132,74 @@ function cleanLib() {
 }
 
 function mosaicoLib() {
-  const bowerfiles = mainBowerFiles({
-    group: 'editor',
-    overrides: {
-      // tinymce has no main…
-      tinymce: {
-        main: 'tinymce.js',
-      },
-      // override for load image
-      'blueimp-load-image': {
-        main: 'js/load-image.all.min.js',
-      },
-    },
-  })
-
-  // Can't replace jQuery with newer version
-  // https://github.com/jquery/jquery/issues/3181#issuecomment-226964470
-  // => Uncaught TypeError: elem.getClientRects is not a function
-  // .filter( name => !/bower_components\/jquery\/dist\/jquery\.js$/.test(name)  )
-  // // replace old version of jQuery
-  // bowerfiles.unshift( path.join(__dirname, './node_modules/jquery/dist/jquery.js') )
-
-  const editorLibs = gulp
-    .src(bowerfiles)
-    .pipe($.filter(['*.js', '**/*.js']))
-    .pipe(
-      $.order([
-        // reorganize files we want to concat
-        'jquery.js',
-        'knockout.js',
-        'jquery-ui*.js',
-        'load-image.all.min.js',
-        'jquery.fileupload.js',
-        'jquery.fileupload-process.js',
-        'jquery.fileupload-image.js',
-        'jquery.fileupload-validate.js',
-        '*.js',
-      ])
-    )
+  return gulp
+    .src([
+      `node_modules/jquery/dist/jquery.js`,
+      // NOTE: use minimized version because non-min uses console to write migration warnings
+      `node_modules/jquery-migrate/dist/jquery-migrate.min.js`,
+      `node_modules/knockout/build/output/knockout-latest.js`,
+      `node_modules/jquery-ui-package/jquery-ui.js`,
+      `node_modules/jquery-ui-touch-punch/jquery.ui.touch-punch.js`,
+      `node_modules/default-passive-events/dist/index.js`,
+      // NOTE: include these 2 BEFORE the fileupload libs
+      // using npm5 we can get sub-dependencies from nested paths, but npm3 does flatten them, so let's depend on them explicitly.
+      // 'node_modules/blueimp-file-upload/node_modules/blueimp-canvas-to-blob/js/canvas-to-blob.js',
+      // 'node_modules/blueimp-file-upload/node_modules/blueimp-load-image/js/load-image.all.min.js',
+      `node_modules/blueimp-canvas-to-blob/js/canvas-to-blob.js`,
+      `node_modules/blueimp-load-image/js/load-image.all.min.js`,
+      // 'node_modules/blueimp-file-upload/js/jquery.iframe-transport.js',
+      `node_modules/blueimp-file-upload/js/jquery.fileupload.js`,
+      `node_modules/blueimp-file-upload/js/jquery.fileupload-process.js`,
+      `node_modules/blueimp-file-upload/js/jquery.fileupload-image.js`,
+      `node_modules/blueimp-file-upload/js/jquery.fileupload-validate.js`,
+      `node_modules/knockout-jqueryui/dist/knockout-jqueryui.js`,
+      `node_modules/tinymce/tinymce.js`,
+      `node_modules/tinymce/themes/modern/theme.js`,
+      `node_modules/tinymce/plugins/link/plugin.js`,
+      `node_modules/tinymce/plugins/hr/plugin.js`,
+      `node_modules/tinymce/plugins/paste/plugin.js`,
+      `node_modules/tinymce/plugins/lists/plugin.js`,
+      `node_modules/tinymce/plugins/textcolor/plugin.js`,
+      `node_modules/tinymce/plugins/code/plugin.js`,
+    ])
     .pipe($.concat('lib-editor-dev.js'))
     .pipe(gulp.dest(buildDir + '/lib'))
     .pipe($.if(isBuild, unDevName()))
     .pipe($.if(isBuild, $.uglify()))
-
-  // only copy necessary tinymce plugins
-  const tinymce = gulp.src(
-    [
-      'bower_components/tinymce/themes/modern/theme.js',
-      'bower_components/tinymce/themes/modern/theme.min.js',
-      'bower_components/tinymce/plugins/paste/plugin.js',
-      'bower_components/tinymce/plugins/paste/plugin.min.js',
-      'bower_components/tinymce/plugins/link/plugin.js',
-      'bower_components/tinymce/plugins/link/plugin.min.js',
-      'bower_components/tinymce/plugins/hr/plugin.js',
-      'bower_components/tinymce/plugins/hr/plugin.min.js',
-      'bower_components/tinymce/plugins/lists/plugin.js',
-      'bower_components/tinymce/plugins/lists/plugin.min.js',
-      'bower_components/tinymce/plugins/textcolor/plugin.js',
-      'bower_components/tinymce/plugins/textcolor/plugin.min.js',
-      'bower_components/tinymce/plugins/colorpicker/plugin.js',
-      'bower_components/tinymce/plugins/colorpicker/plugin.min.js',
-      'bower_components/tinymce/plugins/code/plugin.js',
-      'bower_components/tinymce/plugins/code/plugin.min.js',
-    ],
-    { base: 'bower_components/tinymce' }
-  )
-
-  return merge(editorLibs, tinymce).pipe(gulp.dest(buildDir + '/lib'))
+    .pipe(gulp.dest(buildDir + '/lib'))
 }
+mosaicoLib.description = `copy all related tinymce files to the right place`
+exports[`js:mosaico-lib`] = mosaicoLib
 
-// Bundling libs is just a concat…
+function copyTinymceFiles() {
+  return gulp
+    .src(
+      [
+        'node_modules/tinymce/themes/modern/theme.js',
+        'node_modules/tinymce/themes/modern/theme.min.js',
+        'node_modules/tinymce/plugins/paste/plugin.js',
+        'node_modules/tinymce/plugins/paste/plugin.min.js',
+        'node_modules/tinymce/plugins/link/plugin.js',
+        'node_modules/tinymce/plugins/link/plugin.min.js',
+        'node_modules/tinymce/plugins/hr/plugin.js',
+        'node_modules/tinymce/plugins/hr/plugin.min.js',
+        'node_modules/tinymce/plugins/lists/plugin.js',
+        'node_modules/tinymce/plugins/lists/plugin.min.js',
+        'node_modules/tinymce/plugins/textcolor/plugin.js',
+        'node_modules/tinymce/plugins/textcolor/plugin.min.js',
+        'node_modules/tinymce/plugins/colorpicker/plugin.js',
+        'node_modules/tinymce/plugins/colorpicker/plugin.min.js',
+        'node_modules/tinymce/plugins/code/plugin.js',
+        'node_modules/tinymce/plugins/code/plugin.min.js',
+      ],
+      { base: 'node_modules/tinymce' }
+    )
+    .pipe(gulp.dest(buildDir + '/lib'))
+}
+copyTinymceFiles.description = `copy all related tinymce files to the right place`
+exports[`js:tinymce`] = copyTinymceFiles
+
+// Bundling mosaico libs is just a concat…
 const editorLib = gulp.series(cleanLib, mosaicoLib)
 editorLib.description = `build JS for the mosaico editor and the app`
 
@@ -209,33 +210,24 @@ const source = require('vinyl-source-stream')
 const vinylBuffer = require('vinyl-buffer')
 const aliasify = require('aliasify')
 const shim = require('browserify-shim')
-const debowerify = require('debowerify')
 const babelify = require('babelify')
 const envify = require('envify/custom')
 const watchify = require('watchify')
 
-function jsMosaico(debug = false) {
+function mosaicoEditor(debug = false) {
   return browserify({
     cache: {},
     packageCache: {},
     debug: debug,
-    entries: ['./src/js/app.js', './build/templates.js'],
-    standalone: 'Mosaico',
+    entries: [`./src/js/app.js`, `./build/templates.js`],
+    standalone: `Mosaico`,
   })
-    .transform(aliasify, {
-      aliases: {
-        console: `console-browserify/index.js`,
-        jsep: `jsep/src/jsep.js`,
-        'knockoutjs-reactor': `knockoutjs-reactor/src/knockout.reactor.js`,
-      },
-    })
-    .transform(shim)
-    .transform(debowerify)
+    .transform(aliasify)
+    .transform(shim, { global: true })
     .transform(
+      // babelify only apply to our own custum additions
       babelify.configure({
         presets: [`env`],
-        // Optional only regex - if any filenames **don't** match this regex
-        // then they aren't compiled
         only: /custom-/,
       })
     )
@@ -250,11 +242,11 @@ function jsMosaico(debug = false) {
 }
 
 function jsMosaicoDev() {
-  let b = jsMosaico(true)
+  let b = mosaicoEditor(true)
   if (isDev) {
     b = watchify(b)
     b.on('update', function() {
-      $.util.log(`bundle ${magenta('editor')} app`)
+      console.util.log(`bundle ${magenta('editor')} app`)
       bundleShareDev(b)
     })
   }
@@ -271,7 +263,7 @@ function bundleShareDev(b) {
 }
 
 function jsMosaicoProd() {
-  return jsMosaico()
+  return mosaicoEditor()
     .bundle()
     .on('error', onError)
     .pipe(source('editor.js'))
@@ -286,6 +278,9 @@ const jsEditor = gulp.series(
   isBuild ? gulp.parallel(jsMosaicoDev, jsMosaicoProd) : jsMosaicoDev
 )
 jsEditor.description = `Bundle mosaico app, without libraries`
+
+exports[`js:mosaico-editor`] = jsEditor
+exports[`js:mosaico`] = gulp.parallel(editorLib, jsEditor)
 
 //----- MOSAICO'S KNOCKOUT TEMPLATES: see -> combineKOTemplates.js
 
@@ -315,7 +310,7 @@ function templates() {
     result = result + templates.join('\n') + '\n'
     result = result + '});\n'
     this.push(
-      new $.util.File({
+      new Vinyl({
         cwd: './',
         base: './',
         path: 'templates.js',
@@ -373,7 +368,7 @@ function jsUserDev() {
   if (isDev) {
     b = watchify(b)
     b.on('update', function() {
-      $.util.log(`bundle ${magenta('user')} app`)
+      console.log(`bundle ${magenta('user')} app`)
       bundleUserDev(b)
     })
   }
@@ -427,7 +422,7 @@ function jsAdminDev() {
   if (isDev) {
     b = watchify(b)
     b.on('update', function() {
-      $.util.log(`bundle ${magenta('admin')} app`)
+      console.log(`bundle ${magenta('admin')} app`)
       bundleAdminDev(b)
     })
   }
@@ -469,7 +464,7 @@ js.description = `build js for mosaico app and the for the rests of the applicat
 
 function fonts() {
   return gulp
-    .src('bower_components/font-awesome/fonts/*')
+    .src('node_modules/font-awesome/fonts/*')
     .pipe(gulp.dest('res/fa/fonts'))
 }
 
@@ -516,7 +511,7 @@ function rev() {
     revs.sort(sortByName).forEach(r => {
       md5Object[r.name] = r.hash
     })
-    let file = new $.util.File({
+    let file = new Vinyl({
       path: 'md5public.json',
       contents: new Buffer(JSON.stringify(md5Object, null, ' ')),
     })
@@ -600,18 +595,21 @@ function nodemon(cb) {
   })
 }
 
-function bsAndWatch() {
-  browserSync.init({
-    proxy: 'http://localhost:3000',
-    open: false,
-    port: 7000,
-    ghostMode: false,
-  })
-  watchFiles()
+function launchBrowserSync(cb) {
+  browserSync.init(
+    {
+      proxy: 'http://localhost:3000',
+      open: false,
+      port: 7000,
+      ghostMode: false,
+    },
+    cb
+  )
 }
 
-let initProd = true
+const bsAndWatch = gulp.series(launchBrowserSync, watchFiles)
 
+let initProd = true
 function nodemonProd(cb) {
   return $.nodemon(
     _.merge({ env: { NODE_ENV: 'production' } }, nodemonOptions)
@@ -623,11 +621,12 @@ function nodemonProd(cb) {
   })
 }
 
-function watchFiles() {
+function watchFiles(cb) {
   gulp.watch(['server/views/*.jade', 'dist/*.js']).on('change', reload)
   gulp.watch('src/css/**/*.less', cssEditor)
   gulp.watch('src/css-backend/**/*.styl', cssApp)
   gulp.watch(['src/tmpl/*.html', 'src/tmpl-custom/*.html'], templates)
+  cb()
 }
 
 gulp.task('css', css)
