@@ -1,6 +1,5 @@
 /backend
 /bin
-/bower_components
 /build
 /doc
 /spec
@@ -14,7 +13,6 @@
 /*.html
 /*.js
 !/index.js
-bower.json
 /*.md
 /LICENSE
 npm-debug.log
