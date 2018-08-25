@@ -93,6 +93,7 @@
     "validator": "^10.6.0"
   },
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.2.0",
     "aliasify": "^2.0.0",
     "async": "^2.6.1",
     "autoprefixer": "^9.1.3",

@@ -1,20 +1,20 @@
 'use strict'
 
 var console = require('console')
-var $       = require('jquery')
-var ko      = require('knockout')
-var _omit   = require('lodash.omit')
+var $ = require('jquery')
+var ko = require('knockout')
+var _omit = require('lodash.omit')
 var isEmail = require('validator/lib/isEmail')
 
 function getData(viewModel) {
   // gather meta
   // remove keys that aren't necessary to update
-  var datas  = _omit(ko.toJS(viewModel.metadata), ['urlConverter', 'template'])
+  var datas = _omit(ko.toJS(viewModel.metadata), ['urlConverter', 'template'])
   datas.data = viewModel.exportJS()
   return datas
 }
 
-var loader = function (viewModel) {
+var loader = function(viewModel) {
   console.info('init server storage (save, test, download)')
 
   //////
@@ -23,10 +23,10 @@ var loader = function (viewModel) {
 
   var saveCmd = {
     name: 'Save', // l10n happens in the template
-    enabled: ko.observable(true)
-  };
+    enabled: ko.observable(true),
+  }
   saveCmd.execute = function() {
-    saveCmd.enabled(false);
+    saveCmd.enabled(false)
     var data = getData(viewModel)
     console.info('SAVE DATA')
     console.log(data)
@@ -34,20 +34,20 @@ var loader = function (viewModel) {
     // force JSON for bodyparser to catch up
     // => keep types server side
     $.ajax({
-      url:          window.location.href,
-      method:       'POST',
-      contentType:  'application/json',
-      data:         JSON.stringify(data),
-      success:      onPostSuccess,
-      error:        onPostError,
-      complete:     onPostComplete,
+      url: window.location.href,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+      success: onPostSuccess,
+      error: onPostError,
+      complete: onPostComplete,
     })
 
     // use callback for easier jQuery updates
     // => Deprecation notice for .success(), .error(), and .complete()
     function onPostSuccess(data, textStatus, jqXHR) {
       console.log('save success')
-      viewModel.notifier.success( viewModel.t('save-message-success') )
+      viewModel.notifier.success(viewModel.t('save-message-success'))
     }
 
     function onPostError(jqXHR, textStatus, errorThrown) {
@@ -57,7 +57,7 @@ var loader = function (viewModel) {
     }
 
     function onPostComplete() {
-      saveCmd.enabled(true);
+      saveCmd.enabled(true)
     }
   }
 
@@ -67,51 +67,53 @@ var loader = function (viewModel) {
 
   var testCmd = {
     name: 'Test', // l10n happens in the template
-    enabled: ko.observable(true)
+    enabled: ko.observable(true),
   }
   testCmd.execute = function() {
     console.info('TEST')
     console.log(viewModel.metadata.url.send)
     testCmd.enabled(false)
     var email = viewModel.t('Insert here the recipient email address')
-    email     = global.prompt(viewModel.t("Test email address"), email)
+    email = global.prompt(viewModel.t('Test email address'), email)
 
     // Don't validate `null` values => isEmail will error
-    if ( !email ) return testCmd.enabled(true)
+    if (!email) return testCmd.enabled(true)
 
     if (!isEmail(email)) {
-      global.alert(viewModel.t('Invalid email address'));
+      global.alert(viewModel.t('Invalid email address'))
       return testCmd.enabled(true)
     }
 
-    console.log("TODO testing...", email)
-    var metadata  = ko.toJS(viewModel.metadata)
-    var datas     = {
-      rcpt:     email,
-      html:     viewModel.exportHTML(),
+    console.log('TODO testing...', email)
+    var metadata = ko.toJS(viewModel.metadata)
+    var datas = {
+      rcpt: email,
+      html: viewModel.exportHTML(),
     }
     $.ajax({
-      url:          viewModel.metadata.url.send,
-      method:       'POST',
-      data:         datas,
-      success:      onTestSuccess,
-      error:        onTestError,
-      complete:     onTestComplete,
+      url: viewModel.metadata.url.send,
+      method: 'POST',
+      data: datas,
+      success: onTestSuccess,
+      error: onTestError,
+      complete: onTestComplete,
     })
 
     function onTestSuccess(data, textStatus, jqXHR) {
       console.log('test success')
-      viewModel.notifier.success(viewModel.t("Test email sent..."))
+      viewModel.notifier.success(viewModel.t('Test email sent...'))
     }
 
     function onTestError(jqXHR, textStatus, errorThrown) {
       console.log('test error')
       console.log(errorThrown)
-      viewModel.notifier.error(viewModel.t('Unexpected error talking to server: contact us!'))
+      viewModel.notifier.error(
+        viewModel.t('Unexpected error talking to server: contact us!')
+      )
     }
 
     function onTestComplete() {
-      testCmd.enabled(true);
+      testCmd.enabled(true)
     }
   }
 
@@ -120,25 +122,23 @@ var loader = function (viewModel) {
   //////
 
   var downloadCmd = {
-    name:   'Download', // l10n happens in the template
+    name: 'Download', // l10n happens in the template
     enabled: ko.observable(true),
   }
-  downloadCmd.execute = function() {
-    console.info('DOWNLOAD')
+  downloadCmd.execute = function downloadZip(format) {
+    console.info(`DOWNLOAD – ${format}`)
     downloadCmd.enabled(false)
-    viewModel.notifier.info(viewModel.t("Downloading..."))
+    viewModel.notifier.info(viewModel.t('Downloading...'))
     viewModel.exportHTMLtoTextarea('#downloadHtmlTextarea')
     $('#downloadHtmlFilename').val(viewModel.metadata.name())
     $('#downloadForm')
-    .attr('action', viewModel.metadata.url.zip)
-    .submit()
+      .attr('action', `${viewModel.metadata.url.zip}?format=${format}`)
+      .submit()
     downloadCmd.enabled(true)
   }
-
-  viewModel.save      = saveCmd
-  viewModel.test      = testCmd
-  viewModel.download  = downloadCmd
-
+  viewModel.save = saveCmd
+  viewModel.test = testCmd
+  viewModel.download = downloadCmd
 }
 
-module.exports = loader;
+module.exports = loader

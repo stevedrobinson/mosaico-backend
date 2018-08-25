@@ -1,6 +1,7 @@
 // this the equivalent of app_standalone_material.less
 
-@import "../../node_modules/font-awesome/less/font-awesome.less";
+@import "../../node_modules/@fortawesome/fontawesome-free/less/solid.less";
+@import "../../node_modules/@fortawesome/fontawesome-free/less/fontawesome.less";
 
 @import 'custom-editor_variables.less';
 
@@ -36,8 +37,8 @@
 
 // COPY OF STYLE_VARIABLES.LESS
 
-// Icone font-awesome (.fa-* , configurable via @fa-css-prefix)
-@import (optional) "font-awesome/less/font-awesome.less";
+// // Icone font-awesome (.fa-* , configurable via @fa-css-prefix)
+// @import (optional) "font-awesome/less/font-awesome.less";
 
 // Mosaico: editing tools (toolbar, left toolbox, right preview)
 @import 'style_mosaico_tools.less';
@@ -74,7 +75,7 @@
 
 .makeFontAwesome() { // TODO move this in style_utils?
   visibility: visible;
-  font-family: FontAwesome;
+  font-family: 'Font Awesome 5 Free';
   color: #333332;
   position: relative;
   top: 1px;
@@ -427,6 +428,7 @@ body > .ui-tooltip {
   z-index: 9999;
   max-width: 300px;
   box-shadow: 0px 0px 5px #AAA;
+  pointer-events: none;
 }
 
 .ui-helper-hidden-accessible {
@@ -438,6 +440,7 @@ body > .ui-tooltip {
   padding: 0px;
   position: absolute !important;
   width: 1px;
+  pointer-events: none;
 }
 
 // Show "profile" icon in TinyMCE - TODO remove me
@@ -466,8 +469,8 @@ i.mce-i-newsletter-profile:before {
 
 #loading {
   position: absolute;
-  top: 5px;
-  left: 6px;
+  top: 0;
+  left: 0;
   z-index: 150;
 
   a {
@@ -491,6 +494,15 @@ i.mce-i-newsletter-profile:before {
       opacity: 1;
     }
   }
+}
+
+#home-button {
+  display: flex;
+  height: @topbar-height;
+  width: @topbar-height;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 #carousel-dialog {
@@ -692,35 +704,6 @@ i.mce-i-newsletter-profile:before {
   }
   .fa {
     margin-right: .5em;
-  }
-}
-
-#toolbar {
-  .ui-button {
-    color: @tab-text-color;
-    padding-top: 7px;
-    padding-bottom: 7px;
-    line-height: 22px;
-    background-color: @mosaico-ui-background-color;
-
-    .ui-icon,
-    .ui-button-text {
-      color: currentColor;
-    }
-
-    &:hover,
-    &.pressed {
-      filter: brightness(115%);
-    }
-    &.selected,
-    &.ui-state-active {
-      border-top: 0;
-    }
-    &.ui-button-disabled,
-    &.ui-button-disabled .ui-icon,
-    &.ui-button-disabled .ui-button-text {
-      opacity: .5;
-    }
   }
 }
 
@@ -949,7 +932,7 @@ i.mce-i-newsletter-profile:before {
     }
   }
 
-  // file manager broser button
+  // file manager browser button
   .mo .propInput .ui-textbutton .ui-textbutton-button {
     border-radius: 50%;
     box-shadow: 1px 1px 3px @shadow-color;
@@ -1030,57 +1013,7 @@ i.mce-i-newsletter-profile:before {
 // TOOLBAR
 ////////
 
-#toolbar {
-  padding: 1px 5px;
-  display: flex;
-}
-
-.mailing-name {
-  flex: 1 1 auto;
-  display: flex;
-  margin-right: 7px;
-  border: solid rgba(0, 0, 0, 0);
-  border-width: 0 1px;
-  position: relative;
-
-  &::before,
-  &::after {
-    content: '';
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: @primary-color-contrast;
-    opacity: .2;
-  }
-
-  &::before {
-    left: 0;
-  }
-  &::after {
-    right: 0;
-  }
-
-  .ui-button {
-    margin-right: 0;
-    text-align: left;
-  }
-
-  input {
-    font: inherit;
-    color: @tab-text-color;
-    background: none;
-    padding-left: 7px;
-    border: 0;
-    outline: 0;
-  }
-
-  p,
-  input {
-    flex: 1 1 auto;
-  }
-}
+@import 'custom-top-right-toolbar.less';
 
 //----- IMAGE GALLERY TOOLBOX
 
@@ -1236,7 +1169,7 @@ i.mce-i-newsletter-profile:before {
     &:before {
       visibility: visible;
       font-size: 24px;
-      font-family: FontAwesome;
+      font-family: 'Font Awesome 5 Free';
       content: '\f00d';
       position: relative;
       top: 0px;

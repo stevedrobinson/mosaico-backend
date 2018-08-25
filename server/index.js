@@ -160,10 +160,7 @@ module.exports = _ => {
   // commited assets
   app.use(express.static(path.join(__dirname, '../res')))
   // libs
-  app.use(
-    '/lib/skins',
-    express.static(path.join(__dirname, '../res/vendor/skins'))
-  )
+  app.use('/lib/skins', express.static(path.join(__dirname, '../res/skins')))
   app.use(
     express.static(path.join(__dirname, '../node_modules/material-design-lite'))
   )

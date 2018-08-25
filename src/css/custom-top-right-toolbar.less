@@ -1,0 +1,126 @@
+#toolbar {
+  padding: 1px 5px;
+  display: flex;
+  color: @tab-text-color;
+
+  .rightButtons{
+    display: flex;
+  }
+  .ui-button {
+    background-color: @mosaico-ui-background-color;
+
+    .ui-icon,
+    .ui-button-text {
+      color: currentColor;
+    }
+
+    &:hover,
+    &.pressed {
+      filter: brightness(115%);
+    }
+    &.selected,
+    &.ui-state-active {
+      border-top: 0;
+    }
+    &.ui-button-disabled,
+    &.ui-button-disabled .ui-icon,
+    &.ui-button-disabled .ui-button-text {
+      opacity: .5;
+    }
+  }
+  .toolbar__button {
+    background:  @mosaico-ui-background-color;
+    text-transform: uppercase;
+    font-family: inherit;
+    font-weight: 700;
+    display: flex;
+    padding: 0 7px;
+    margin: 0;
+    align-items: center;
+    border: 0;
+    color: inherit;
+    height: 100%;
+    cursor: pointer;
+
+    &:hover {
+      filter: brightness(115%);
+    }
+
+    .fas:not(:only-child) {
+      margin-right: 7px;
+    }
+  }
+}
+
+.mailing-name {
+  flex: 1 1 auto;
+  display: flex;
+  border: solid rgba(0, 0, 0, 0);
+  border-width: 0 1px;
+  position: relative;
+
+  &::before,
+  &::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: @primary-color-contrast;
+    opacity: .2;
+  }
+
+  &::before {
+    left: 0;
+  }
+  &::after {
+    right: 0;
+  }
+
+  .ui-button {
+    margin-right: 0;
+    text-align: left;
+  }
+
+  input {
+    font: inherit;
+    color: @tab-text-color;
+    background: none;
+    padding-left: 7px;
+    border: 0;
+    outline: 0;
+  }
+
+  p,
+  input {
+    flex: 1 1 auto;
+  }
+}
+
+.download {
+  position: relative;
+
+  &__panel {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: -1px;
+    padding-top: @topbar-height;
+
+    &:hover {
+      display: block;
+    }
+    &_action {
+      display: block;
+      width: 100%;
+    }
+    .ui-button {
+      border-radius: 0;
+      font-size: .9em;
+    }
+  }
+  &:hover &__panel {
+    display: block;
+  }
+}

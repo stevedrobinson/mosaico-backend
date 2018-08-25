@@ -246,7 +246,7 @@ function jsMosaicoDev() {
   if (isDev) {
     b = watchify(b)
     b.on('update', function() {
-      console.util.log(`bundle ${magenta('editor')} app`)
+      console.log(`bundle ${magenta('editor')} app`)
       bundleShareDev(b)
     })
   }
@@ -462,13 +462,17 @@ js.description = `build js for mosaico app and the for the rests of the applicat
 
 //----- FONTS
 
+function cleanFonts() {
+  return del('res/fa/fonts')
+}
+
 function fonts() {
   return gulp
-    .src('node_modules/font-awesome/fonts/*')
+    .src('node_modules/@fortawesome/fontawesome-free/webfonts/*')
     .pipe(gulp.dest('res/fa/fonts'))
 }
 
-const assets = fonts
+const assets = gulp.series(cleanFonts, fonts)
 assets.description = `Copy font-awesome in the right place`
 
 //----- MAINTENANCE
