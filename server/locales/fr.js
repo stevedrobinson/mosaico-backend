@@ -26,11 +26,11 @@
 		"logout": "déconnexion",
 		"make-mailing": "Cliquez sur l'un des templates ci-dessous pour créer un nouvel email",
 		"no-content": "Pas de mailing enregistrés",
-		"create-new-mailing": "home.create-new-mailing",
+		"create-new-mailing": "Créer un nouveau mailing",
 		"no": {
 			"groups": "Il n'y a pas encore de groups accessibles",
 			"mailing": "pas de mailings trouvés",
-			"templates": "home.no.templates"
+			"templates": "pas de templates trouvés"
 		},
 		"welcome": "bienvenue %s",
 		"delete": {
@@ -101,7 +101,7 @@
 			"reset": "Réinitialisation du mot de passe"
 		},
 		"token": {
-			"invalid": "Désolé! le lien de résinitialisation est invalide ou a expiré."
+			"invalid": "Désolé! le lien de réinitialisation est invalide ou a expiré."
 		},
 		"nomatch": "Les mots de passe ne sont pas identiques",
 		"error": {
@@ -162,8 +162,8 @@
 	},
 	"table": {
 		"selection": {
-			"singular": "élément selectionné",
-			"plural": "éléments selectionnés"
+			"singular": "élément sélectionné",
+			"plural": "éléments sélectionnés"
 		}
 	},
 	"admin": {
@@ -178,7 +178,7 @@
 			"generate-previews": "générer les miniatures",
 			"files": "fichiers",
 			"new": "nouveau template",
-			"associated": "pas de templates associés",
+			"associated": "templates associés",
 			"builtin-templates-title": "Utiliser un template préexistant",
 			"preview-notice": "Générer les images de preview peut prendre quelques secondes"
 		},
@@ -191,7 +191,7 @@
 				"action-long": {
 					"send": "envoyer le mailing d'initialisation",
 					"resend": "renvoyer le mail d'initialisation",
-					"reset": "réinitialisater le mot de passe"
+					"reset": "réinitialiser le mot de passe"
 				},
 				"value": {
 					"to-be-initialized": "en attente d'activation",

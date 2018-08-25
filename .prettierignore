@@ -1,3 +1,4 @@
 server-config.js
 Gruntfile.js
 *.less
+/server/locales/*.js

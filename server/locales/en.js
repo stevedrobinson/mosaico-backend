@@ -29,7 +29,7 @@
 		"no": {
 			"groups": "No accessible groups yet",
 			"mailing": "no mailings founded",
-			"templates": "home.no.templates"
+			"templates": "no templates founded"
 		},
 		"welcome": "Welcome %s",
 		"delete": {
@@ -47,7 +47,7 @@
 		"snackbar": {
 			"deleteMessage": "Your mailing has been deleted",
 			"renameMessage": "Your mailing has been rename",
-			"errorMessage": "An error has occured. Action aborted"
+			"errorMessage": "An error has occurred. Action aborted"
 		}
 	},
 	"layout": {
@@ -177,8 +177,8 @@
 			"generate-previews": "generate previews",
 			"files": "files",
 			"new": "new template",
-			"associated": "no associated templates",
-			"builtin-templates-title": "Use a prebuild template",
+			"associated": "associated templates",
+			"builtin-templates-title": "Use a prebuilt template",
 			"preview-notice": "Generate the previews can take some seconds"
 		},
 		"users": {

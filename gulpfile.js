@@ -564,7 +564,7 @@ const nodemonOptions = {
   ext: 'js json',
   watch: [
     'server/**/*.js',
-    '!server/locales/*.js',
+    // '!server/locales/*.js',
     '.backendrc',
     'index.js',
     'res/lang/*.js',
