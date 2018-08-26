@@ -3,31 +3,14 @@
   display: flex;
   color: @tab-text-color;
 
-  .rightButtons{
+  .leftButtons,
+  .rightButtons {
     display: flex;
   }
-  .ui-button {
-    background-color: @mosaico-ui-background-color;
-
-    .ui-icon,
-    .ui-button-text {
-      color: currentColor;
-    }
-
-    &:hover,
-    &.pressed {
-      filter: brightness(115%);
-    }
-    &.selected,
-    &.ui-state-active {
-      border-top: 0;
-    }
-    &.ui-button-disabled,
-    &.ui-button-disabled .ui-icon,
-    &.ui-button-disabled .ui-button-text {
-      opacity: .5;
-    }
+  .rightButtons {
+    flex-direction: row-reverse;
   }
+  .ui-button,
   .toolbar__button {
     background:  @mosaico-ui-background-color;
     text-transform: uppercase;
@@ -41,14 +24,43 @@
     color: inherit;
     height: 100%;
     cursor: pointer;
+    border-radius: 0;
 
-    &:hover {
+    &:hover,
+    &.pressed {
       filter: brightness(115%);
     }
 
-    .fas:not(:only-child) {
+    // gallery button has a label, but it's hidden in CSS
+    .fas:not(:only-child):not(.fa-image):not(.fa-save) {
       margin-right: 7px;
     }
+
+    // font-awesone doesn't provide a size between fa-lg (1.33em) and fa-2x (2em)
+    .fa-save,
+    .fa-image {
+      font-size: 1.75em;
+    }
+  }
+
+  .ui-button {
+    .ui-icon,
+    .ui-button-text {
+      color: currentColor;
+    }
+    &.selected,
+    &.ui-state-active {
+      border-top: 0;
+    }
+    &.ui-button-disabled,
+    &.ui-button-disabled .ui-icon,
+    &.ui-button-disabled .ui-button-text {
+      opacity: .5;
+    }
+  }
+
+  .toolbar__button--save .ui-button-text {
+    display: none;
   }
 }
 
@@ -118,6 +130,7 @@
     .ui-button {
       border-radius: 0;
       font-size: .9em;
+      filter: brightness(85%);
     }
   }
   &:hover &__panel {
