@@ -16,7 +16,7 @@
         <!-- /ko -->
         <!-- ko if: _src() == '' -->
         <div title="Upload a new image" data-bind="attr: { title: $root.t('Upload a new image') }" class="tool upload" style="position: relative; overflow: hidden;"><i
-            class="fa fa-fw fa-upload"></i>
+            class="fas fa-upload"></i>
           <input class="fileupload nofile" type="file" name="files[]" data-bind="fileupload: { data: _src, onerror: $root.notifier.error, onfile: $root.loadMailingImage, canvasPreview: true }"
             style="z-index: 20; position: absolute; top: 0; left: 0; right: 0; bottom: 0; min-width: 100%; min-height: 100%; font-size: 999px; text-align: right; filter: alpha(opacity=0); opacity: 0; outline: none; cursor: inherit; display: block">
         </div>
