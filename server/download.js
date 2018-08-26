@@ -69,9 +69,9 @@ const imagesFolder = 'images'
 // https://github.com/archiverjs/node-archiver/blob/master/examples/express.js
 
 async function zip(req, res, next) {
-  const { user, body, query } = req
-  console.log({ query })
+  const { body } = req
   const { mailingId } = req.params
+  const { format } = req.query
   const reqParams = {
     where: {
       id: mailingId,
@@ -80,37 +80,68 @@ async function zip(req, res, next) {
   const mailing = await Mailing.findOne(addGroupFilter(req, reqParams))
 
   if (!mailing) return next(createError(404))
-  const archive = archiver('zip')
-  let { html } = body
-  let $ = cheerio.load(html)
-  let name = getName(mailing.name)
+  const archive = archiver(`zip`)
+  const name = getName(mailing.name)
+  const html =
+    format === `cdn`
+      ? body.html
+      : await downloadMailingImages({
+          archive,
+          name,
+          html: body.html,
+        })
 
-  console.log('download zip', name)
+  console.log(`download zip`, name, `with format`, format)
 
+  archive.on(`error`, next)
+
+  // on stream closed we can end the request
+  archive.on(`end`, () => {
+    console.log(`Archive wrote ${archive.pointer()} bytes`)
+    res.end()
+  })
+
+  // set the archive name
+  res.attachment(`${name}.zip`)
+
+  // this is the streaming magic
+  archive.pipe(res)
+
+  // Add html with relatives url
+  archive.append(secureHtml(html), {
+    name: `${name}.html`,
+    prefix: `${name}/`,
+  })
+
+  archive.finalize()
+}
+
+async function downloadMailingImages({ archive, name, html }) {
+  const $ = cheerio.load(html)
   // keep a track of every images for latter download
-  // be carefull to avoid data uri
+  // be careful to avoid data uri
   // relatives path are not handled:
   //  - the mailing should work also by email test
   //  - SO no need to handle them
-  const $images = $('img')
+  const $images = $(`img`)
   const imgUrls = _.uniq(
     $images
-      .map((i, el) => $(el).attr('src'))
+      .map((i, el) => $(el).attr(`src`))
       .get()
       .filter(isHttpUrl)
   )
-  const $background = $('[background]')
+  const $background = $(`[background]`)
   const bgUrls = _.uniq(
     $background
-      .map((i, el) => $(el).attr('background'))
+      .map((i, el) => $(el).attr(`background`))
       .get()
       .filter(isHttpUrl)
   )
-  const $style = $('[style]')
+  const $style = $(`[style]`)
   const styleUrls = []
-  $style.filter((i, el) => /url\(/.test($(el).attr('style'))).each((i, el) => {
+  $style.filter((i, el) => /url\(/.test($(el).attr(`style`))).each((i, el) => {
     const urlReg = /url\('?([^)']*)/
-    const style = $(el).attr('style')
+    const style = $(el).attr(`style`)
     const result = urlReg.exec(style)
     if (
       result &&
@@ -131,28 +162,8 @@ async function zip(req, res, next) {
   allImages.forEach(imgUrl => {
     const escImgUrl = esc(imgUrl)
     const relativeUrl = `${imagesFolder}/${getImageName(imgUrl)}`
-    const search = new RegExp(escImgUrl, 'g')
+    const search = new RegExp(escImgUrl, `g`)
     html = html.replace(search, relativeUrl)
-  })
-
-  archive.on('error', next)
-
-  // on stream closed we can end the request
-  archive.on('end', () => {
-    console.log('Archive wrote %d bytes', archive.pointer())
-    res.end()
-  })
-
-  // set the archive name
-  res.attachment(`${name}.zip`)
-
-  // this is the streaming magic
-  archive.pipe(res)
-
-  // Add html with relatives url
-  archive.append(secureHtml(html), {
-    name: `${name}.html`,
-    prefix: `${name}/`,
   })
 
   // Pipe all images BUT don't add errored images
@@ -160,7 +171,7 @@ async function zip(req, res, next) {
     const dfd = h.defer()
     const imageName = getImageName(imageUrl)
     const imgRequest = request(imageUrl)
-    imgRequest.on('response', response => {
+    imgRequest.on(`response`, response => {
       if (response.statusCode !== 200) return
       archive.append(imgRequest, {
         name: imageName,
@@ -168,8 +179,8 @@ async function zip(req, res, next) {
       })
       dfd.resolve()
     })
-    imgRequest.on('error', imgError => {
-      console.log('[ZIP] error during downloading', imageUrl)
+    imgRequest.on(`error`, imgError => {
+      console.log(`[ZIP] error during downloading`, imageUrl)
       console.log(imgError)
       // still resolve, just don't add this errored image to the archive
       dfd.resolve()
@@ -178,12 +189,12 @@ async function zip(req, res, next) {
   })
 
   // Wait for all images to be requested before closing archive
-  const imagesRequestStatus = await Promise.all(imagesRequest)
-  archive.finalize()
+  await Promise.all(imagesRequest)
+  return html
 }
 
 function getName(name) {
-  name = name || 'email'
+  name = name || `email`
   return getSlug(name.replace(/\.[0-9a-z]+$/, ''))
 }
 
