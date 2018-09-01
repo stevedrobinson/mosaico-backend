@@ -154,13 +154,6 @@ function mosaicoLib() {
       `node_modules/blueimp-file-upload/js/jquery.fileupload-validate.js`,
       `node_modules/knockout-jqueryui/dist/knockout-jqueryui.js`,
       `node_modules/tinymce/tinymce.js`,
-      `node_modules/tinymce/themes/modern/theme.js`,
-      `node_modules/tinymce/plugins/link/plugin.js`,
-      `node_modules/tinymce/plugins/hr/plugin.js`,
-      `node_modules/tinymce/plugins/paste/plugin.js`,
-      `node_modules/tinymce/plugins/lists/plugin.js`,
-      `node_modules/tinymce/plugins/textcolor/plugin.js`,
-      `node_modules/tinymce/plugins/code/plugin.js`,
     ])
     .pipe($.concat('lib-editor-dev.js'))
     .pipe(gulp.dest(buildDir + '/lib'))
@@ -200,7 +193,10 @@ copyTinymceFiles.description = `copy all related tinymce files to the right plac
 exports[`js:tinymce`] = copyTinymceFiles
 
 // Bundling mosaico libs is just a concat…
-const editorLib = gulp.series(cleanLib, mosaicoLib)
+const editorLib = gulp.series(
+  cleanLib,
+  gulp.parallel(mosaicoLib, copyTinymceFiles)
+)
 editorLib.description = `build JS for the mosaico editor and the app`
 
 //----- MOSAICO APPLICATION
