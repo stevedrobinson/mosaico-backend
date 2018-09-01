@@ -12,8 +12,10 @@
 /*.html
 /*.js
 !/index.js
+!/gulpfile.js
 /*.md
 /LICENSE
 npm-debug.log
+package.json.NOTES
 .DS_Store
 /s3-*
