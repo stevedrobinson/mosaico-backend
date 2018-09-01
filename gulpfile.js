@@ -541,7 +541,7 @@ const cleanTmp = cb => del(['tmp/upload_*'], cb)
 
 function toc() {
   return gulp
-    .src('./BACKEND.md')
+    .src('./README.md')
     .pipe(
       $.doctoc({
         mode: 'github.com',
