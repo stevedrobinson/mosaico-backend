@@ -1,5 +1,0 @@
-server-config.js
-Gruntfile.js
-*.less
-/server/locales/*.js
-/res/lang/custom-*.js
