@@ -311,7 +311,10 @@ a[disabledhref]:-moz-read-write {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: none;
+        background: @background-color;
+      }
+      .ui-state-active {
+        filter: brightness(125%);
       }
     }
   }
