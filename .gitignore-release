@@ -1,10 +1,7 @@
 /backend
-/bin
-/bower_components
 /build
 /doc
 /spec
-/src
 /tasks
 /uploads
 /tests
@@ -14,9 +11,10 @@
 /*.html
 /*.js
 !/index.js
-bower.json
+!/gulpfile.js
 /*.md
 /LICENSE
 npm-debug.log
+package.json.NOTES
 .DS_Store
 /s3-*

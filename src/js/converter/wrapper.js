@@ -5,15 +5,56 @@
 // wrap/upwrap objects on simple array methods (push, splice)
 
 var ko = require("knockout");
-var kowrap = require("knockout.wrap");
 var console = require("console");
 
-var _getOptionsObject = function(options) {
+function wrap(v) {
+  var typeOfv = typeof v;
+  if (typeOfv === 'object') {
+    if (v) {
+      if (v.constructor == Date) typeOfv = 'date';
+      else if (Object.prototype.toString.call(v) == '[object Array]') typeOfv = 'array';
+    } else {
+      typeOfv = 'null';
+    }
+  }
+
+  if (typeOfv == "array") {
+
+    var r = ko.observableArray();
+    if (!v || v.length === 0) return r;
+    for (var i = 0, l = v.length; i < l; ++i) r.push(wrap(v[i]));
+    return r;
+
+  } else if (typeOfv == "object") {
+
+    var t = {};
+    for (var k in v) {
+      var wv = v[k];
+      t[k] = wrap(wv);
+    }
+    return ko.observable(t);
+
+  } else if (typeOfv == 'function') {
+
+    return v;
+
+  } else {
+
+    var t2 = ko.observable();
+    t2(v);
+    return t2;
+
+  }
+}
+
+// TODO the "select widget" uses its own _getOptionsObject to read and parse the "option" string
+//      we should merge the logic.
+var _getOptionsObjectKeys = function(options) {
   var optionsCouples = options.split('|');
-  var opts = {};
+  var opts = [];
   for (var i = 0; i < optionsCouples.length; i++) {
     var opt = optionsCouples[i].split('=');
-    opts[opt[0]] = opt.length > 1 ? opt[1] : opt[0];
+    opts.push(opt[0].trim());
   }
   return opts;
 };
@@ -84,9 +125,8 @@ var _getVariants = function(def) {
     console.error("Unexpected variant declaration", variantProp, def[variantProp]);
     throw "Unexpected variant declaration: cannot find property " + variantProp + " or its _options string and it is not a boolean";
   }
-  // TODO I read the "keys" but this is not 100% correct because they are not garanteed to be sorted as in declaration
   if (typeof def[variantProp]._options == 'string') {
-    variantOptions = Object.keys(_getOptionsObject(def[variantProp]._options));
+    variantOptions = _getOptionsObjectKeys(def[variantProp]._options);
   } else {
     variantOptions = [true, false];
   }
@@ -226,7 +266,7 @@ var _makeBlocksWrap = function(instrument, inputModel) {
   var model = ko.toJS(inputModel);
   var input = model.blocks;
   model.blocks = [];
-  var res = kowrap.fromJS(model, undefined, true)();
+  var res = wrap(model)();
   _augmentBlocksObservable(res.blocks, instrument);
   for (var i = 0; i < input.length; i++) {
     var obj = ko.toJS(input[i]);
@@ -277,12 +317,10 @@ var _blockInstrumentFunction = function(def, defs, themes, knockout, self, model
   // ugly: sometimes we have to bind content but not self, so we repeat self at the end as "self2"
   if (typeof self == 'undefined') self = self2;
 
-  var computedFunctions;
-  computedFunctions = {
-    '': _makeComputedFunction.bind(self, def, defs, themes, knockout, modelContent, isContent)
-  };
+  var res = wrap(self);
+  // Augment observables with custom code
+  res(_makeComputedFunction(def, defs, themes, knockout, modelContent, isContent, res()));
 
-  var res = kowrap.fromJS(self, computedFunctions, true);
   res._unwrap = _unwrap.bind(res);
   return res;
 };

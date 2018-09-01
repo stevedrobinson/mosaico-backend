@@ -1,0 +1,15 @@
+<!-- ko if: typeof $root.download !== 'undefined' -->
+<form id="downloadForm" class="download" action="#" method="POST">
+  <input type="hidden" name="action" value="download" />
+  <input type="hidden" name="filename" value="email.html" id="downloadHtmlFilename" />
+  <input type="hidden" name="html" id="downloadHtmlTextarea" />
+  <button type="button" class="toolbar__button download__button" title="Download template" data-bind="attr: { title: $root.t('Download template') }">
+    <i class="fas fa-file-archive" aria-hidden="true"></i>
+    <span data-bind="text: $root.t($root.download.name)">DOWNLOAD</span>
+  </button>
+  <div class="download__panel">
+    <a class="download__panel_action" href="javascript:void(0)" data-bind="click: $root.download.execute.bind($element, 'image'), clickBubble: false, button: { disabled: !$root.download.enabled(), label: $root.t('download-with-images'), text: true }">DOWNLOAD</a>
+    <a class="download__panel_action" href="javascript:void(0)" data-bind="click: $root.download.execute.bind($element, 'cdn'), clickBubble: false, button: { disabled: !$root.download.enabled(), label: $root.t('download-cdn'), text: true }">DOWNLOAD</a>
+  </div>
+</form>
+<!-- /ko -->

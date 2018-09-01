@@ -10,7 +10,7 @@ var _getOptionsObject = function(options) {
   var opts = {};
   for (var i = 0; i < optionsCouples.length; i++) {
     var opt = optionsCouples[i].split('=');
-    opts[opt[0]] = opt.length > 1 ? opt[1] : opt[0];
+    opts[opt[0].trim()] = opt.length > 1 ? opt[1].trim() : opt[0].trim();
   }
   return opts;
 };
@@ -135,7 +135,7 @@ var _propEditor = function(withBindingProvider, widgets, templateUrlConverter, m
   if (typeof level == 'undefined') level = 0;
 
   if (typeof prop !== 'undefined' && typeof model == 'object' && model !== null && typeof model._usecount === 'undefined') {
-    console.log("TODO EDITOR ignoring", path, "property because it is not used by the template", "prop:", prop, "type:", editType, "level:", level, withBindingProvider._templateName);
+    if (typeof console.debug == 'function') console.debug("Ignoring", path, "property because it is not used by the template", "prop:", prop, "type:", editType, "level:", level, withBindingProvider._templateName);
     return "";
   }
 
@@ -175,10 +175,10 @@ var _propEditor = function(withBindingProvider, widgets, templateUrlConverter, m
 
   if (typeof prop != 'undefined' && (model === null || typeof model._name == 'undefined')) {
     // TODO throw exception?
-    console.log("TODO WARN Missing label for property ", prop);
+    console.log("Missing label for property ", prop);
   }
-  if (typeof prop == 'undefined' && model !== null && typeof model._name == 'undefined') {
-    console.log("TODO WARN Missing label for object ", model.type /*, model */ );
+  if (typeof prop == 'undefined' && model !== null && typeof model._name == 'undefined' && model.type !== 'theme') {
+    console.log("Missing label for object ", model.type /*, model */ );
   }
 
   if (typeof model == 'object' && model !== null && typeof model._widget == 'undefined') {
@@ -201,7 +201,7 @@ var _propEditor = function(withBindingProvider, widgets, templateUrlConverter, m
       if (typeof themeModel !== 'undefined' && themeModel !== null && typeof themeModel._name !== 'undefined') {
         themeSectionName = themeModel._name;
       } else {
-        console.log("TODO missing label for theme section ", prop, model !== null ? model.type : '-');
+        console.log("Missing label for theme section ", prop, model !== null ? model.type : '-');
       }
 
       modelName = '<span class="blockSelectionMethod" data-bind="text: customStyle() ? $root.ut(\'template\', \'' + utils.addSlashes(modelName) + '\') : $root.ut(\'template\', \'' + utils.addSlashes(themeSectionName) + '\')">Block</span>';

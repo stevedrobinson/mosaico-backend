@@ -59,7 +59,7 @@
     "password": "admin"
   },
 
-  // show complentary informations on the front-end
+  // show complementary informations on the front-end
 
   "debug": false,
 

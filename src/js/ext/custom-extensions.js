@@ -1,8 +1,8 @@
 'use strict'
 
-var ko            = require('knockout')
-var url           = require('url')
-var slugFilename  = require('../../../shared/slug-filename.js')
+var ko = require('knockout')
+var url = require('url')
+var slugFilename = require('../../../shared/slug-filename.js')
 
 // https://github.com/voidlabs/mosaico/wiki/Mosaico-Plugins
 
@@ -11,31 +11,30 @@ var slugFilename  = require('../../../shared/slug-filename.js')
 //////
 
 const serverStorage = require('./custom-server-storage')
-const editTitle     = require('./custom-edit-title')
-let   textEditor    = require('./custom-text-editor')
-const gallery       = require('./custom-gallery')
-const removeImage   = require('./custom-remove-gallery-image')
+const editTitle = require('./custom-edit-title')
+let textEditor = require('./custom-text-editor')
+const gallery = require('./custom-gallery')
+const removeImage = require('./custom-remove-gallery-image')
 // widgets
 // https://github.com/voidlabs/mosaico/wiki/Mosaico-Plugins#widget-plugins
 const widgetBgimage = require('./custom-widget-bgimage')
 
-
 const setEditorIcon = opts => viewModel => {
-  viewModel.logoPath  = false
-  viewModel.logoUrl   = false
-  viewModel.logoAlt   = false
+  viewModel.logoPath = false
+  viewModel.logoUrl = false
+  viewModel.logoAlt = false
   viewModel.brandName = opts.brandName
 }
 
 function extendViewModel(opts, customExtensions) {
-  customExtensions.push( serverStorage )
-  customExtensions.push( setEditorIcon(opts) )
-  customExtensions.push( editTitle )
-  customExtensions.push( gallery(opts) )
-  customExtensions.push( removeImage )
-  // widget should be differenciating of VM extentions by
+  customExtensions.push(serverStorage)
+  customExtensions.push(setEditorIcon(opts))
+  customExtensions.push(editTitle)
+  customExtensions.push(gallery(opts))
+  customExtensions.push(removeImage)
+  // widget should be differentiating of VM extensions by
   // template-loader.js#pluginsCall
-  customExtensions.push( widgetBgimage(opts) )
+  customExtensions.push(widgetBgimage(opts))
 }
 
 //////
@@ -46,7 +45,7 @@ function templateUrlConverter(opts) {
   var assets = opts.metadata.assets || {}
   return function customTemplateUrlConverter(url) {
     if (!url) return null
-      console.log('customTemplateUrlConverter', url)
+    console.log('customTemplateUrlConverter', url)
     // handle: [unsubscribe_link] or mailto:[mail]
     if (/\]$/.test(url)) return null
     // handle absolute url: http
@@ -54,7 +53,7 @@ function templateUrlConverter(opts) {
     // handle ESP tags: in URL <%
     if (/<%/.test(url)) return null
     // handle other urls: img/social_def/twitter_ok.png
-    var urlRegexp       = /([^\/]*)$/
+    var urlRegexp = /([^\/]*)$/
     var extentionRegexp = /\.[0-9a-z]+$/
     // as it is done, all files are flatten in asset folder (uploads or S3)
     url = urlRegexp.exec(url)[1]
@@ -68,8 +67,8 @@ function templateUrlConverter(opts) {
     //    => we need to maintain a dictionary of name -> md5 name
     //    here come the assets block
     // we still keep the slug part for backward compatibility reason with old image name conventions
-    url = slugFilename( url )
-    url = assets[ url ] ? opts.imgProcessorBackend + assets[ url ] : null
+    url = slugFilename(url)
+    url = assets[url] ? opts.imgProcessorBackend + assets[url] : null
     return url
   }
 }
@@ -79,15 +78,14 @@ function templateUrlConverter(opts) {
 
 // this equivalent to the original app.js#applyBindingOptions
 function extendKnockout(opts) {
-
   //----- TINYMCE
 
   // Change tinyMCE full editor options
   if (opts.lang === 'fr') {
     textEditor.language_url = '/tinymce-langs/fr_FR.js'
-    textEditor.language     = 'fr_FR'
+    textEditor.language = 'fr_FR'
     tinymce.util.I18n.add('fr_FR', {
-      'Cancel': 'Annuler',
+      Cancel: 'Annuler',
       'in pixel': 'en pixel',
       'Enter a font-size': 'Entrez une taille de police',
       'Letter spacing': 'Interlettrage',
@@ -95,10 +93,10 @@ function extendKnockout(opts) {
       'Font size: ': 'Taille : ',
       'minimum size: 8px': 'taille minimum : 8px',
       'no decimals': 'pas de décimales',
-    } )
+    })
   }
   //- https://www.tinymce.com/docs/configure/url-handling/#convert_urls
-  textEditor = $.extend( {convert_urls: false}, textEditor, opts.tinymce )
+  textEditor = $.extend({ convert_urls: false }, textEditor, opts.tinymce)
   ko.bindingHandlers.wysiwyg.fullOptions = textEditor
 
   // mirror options to the small version of tinymce
@@ -107,8 +105,8 @@ function extendKnockout(opts) {
     external_plugins: {
       paste: textEditor.external_plugins.paste,
     },
-    theme_url:  textEditor.theme_url,
-    skin_url:   textEditor.skin_url,
+    theme_url: textEditor.theme_url,
+    skin_url: textEditor.skin_url,
   }
 
   //----- URLS HANDLING
@@ -118,32 +116,39 @@ function extendKnockout(opts) {
   // customTemplateUrlConverter is used:
   //  - for preview images on left bar
   //  - for static links in templates
-  ko.bindingHandlers.wysiwygSrc.templateUrlConverter = templateUrlConverter(opts)
+  ko.bindingHandlers.wysiwygSrc.templateUrlConverter = templateUrlConverter(
+    opts
+  )
 
   // options have been set in the editor template
-  var imgProcessorBackend = url.parse( opts.imgProcessorBackend )
+  var imgProcessorBackend = url.parse(opts.imgProcessorBackend)
 
   // send the non-resized image url
-  ko.bindingHandlers.fileupload.remoteFilePreprocessor = function (file) {
+  ko.bindingHandlers.fileupload.remoteFilePreprocessor = function(file) {
     console.info('REMOTE FILE PREPROCESSOR')
     console.log(file)
     var fileUrl = url.format({
       protocol: imgProcessorBackend.protocol,
-      host:     imgProcessorBackend.host,
+      host: imgProcessorBackend.host,
       pathname: imgProcessorBackend.pathname,
-    });
+    })
     file.url = url.resolve(fileUrl, url.parse(file.url).pathname)
     return file
   }
 
   // push "convertedUrl" method to the wysiwygSrc binding
-  ko.bindingHandlers.wysiwygSrc.convertedUrl = function(src, method, width, height) {
+  ko.bindingHandlers.wysiwygSrc.convertedUrl = function(
+    src,
+    method,
+    width,
+    height
+  ) {
     var imageName = url.parse(src).pathname
     if (!imageName) console.warn('no pathname for image', src)
     console.info('CONVERTED URL', imageName, method, width, height)
-    imageName     = imageName.replace('/img/', '')
-    var path      = opts.basePath + '/' + method
-    path          = path + '/' + width + 'x' + height + '/' + imageName
+    imageName = imageName.replace('/img/', '')
+    var path = opts.basePath + '/' + method
+    path = path + '/' + width + 'x' + height + '/' + imageName
     return path
   }
 

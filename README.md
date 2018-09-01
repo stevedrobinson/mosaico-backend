@@ -1,14 +1,15 @@
 [![herokubtn](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/goodenough/mosaico-backend/tree/release)
 
-* Heroku button page: https://elements.heroku.com/buttons/goodenough/mosaico-backend
+- Heroku button page: https://elements.heroku.com/buttons/goodenough/mosaico-backend
 
 [![screencast](https://drive.google.com/uc?export=view&id=0BwQNm5fx5y30SXpSMWI4U1Z3b0E)](https://youtu.be/HqUT2et0FnM)
 
 # Mosaico backend
 
-Ready to go backend for [Mosaico](http://mosaico.io) editor version 0.16
+Ready to go backend for [Mosaico](http://mosaico.io) editor version 0.17.4
 
 Main features are:
+
 - upload templates and images for Mosaico editor
 - persist mailings into DB
 - an admin manage users/groups
@@ -25,26 +26,32 @@ See the screencast https://youtu.be/sLzZq3cXDi0
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [ON HEROKU](#on-heroku)
+  - [about heroku's stack version](#about-herokus-stack-version)
 - [ON ANOTHER SERVER](#on-another-server)
-  - [Pre-requisites:](#pre-requisites)
+  - [Pre-requisites](#pre-requisites)
   - [Configuration](#configuration)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-### ON [HEROKU](https://www.heroku.com/home) 
+### ON [HEROKU](https://www.heroku.com/home)
 
 - have an [Heroku account](https://www.heroku.com/home)
-- have an [amazon S3 account](https://aws.amazon.com/s3/) for image hosting 
-- click the heroku deploy button and go through the installation wizard 
+- have an [amazon S3 account](https://aws.amazon.com/s3/) for image hosting
+- click the heroku deploy button and go through the installation wizard
 
 Heroku uses 2 environment [config vars](https://devcenter.heroku.com/articles/config-vars#setting-up-config-vars-for-a-deployed-application) that will take precedence over our defaults:
 ![heroku-config-vars](http://imgur.com/download/DAw55D3)
 
+#### about heroku's stack version
+
+This application needs the [cedar-14 stack](https://devcenter.heroku.com/articles/cedar-14-stack) due to some limitations while running [nightmare.js](http://www.nightmarejs.org/)
+more informations on [nightmare-heroku](https://github.com/oscarmorrison/nightmare-heroku)
+
 ### ON ANOTHER SERVER
 
-#### Pre-requisites:
+#### Pre-requisites
 
-- Node.js >=8.5.0
+- Node.js >=8.11.4
 - [PostgreSQL](https://www.postgresql.org/) >=9.6 ([postgresapp](http://postgresapp.com/) on a mac)
 - [Redis](https://redis.io/) (`brew install redis` on mac `redis-server` to start)
 - SMTP server (like [mailcatcher](https://mailcatcher.me/): `brew install ruby` – restart terminal – `gem install mailcatcher` then `mailcatcher`)
@@ -52,7 +59,7 @@ Heroku uses 2 environment [config vars](https://devcenter.heroku.com/articles/co
 NB: A compiled version of [sharp](http://sharp.dimens.io/en/stable/) — which is used to resize images and declared as a dependency — should be fetched automatically by npm for your system environment. In case of troubles see [sharp installation instructions](http://sharp.dimens.io/en/stable/install/).
 
 ```sh
-npm run deps
+npm install
 npm run dev
 ```
 

@@ -1,6 +1,7 @@
 // this the equivalent of app_standalone_material.less
 
-@import "../../bower_components/font-awesome/less/font-awesome.less";
+@import "../../node_modules/@fortawesome/fontawesome-free/less/solid.less";
+@import "../../node_modules/@fortawesome/fontawesome-free/less/fontawesome.less";
 
 @import 'custom-editor_variables.less';
 
@@ -36,8 +37,8 @@
 
 // COPY OF STYLE_VARIABLES.LESS
 
-// Icone font-awesome (.fa-* , configurable via @fa-css-prefix)
-@import (optional) "font-awesome/less/font-awesome.less";
+// // Icone font-awesome (.fa-* , configurable via @fa-css-prefix)
+// @import (optional) "font-awesome/less/font-awesome.less";
 
 // Mosaico: editing tools (toolbar, left toolbox, right preview)
 @import 'style_mosaico_tools.less';
@@ -74,7 +75,7 @@
 
 .makeFontAwesome() { // TODO move this in style_utils?
   visibility: visible;
-  font-family: FontAwesome;
+  font-family: 'Font Awesome 5 Free';
   color: #333332;
   position: relative;
   top: 1px;
@@ -178,6 +179,30 @@
   text-decoration: none !important;
 }
 
+.makeEditableHover(@size, @editableSelector, @borderElementSelector: ~':before') {
+  @{editableSelector}@{borderElementSelector} {
+    content: "";
+    display: block;
+    position: absolute;
+    // z-index: 0;
+    top: -3px; bottom: -3px;
+    left: -7px; right: -7px;
+    border: 1px dashed transparent;
+    opacity: 0.3;
+
+    // otherwise this catches clicks and prevent correct selection of underlying text
+    pointer-events: none;
+  }
+
+  &:hover @{editableSelector}@{borderElementSelector} {
+    border-color: @mosaico-outline-color;
+  }
+
+  &:hover @{editableSelector}:hover@{borderElementSelector} {
+    border-color: transparent;
+  }
+}
+
 //----- PAGE SETTINGS – Base styles / reset, full page layout
 
 body {
@@ -238,17 +263,6 @@ a[disabledhref]:-moz-read-write {
   min-width: @mainarea-minwidth;
 }
 
-#toolbar {
-  z-index: 110 !important; // Bigger than #main-toolbox .ui-tabs .ui-tabs-panel
-  background-color: @mosaico-ui-background-color;
-  box-sizing: border-box;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: @topbar-height;
-}
-
 #main-toolbox {
   backface-visibility: hidden;
   display: none;
@@ -267,16 +281,56 @@ a[disabledhref]:-moz-read-write {
 #main-preview {
   backface-visibility: hidden;
   display: none;
+  top: @topbar-height;
   right: 0;
   width: @rightsidebar-width;
-  //padding: 10px;
   overflow: hidden;
+  border-left: 5px solid @background-color;
+  // higher than #toolbar
+  z-index: 120;
 }
-.withPreviewFrame #main-preview {
-  display: block;
+.withPreviewFrame {
+  #main-preview {
+    display: block;
+    // here for override
+    #frame-container {
+      top: 0;
+    }
+    #preview-toolbar {
+      padding: 0;
+
+      .ui-buttonset {
+        height: @topbar-height;
+        margin: 0;
+        display: flex !important; // override style tag
+        flex-direction: row-reverse;
+      }
+      .ui-button {
+        flex: 1 0 auto;
+        border-radius: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: @background-color;
+      }
+      .ui-state-active {
+        filter: brightness(125%);
+      }
+    }
+  }
+  #frame-container {
+    &::before {
+      display: none;
+    }
+    &::after {
+      background-color: @background-color;
+    }
+  }
 }
-.withPreviewFrame #main-edit-area {
-  right: (@rightsidebar-width + 5px);
+@media (min-width: 1600px) {
+  .withPreviewFrame #main-edit-area {
+    right: @rightsidebar-width;
+  }
 }
 
 #main-edit-area:before,
@@ -403,6 +457,7 @@ body > .ui-tooltip {
   z-index: 9999;
   max-width: 300px;
   box-shadow: 0px 0px 5px #AAA;
+  pointer-events: none;
 }
 
 .ui-helper-hidden-accessible {
@@ -414,6 +469,7 @@ body > .ui-tooltip {
   padding: 0px;
   position: absolute !important;
   width: 1px;
+  pointer-events: none;
 }
 
 // Show "profile" icon in TinyMCE - TODO remove me
@@ -442,8 +498,8 @@ i.mce-i-newsletter-profile:before {
 
 #loading {
   position: absolute;
-  top: 5px;
-  left: 6px;
+  top: 0;
+  left: 0;
   z-index: 150;
 
   a {
@@ -467,6 +523,15 @@ i.mce-i-newsletter-profile:before {
       opacity: 1;
     }
   }
+}
+
+#home-button {
+  display: flex;
+  height: @topbar-height;
+  width: @topbar-height;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
 }
 
 #carousel-dialog {
@@ -533,7 +598,7 @@ i.mce-i-newsletter-profile:before {
 
 @fa-font-path: "/fa/fonts";
 
-@import (less) "../../bower_components/toastr/toastr.css";
+@import (less) "../../node_modules/toastr/build/toastr.css";
 
 ////////
 // BEGINNING OF CUSTOM STYLES
@@ -541,13 +606,6 @@ i.mce-i-newsletter-profile:before {
 
 // http://lea.verou.me/2012/04/background-attachment-local/
 .scrolling-shadow() {
-  background:
-    // Shadow covers
-    linear-gradient(white 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-    // Shadows
-    radial-gradient(50% 0, farthest-side, rgba(0,0,0,.35), rgba(0,0,0,0)),
-    radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.35), rgba(0,0,0,0)) 0 100%;
   background:
     // Shadow covers
     linear-gradient(white 30%, rgba(255,255,255,0)),
@@ -616,6 +674,9 @@ i.mce-i-newsletter-profile:before {
       margin: 1px 1px 0 0;
       line-height: @topbar-height - 4px;
     }
+    .fas {
+      margin-right: 7px;
+    }
   }
 }
 
@@ -675,35 +736,6 @@ i.mce-i-newsletter-profile:before {
   }
   .fa {
     margin-right: .5em;
-  }
-}
-
-#toolbar {
-  .ui-button {
-    color: @tab-text-color;
-    padding-top: 7px;
-    padding-bottom: 7px;
-    line-height: 22px;
-    background-color: @mosaico-ui-background-color;
-
-    .ui-icon,
-    .ui-button-text {
-      color: currentColor;
-    }
-
-    &:hover,
-    &.pressed {
-      filter: brightness(115%);
-    }
-    &.selected,
-    &.ui-state-active {
-      border-top: 0;
-    }
-    &.ui-button-disabled,
-    &.ui-button-disabled .ui-icon,
-    &.ui-button-disabled .ui-button-text {
-      opacity: .5;
-    }
   }
 }
 
@@ -932,7 +964,7 @@ i.mce-i-newsletter-profile:before {
     }
   }
 
-  // file manager broser button
+  // file manager browser button
   .mo .propInput .ui-textbutton .ui-textbutton-button {
     border-radius: 50%;
     box-shadow: 1px 1px 3px @shadow-color;
@@ -1013,57 +1045,7 @@ i.mce-i-newsletter-profile:before {
 // TOOLBAR
 ////////
 
-#toolbar {
-  padding: 1px 5px;
-  display: flex;
-}
-
-.mailing-name {
-  flex: 1 1 auto;
-  display: flex;
-  margin-right: 7px;
-  border: solid rgba(0, 0, 0, 0);
-  border-width: 0 1px;
-  position: relative;
-
-  &::before,
-  &::after {
-    content: '';
-    pointer-events: none;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: @primary-color-contrast;
-    opacity: .2;
-  }
-
-  &::before {
-    left: 0;
-  }
-  &::after {
-    right: 0;
-  }
-
-  .ui-button {
-    margin-right: 0;
-    text-align: left;
-  }
-
-  input {
-    font: inherit;
-    color: @tab-text-color;
-    background: none;
-    padding-left: 7px;
-    border: 0;
-    outline: 0;
-  }
-
-  p,
-  input {
-    flex: 1 1 auto;
-  }
-}
+@import 'custom-top-right-toolbar.less';
 
 //----- IMAGE GALLERY TOOLBOX
 
@@ -1219,7 +1201,7 @@ i.mce-i-newsletter-profile:before {
     &:before {
       visibility: visible;
       font-size: 24px;
-      font-family: FontAwesome;
+      font-family: 'Font Awesome 5 Free';
       content: '\f00d';
       position: relative;
       top: 0px;
@@ -1324,7 +1306,7 @@ i.mce-i-newsletter-profile:before {
 ////////
 
 // add a class to fix button width for toolbar to compute size
-// see badsender-text-editor.js for more details
+// see custom-text-editor.js for more details
 
 .mce-fontsizedialogbutton {
   width: 120px !important;

@@ -83,6 +83,8 @@
     overflow: visible; // preview icons to select desktop/tablet/smartphone are truncated without this.
   }
 
+  .far,
+  .fas,
   .fa { // reset .fa
     display: inline-block;
     font-style: normal;
@@ -586,15 +588,15 @@
   }
 
   // When screen is not big enough to show the preview sidebar, let's hide the preview button
-  @media (max-width: (@screen-lg-max) ) {
-    label[for=previewFrameToggle] {
-      display: none;
-    }
-    .ui-button[for=showGallery] {
-      .ui-icon { margin-right: 0 }
-      .ui-button-text { display: none }
-    }
-  }
+  // @media (max-width: (@screen-lg-max) ) {
+  //   label[for=previewFrameToggle] {
+  //     display: none;
+  //   }
+  //   .ui-button[for=showGallery] {
+  //     .ui-icon { margin-right: 0 }
+  //     .ui-button-text { display: none }
+  //   }
+  // }
 
   .leftButtons {
     float: left;

@@ -29,4 +29,7 @@ module.exports = {
   // prevent i18n console.warn
   'Fake image editor':            ``,
   '<p>Fake image editor</p>':     ``,
+  // download buttons
+  'download-with-images':         `with local images`,
+  'download-cdn':                 `with CDN images`,
 }

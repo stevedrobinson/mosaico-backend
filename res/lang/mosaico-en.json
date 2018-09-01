@@ -84,5 +84,7 @@
     "File upload aborted": "File upload aborted",
     "Failed to resize image": "Failed to resize image",
     "Unexpected upload error": "Unexpected upload error",
-    "Unexpected error listing files": "Unexpected error listing files"
+    "Unexpected error listing files": "Unexpected error listing files",
+    "__current__ of __total__": "__current__ of __total__",
+    "Select from gallery": "Select from gallery"
 }
