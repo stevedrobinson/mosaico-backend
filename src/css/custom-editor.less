@@ -263,17 +263,6 @@ a[disabledhref]:-moz-read-write {
   min-width: @mainarea-minwidth;
 }
 
-#toolbar {
-  z-index: 110 !important; // Bigger than #main-toolbox .ui-tabs .ui-tabs-panel
-  background-color: @mosaico-ui-background-color;
-  box-sizing: border-box;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: @topbar-height;
-}
-
 #main-toolbox {
   backface-visibility: hidden;
   display: none;
@@ -292,16 +281,53 @@ a[disabledhref]:-moz-read-write {
 #main-preview {
   backface-visibility: hidden;
   display: none;
+  top: @topbar-height;
   right: 0;
   width: @rightsidebar-width;
-  //padding: 10px;
   overflow: hidden;
+  border-left: 5px solid @background-color;
+  // higher than #toolbar
+  z-index: 120;
 }
-.withPreviewFrame #main-preview {
-  display: block;
+.withPreviewFrame {
+  #main-preview {
+    display: block;
+    // here for override
+    #frame-container {
+      top: 0;
+    }
+    #preview-toolbar {
+      padding: 0;
+
+      .ui-buttonset {
+        height: @topbar-height;
+        margin: 0;
+        display: flex !important; // override style tag
+        flex-direction: row-reverse;
+      }
+      .ui-button {
+        flex: 1 0 auto;
+        border-radius: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+      }
+    }
+  }
+  #frame-container {
+    &::before {
+      display: none;
+    }
+    &::after {
+      background-color: @background-color;
+    }
+  }
 }
-.withPreviewFrame #main-edit-area {
-  right: (@rightsidebar-width + 5px);
+@media (min-width: 1600px) {
+  .withPreviewFrame #main-edit-area {
+    right: @rightsidebar-width;
+  }
 }
 
 #main-edit-area:before,

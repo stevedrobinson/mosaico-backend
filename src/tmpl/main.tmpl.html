@@ -8,8 +8,8 @@
   <div id="toolbar" class="mo" data-bind="tooltips: {}">
     <!-- ko if: typeof $root.undo != 'undefined' -->
     <span data-bind="buttonset: { }" class="leftButtons">
-      <a title="Undo last operation" href="javascript:void(0)" data-bind="attr: { title: $root.t('Undo last operation') }, click: $root.undo.execute, clickBubble: false, button: { disabled: !$root.undo.enabled(), icons: { primary: 'fas fa-reply' }, label: $root.undo.name, text: true }">UNDO</a>
-      <a title="Redo last operation" href="javascript:void(0)" data-bind="attr: { title: $root.t('Redo last operation') }, click: $root.redo.execute, clickBubble: false, button: { disabled: !$root.redo.enabled(), icons: { primary: 'fas fa-share' }, label: $root.redo.name, text: true }">REDO</a>
+      <a class="toolbar__button toolbar__button--undo" title="Undo last operation" href="javascript:void(0)" data-bind="attr: { title: $root.t('Undo last operation') }, click: $root.undo.execute, clickBubble: false, button: { disabled: !$root.undo.enabled(), icons: { primary: 'fas fa-reply' }, label: $root.undo.name, text: true }">UNDO</a>
+      <a class="toolbar__button toolbar__button--redo" title="Redo last operation" href="javascript:void(0)" data-bind="attr: { title: $root.t('Redo last operation') }, click: $root.redo.execute, clickBubble: false, button: { disabled: !$root.redo.enabled(), icons: { primary: 'fas fa-share' }, label: $root.redo.name, text: true }">REDO</a>
     </span>
     <!-- ko if: $root.debug -->
     <a href="javascript:void(0)" data-bind="click: $root.undoReset, clickBubble: false, button: { disabled: !$root.undo.enabled() && !$root.redo.enabled(), label: 'reset', text: true }">RESET</a>
@@ -67,7 +67,7 @@
   <div id="main-preview" class="mo" data-bind="scrollable: true, if: $root.showPreviewFrame">
     <div id="preview-toolbar">
       <div data-bind="visible: $root.showPreviewFrame, buttonset: { }" style="display: inline-block">
-        <input id="previewLarge" type="radio" name="previewMode" value="large" data-bind="checked: $root.previewMode, button: { text: false, label: 'large', icons: { primary: 'fas fa-desktop-alt' } }"
+        <input id="previewLarge" type="radio" name="previewMode" value="large" data-bind="checked: $root.previewMode, button: { text: false, label: 'large', icons: { primary: 'fas fa-desktop' } }"
         />
         <label for="previewLarge" title="Large screen" data-bind="attr: { title: $root.t('Large screen') }">Large screen</label>
         <input id="previewDesktop" type="radio" name="previewMode" value="desktop" data-bind="checked: $root.previewMode, button: { text: false, label: 'desktop', icons: { primary: 'fas fa-tablet-alt' } }"

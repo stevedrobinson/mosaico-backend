@@ -1,3 +1,6 @@
 {
-  "cSpell.words": ["mosaico"]
+  "cSpell.words": [
+    "mosaico"
+  ],
+  "editor.formatOnSave": true
 }

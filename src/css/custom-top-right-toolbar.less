@@ -2,6 +2,14 @@
   padding: 1px 5px;
   display: flex;
   color: @tab-text-color;
+  z-index: 110 !important; // Bigger than #main-toolbox .ui-tabs .ui-tabs-panel
+  background-color: @mosaico-ui-background-color;
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: @topbar-height;
 
   .leftButtons,
   .rightButtons {
@@ -32,7 +40,7 @@
     }
 
     // gallery button has a label, but it's hidden in CSS
-    .fas:not(:only-child):not(.fa-image):not(.fa-save) {
+    .fas:not(:only-child):not(.fa-image):not(.fa-save):not(.fa-share) {
       margin-right: 7px;
     }
 
@@ -59,8 +67,11 @@
     }
   }
 
-  .toolbar__button--save .ui-button-text {
-    display: none;
+  .toolbar__button--redo,
+  .toolbar__button--save {
+    .ui-button-text {
+      display: none;
+    }
   }
 }
 
