@@ -75,6 +75,31 @@
   }
 }
 
+label[for=previewFrameToggle] {
+  &::before {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    content: "\f06e";
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+  }
+  &.ui-state-active {
+    &::before {
+      content: "\f070";
+    }
+  }
+  span {
+    border: 0 !important;
+    clip: rect(0 0 0 0) !important;
+    height: 1px !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+    width: 1px !important;
+  }
+}
+
 .mailing-name {
   flex: 1 1 auto;
   display: flex;

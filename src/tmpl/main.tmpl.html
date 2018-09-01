@@ -25,8 +25,11 @@
     <!-- ko template: {name: 'edit-name' } --># mailing name #
     <!-- /ko -->
 
-    <input id="previewFrameToggle" type="checkbox" data-bind="checked: $root.showPreviewFrame, button: { refreshOn: $root.showPreviewFrame, icons: { primary: 'fas fa-tablet-alt', secondary: null }, text: false, label: $root.t('Preview') }"><label
-      title="Show live preview" for="previewFrameToggle" data-bind="attr: { title: $root.t('Show live preview') }">PREVIEW</label></input>
+    <input id="previewFrameToggle" type="checkbox" data-bind="checked: $root.showPreviewFrame, button: { refreshOn: $root.showPreviewFrame, icons: { primary: null , secondary: null }, text: false, label: $root.t('Preview') }"
+    />
+    <label for="previewFrameToggle" title="Show live preview" data-bind="attr: { title: $root.t('Show live preview') }">
+      PREVIEW
+    </label>
 
     <!-- ko if: $root.debug -->
     <a href="javascript:void(0)" data-bind="click: $root.export, clickBubble: false, button: { label: 'export', text: true }">EXPORT</a>
