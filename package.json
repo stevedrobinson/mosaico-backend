@@ -214,9 +214,8 @@
   "license": "GPL-3.0",
   "licenseurl": "https://www.gnu.org/licenses/gpl-3.0.en.html",
   "scripts": {
-    "deps": "export NODE_ENV=development && npm install",
     "test": "grunt jasmine_node",
-    "build": "npm run deps && gulp build",
+    "build": "gulp build",
     "start": "NODE_ENV=production node server/workers.js",
     "prod": "npm run build && npm start",
     "dev": "gulp dev --dev",
