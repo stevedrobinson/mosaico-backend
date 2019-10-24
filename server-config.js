@@ -6,7 +6,7 @@ module.exports = {
 		// auth: { user: '####', pass: '####' }
 	},
 	emailOptions: {
-		from: 'Mosaico by VOXmail <test@mosaico.io>', // sender address
+		from: 'Brilliant Metrics <service@brilliantmetrics.com>', // sender address
 		// bcc: 'mosaico@mosaico.io',
 	}
 };
