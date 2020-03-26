@@ -3,14 +3,13 @@
   "description": "Ready to go backend for Mosaico editor",
   "repository": "https://github.com/goodenough/mosaico-backend",
   "logo": "https://mosaicobackend-prod.herokuapp.com/applogo.svg",
-  "keywords": [
-  ],
-  "stack": "cedar-14",
+  "keywords": [],
+  "stack": "heroku-18",
   "success_url": "/admin/login",
   "env": {
     "APP_NAME": {
-        "description": "copy and paste the name you've given to your application",
-        "required": true
+      "description": "copy and paste the name you've given to your application",
+      "required": true
     },
     "backend_admin__password": {
       "description": "The password to access the admin",
