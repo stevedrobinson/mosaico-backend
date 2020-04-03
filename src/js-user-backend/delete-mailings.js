@@ -1,3 +1,7 @@
+'use strict'
+import jQuery from 'jquery'
+window.$ = window.jQuery = jQuery
+
 import logger from './_logger'
 import pubsub from './_pubsub'
 

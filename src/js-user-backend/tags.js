@@ -1,3 +1,7 @@
+'use strict'
+import jQuery from 'jquery'
+window.$ = window.jQuery = jQuery
+
 import entries from 'lodash.topairs'
 
 import logger from './_logger'
