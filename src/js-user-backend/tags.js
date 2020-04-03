@@ -1,29 +1,29 @@
-import $        from 'jquery'
-import entries  from 'lodash.topairs'
+import * as $ from 'jquery'
+import entries from 'lodash.topairs'
 
 import logger from './_logger'
 import pubsub from './_pubsub'
 import cleanTagName from './../../shared/clean-tag-name'
-import tmpl   from './../../server/views/_tag-item.pug'
+import tmpl from './../../server/views/_tag-item.pug'
 
-const DEBUG           = false
-const log             = logger('tags', DEBUG)
-const $ui             = {}
-let isOpen            = false
+const DEBUG = false
+const log = logger('tags', DEBUG)
+const $ui = {}
+let isOpen = false
 const countainerClass = '.js-tags'
 
 function init() {
   log('init')
-  $ui.container   = $( countainerClass )
+  $ui.container = $(countainerClass)
   if (!$ui.container.length) return log.warn('abort init')
   bindUi()
   bindEvents()
 }
 
 function bindUi() {
-  $ui.html        = $('html')
-  $ui.tagsList    = $ui.container.find('input')
-  $ui.modal       = $('.js-dialog-add-tag')
+  $ui.html = $('html')
+  $ui.tagsList = $ui.container.find('input')
+  $ui.modal = $('.js-dialog-add-tag')
   $ui.mdlTagInput = $ui.modal.find('.mdl-js-textfield')
   $ui.newTagInput = $ui.modal.find('input')
   $ui.tagsWrapper = $ui.container.find('.js-tags-list')
@@ -45,29 +45,26 @@ function bindEvents() {
 // -> tag panel represent the current selection computed tags
 function updateTagList(e) {
   log('updateTagList', e)
-  let tagList           = {}
+  let tagList = {}
   const { $checkboxes } = e
-  const lineCount       = $checkboxes.length
+  const lineCount = $checkboxes.length
   if (isOpen) closeTagPanel()
 
-  $checkboxes
-  .each( (i, el) => {
-    el
-    .getAttribute('data-tags')
-    .split(',')
-    .forEach( tag => {
-      if (!tag) return
-      if (!tagList[tag]) return tagList[tag] = 1
-      tagList[tag] = tagList[tag] + 1
-    } )
-  } )
+  $checkboxes.each((i, el) => {
+    el.getAttribute('data-tags')
+      .split(',')
+      .forEach(tag => {
+        if (!tag) return
+        if (!tagList[tag]) return (tagList[tag] = 1)
+        tagList[tag] = tagList[tag] + 1
+      })
+  })
 
   // by default everything is unchecked
   $ui.tagsList.filter('[value=remove]').prop('checked', true)
 
-  entries( tagList )
-  .forEach(  tagLine => {
-    const [tag, count]  = tagLine
+  entries(tagList).forEach(tagLine => {
+    const [tag, count] = tagLine
     const tagCheckboxes = $ui.tagsList.filter(`[name="tag-${tag}"]`)
     // mixed tags
     if (count < lineCount) {
@@ -76,15 +73,14 @@ function updateTagList(e) {
     // every selection share the same tag
     tagCheckboxes.filter('[value=add]').prop('checked', true)
   })
-
 }
 
 function toggleTag(e) {
   log('toggle tag')
-  const $inputs   = $(e.currentTarget).find('input')
-  const $checked  = $inputs.filter(':checked')
+  const $inputs = $(e.currentTarget).find('input')
+  const $checked = $inputs.filter(':checked')
   const isChecked = $checked.attr('value') === 'add'
-  $inputs.eq( isChecked ? 0 : 2 ).prop('checked', true)
+  $inputs.eq(isChecked ? 0 : 2).prop('checked', true)
 }
 
 function openTagPanel(e) {
@@ -103,14 +99,14 @@ function closeTagPanel() {
 }
 
 function handleGlobalCick(e) {
-  const $target     = $( e.target )
-  const fromTagsUi  = [
+  const $target = $(e.target)
+  const fromTagsUi = [
     $target.is(countainerClass),
     $target.parents(countainerClass).length > 0,
     $target.is('dialog'),
-    $target.parents('dialog').length > 0
-  ].filter( value => value)
-  if ( e.isDefaultPrevented() || fromTagsUi.length ) return
+    $target.parents('dialog').length > 0,
+  ].filter(value => value)
+  if (e.isDefaultPrevented() || fromTagsUi.length) return
   log('close from global click')
   e.preventDefault()
   closeTagPanel()
@@ -134,15 +130,17 @@ function showModal() {
 
 function addTag() {
   log('add tag')
-  const newTag = cleanTagName( $ui.newTagInput.val() )
+  const newTag = cleanTagName($ui.newTagInput.val())
   if (!newTag) return hideModal()
   if ($(`[name="tag-${newTag}"]`).length) return hideModal()
-  const $line   = $( tmpl({ tag: {name: newTag} }) )
+  const $line = $(tmpl({ tag: { name: newTag } }))
   $line.find('input:checked').prop('checked', false)
   $line.find('input:last-of-type').prop('checked', true)
-  $ui.tagsWrapper.append( $line )
+  $ui.tagsWrapper.append($line)
   hideModal()
-  setTimeout( _ => { bindUi() }, 0)
+  setTimeout(_ => {
+    bindUi()
+  }, 0)
 }
 
 function hideModal() {

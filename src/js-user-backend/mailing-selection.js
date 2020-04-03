@@ -1,9 +1,7 @@
-//import $ from 'jquery'
+import * as $ from 'jquery'
 
 import logger from './_logger'
 import pubsub from './_pubsub'
-
-var $ = require('jquery')
 
 const DEBUG = false
 const log = logger('mailing selection', DEBUG)

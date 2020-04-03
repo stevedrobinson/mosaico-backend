@@ -1,11 +1,11 @@
-import $ from 'jquery'
+import * as $ from 'jquery'
 
 import logger from './_logger'
 import pubsub from './_pubsub'
 
-const DEBUG     = false
-const log       = logger('delete mailing', DEBUG)
-const $ui       = {}
+const DEBUG = false
+const log = logger('delete mailing', DEBUG)
+const $ui = {}
 
 function init() {
   log('init')
@@ -16,9 +16,9 @@ function init() {
 }
 
 function bindUi() {
-  $ui.form          = $('.js-action-form')
-  $ui.dialog        = $('.js-dialog-delete')
-  $ui.mailingList  = $('.js-delete-selection-list')
+  $ui.form = $('.js-action-form')
+  $ui.dialog = $('.js-dialog-delete')
+  $ui.mailingList = $('.js-delete-selection-list')
 }
 
 function bindEvents() {
@@ -37,10 +37,7 @@ function toggleWarn(e) {
 
 function removeMailing() {
   log('remove mailing')
-  $ui
-  .form
-  .attr( 'action', $ui.btn.attr('formaction') )
-  .submit()
+  $ui.form.attr('action', $ui.btn.attr('formaction')).submit()
 }
 
 function closeDialog() {
@@ -50,15 +47,15 @@ function closeDialog() {
 
 function updateMailingList(e) {
   const { $checkboxes } = e
-  const names           = []
+  const names = []
   $checkboxes
-  .parent('td')
-  .next()
-  .find('a')
-  .each( (i, el) => {
-    names.push(el.text)
-  } )
-  $ui.mailingList.html(  names.map(name => `<li>${name}</li>`) )
+    .parent('td')
+    .next()
+    .find('a')
+    .each((i, el) => {
+      names.push(el.text)
+    })
+  $ui.mailingList.html(names.map(name => `<li>${name}</li>`))
 }
 
 init()

@@ -1,20 +1,20 @@
 'use strict'
 
 import dialogPolyfill from 'dialog-polyfill'
-import Pikaday        from 'pikaday'
+import Pikaday from 'pikaday'
 
-import $              from 'jquery'
-import select2        from 'select2'
+import * as $ from 'jquery'
+import select2 from 'select2'
 
 import pubsub from './_pubsub'
 import './mailing-selection'
 import './tags'
 import './delete-mailings'
 
-const dialogRename    = $('.js-dialog-rename')[0]
-const dialogDelete    = $('.js-dialog-delete')[0]
-const dialogTag       = $('.js-dialog-add-tag')[0]
-const notif           = $('#notification')[0]
+const dialogRename = $('.js-dialog-rename')[0]
+const dialogDelete = $('.js-dialog-delete')[0]
+const dialogTag = $('.js-dialog-add-tag')[0]
+const notif = $('#notification')[0]
 
 // https://github.com/GoogleChrome/dialog-polyfill
 if (dialogRename && !dialogRename.showModal) {
@@ -31,16 +31,16 @@ $(document).on('keyup', e => {
 // RENAME MAILING
 //////
 
-let route         = false
-let $nameLink     = false
-let $inputRename  = $('#rename-field')
+let route = false
+let $nameLink = false
+let $inputRename = $('#rename-field')
 
 $('.js-rename').on('click', e => {
   e.preventDefault()
   const $target = $(e.currentTarget)
-  route         = $target.data('href')
-  $nameLink     = $target.parents('tr').find('.js-name')
-  $inputRename.val( $nameLink.text() )
+  route = $target.data('href')
+  $nameLink = $target.parents('tr').find('.js-name')
+  $inputRename.val($nameLink.text())
 
   // update MDL
   const wrapper = $inputRename.parent()[0]
@@ -56,30 +56,30 @@ $('.js-post').on('click', e => {
   var name = $inputRename.val()
   $.ajax({
     method: 'POST',
-    url:    route,
-    data:   {
+    url: route,
+    data: {
       name: name,
-    }
+    },
   })
-  .then( mosaicoMailing => {
-    $nameLink.text(mosaicoMailing.meta.name)
-    notif.MaterialSnackbar.showSnackbar({
-      message: window.badesenderI18n.snackbarRenameMessage,
+    .then(mosaicoMailing => {
+      $nameLink.text(mosaicoMailing.meta.name)
+      notif.MaterialSnackbar.showSnackbar({
+        message: window.badesenderI18n.snackbarRenameMessage,
+      })
+      closeRenameDialog()
     })
-    closeRenameDialog()
-  })
-  .catch( _ => {
-    notif.MaterialSnackbar.showSnackbar({
-      message: 'error',
+    .catch(_ => {
+      notif.MaterialSnackbar.showSnackbar({
+        message: 'error',
+      })
     })
-  })
 })
 
 $('.js-close-rename-dialog').on('click', closeRenameDialog)
 
 function closeRenameDialog() {
   $nameLink = false
-  route     = false
+  route = false
   dialogRename.close()
 }
 
@@ -96,7 +96,7 @@ $('.js-toggle-filter').on('click', e => $filter.toggleClass('is-visible'))
 
 const $paginationSelect = $('.js-pagination')
 $paginationSelect.on('change', e => {
-  window.location.assign( $paginationSelect.val() )
+  window.location.assign($paginationSelect.val())
 })
 
 //////
@@ -107,14 +107,16 @@ $paginationSelect.on('change', e => {
 
 // https://select2.github.io/options.html
 
-$('select[multiple]').each( (index, el) => {
-  const $select   = $(el)
-  const $wrapper  = $select.parent()
-  const wrapper   = $wrapper[0]
+$('select[multiple]').each((index, el) => {
+  const $select = $(el)
+  const $wrapper = $select.parent()
+  const wrapper = $wrapper[0]
 
-  $select.select2({
-    width: '100%',
-  }).on('change', updateMDL)
+  $select
+    .select2({
+      width: '100%',
+    })
+    .on('change', updateMDL)
 
   function updateMDL() {
     componentHandler.downgradeElements(wrapper)
@@ -128,22 +130,22 @@ $('select[multiple]').each( (index, el) => {
 
 const pickers = []
 
-$('input[type="date"]').each( (index, el) => {
-  const $input    = $(el)
-  const $wrapper  = $input.parent().addClass('js-calendar')
-  const wrapper   = $wrapper[0]
+$('input[type="date"]').each((index, el) => {
+  const $input = $(el)
+  const $wrapper = $input.parent().addClass('js-calendar')
+  const wrapper = $wrapper[0]
   // Pikaday doesn't work well with a type date
   $input.attr('type', 'text')
-  const picker  = new Pikaday({
-    field:    el,
-    i18n:     window.badesenderI18n.pikaday,
+  const picker = new Pikaday({
+    field: el,
+    i18n: window.badesenderI18n.pikaday,
     firstDay: 1,
     onSelect: date => {
       // set value & update MDL
       componentHandler.downgradeElements(wrapper)
       $input.val(picker.toString('YYYY-MM-DD'))
       componentHandler.upgradeElements(wrapper)
-    }
+    },
   })
   pickers.push(picker)
 })
