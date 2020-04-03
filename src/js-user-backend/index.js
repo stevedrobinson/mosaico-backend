@@ -1,6 +1,6 @@
 'use strict'
-import jQuery from 'jquery'
-window.$ = window.jQuery = jQuery
+import $ from 'jquery'
+window.$ = window.jQuery = $
 
 import dialogPolyfill from 'dialog-polyfill'
 import Pikaday from 'pikaday'

@@ -1,6 +1,5 @@
 'use strict'
-import jQuery from 'jquery'
-window.$ = window.jQuery = jQuery
+import $ from 'jquery'
 
 import entries from 'lodash.topairs'
 
