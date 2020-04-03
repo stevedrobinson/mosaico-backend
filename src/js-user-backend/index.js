@@ -3,7 +3,9 @@
 import dialogPolyfill from 'dialog-polyfill'
 import Pikaday from 'pikaday'
 
-import * as $ from 'jquery'
+import jQuery from 'jquery'
+window.$ = window.jQuery = jQuery
+
 import select2 from 'select2'
 
 import pubsub from './_pubsub'

@@ -1,5 +1,3 @@
-import * as $ from 'jquery'
-
 import logger from './_logger'
 import pubsub from './_pubsub'
 

@@ -1,4 +1,3 @@
-import * as $ from 'jquery'
 import entries from 'lodash.topairs'
 
 import logger from './_logger'
