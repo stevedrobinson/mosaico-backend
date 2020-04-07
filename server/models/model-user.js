@@ -67,7 +67,7 @@ const tmplI18n = {
       reset: `INITIALISER MON MOT DE PASSE`,
     },
     en: {
-      title: `Welcome to the  ${brand.name}'s email builder`,
+      title: `Welcome to the  ${brand.name} email builder`,
       desc: `Click the button below to reset your password, or copy the following URL into your browser:`,
       reset: `RESET MY PASSWORD`,
     },
@@ -79,7 +79,7 @@ const tmplI18n = {
       reset: `SE CONNECTER`,
     },
     en: {
-      title: `Your password has been succesfully setted`,
+      title: `Your password has been succesfully reset`,
       desc: `Click the button below to login, or copy the following URL into your browser:`,
       reset: `LOGIN`,
     },
@@ -275,16 +275,16 @@ User.prototype.setPassword = async function(password) {
   const isEn = lang === 'en'
   const subject = isEn ? 'password reset' : 'réinitialisation de mot de passe'
   const text = isEn
-    ? `your password has been succesfully been reseted. connect at`
+    ? `your password has been succesfully been reset. connect at`
     : `Votre mot de passe à bien été réinitialisé. Connectez-vous à l'adresse suivante :`
   const mailOptions = {
     to: user.email,
     subject: `${brand.name} – ${subject}`,
-    text: `${text} http://${config.host}/login`,
+    text: `${text} https://${config.brand.vanityHost}/login`,
     html: tmpReset(
       getTemplateData('reset-success', lang, {
         type: 'admin',
-        url: `http://${config.host}/login?lang=${lang}`,
+        url: `https://${config.brand.vanityHost}/login?lang=${lang}`,
       })
     ),
   }
