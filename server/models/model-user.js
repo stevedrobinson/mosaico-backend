@@ -253,11 +253,11 @@ User.prototype.resetPassword = async function(type) {
   const mailOptions = {
     to: user.email,
     subject: `${brand.name} – ${subject}`,
-    text: `${text} http://${config.host}/password/${user.token}`,
+    text: `${text} https://${config.brand.vanityHost}/password/${user.token}`,
     html: tmpReset(
       getTemplateData('reset-password', lang, {
         type: type,
-        url: `http://${config.brand.vanityHost}/password/${user.token}?lang=${lang}`,
+        url: `https://${config.brand.vanityHost}/password/${user.token}?lang=${lang}`,
       })
     ),
   }
