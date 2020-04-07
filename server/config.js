@@ -23,8 +23,8 @@ const config = rc('backend', {
     port: 1025,
   },
   emailOptions: {
-    from: 'Mosaico-backend test <info@mosaico-backend-test.name>',
-    testSubjectPrefix: '[mosaico-backend email builder]',
+    from: 'Brilliant Metrics Email Builder <service@brilliantmetrics.com>',
+    testSubjectPrefix: '[BrilMet Email Builder]',
   },
   storage: {},
   images: {
@@ -43,6 +43,7 @@ const config = rc('backend', {
     'color-primary-contrast': 'white',
     'color-accent': '#008a9b',
     'color-accent-contrast': 'white',
+    vanityHost: 'emailbuilder.brilliantmetrics.com',
   },
   // this is really optional.
   // It's just to be able to backup/restore DB with scripts
