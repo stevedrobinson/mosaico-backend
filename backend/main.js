@@ -128,7 +128,8 @@ app.post('/dl/', function(req, res) {
             res.end();
         } else if (req.body.action == 'email') {
             var nodemailer = require('nodemailer');
-            var transporter = nodemailer.createTransport(config.emailTransport);
+            var nodemailerSendgrid = require('nodemailer-sendgrid');
+            var transporter = nodemailer.createTransport(nodemailerSendgrid(config.emailTransport.auth));
 
             var mailOptions = extend({
                 to: req.body.rcpt, // list of receivers

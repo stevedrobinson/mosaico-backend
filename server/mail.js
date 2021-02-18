@@ -3,6 +3,7 @@
 const { extend, pick }  = require( 'lodash' )
 const chalk             = require( 'chalk' )
 const nodemailer        = require( 'nodemailer' )
+const nodemailerSendgrid = require('nodemailer-sendgrid');
 const wellknown         = require( 'nodemailer-wellknown' )
 const createError       = require( 'http-errors' )
 
@@ -14,7 +15,7 @@ if (mailConfig.service) {
   delete mailConfig.service
 }
 
-const transporter = nodemailer.createTransport(config.emailTransport)
+const transporter = nodemailer.createTransport(nodemailerSendgrid(config.emailTransport.auth));
 
 function send(options) {
   var mailOptions = extend({}, options, pick( config.emailOptions, ['from'] ) )
