@@ -615,6 +615,7 @@ module.exports = _ => {
     }
 
     try {
+      console.log('[REDIS] connection - ATTEMPTING PING')
       await redis.ping()
       console.log(c.green('[REDIS] connection – SUCCESS'))
     } catch (err) {
