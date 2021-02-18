@@ -103,11 +103,10 @@ if (config.TEST) {
 
 //----- HEROKU ADDONS OVERRIDES
 
-if (process.env.SENDGRID_USERNAME && process.env.SENDGRID_PASSWORD) {
+if (process.env.SENDGRID_API_KEY) {
   config.emailTransport.service = 'SendGrid'
   config.emailTransport.auth = {
-    user: process.env.SENDGRID_USERNAME,
-    pass: process.env.SENDGRID_PASSWORD,
+    api_key: process.env.SENDGRID_API_KEY,
   }
 }
 
