@@ -628,6 +628,7 @@ module.exports = _ => {
       console.log(c.green('[DATABASE] connection – SUCCESS'))
     } catch (err) {
       console.log(c.red('[DATABASE] connection – ERROR'))
+      console.log(`${err.code}: ${err.message}`);
       return stopApplication(new Error('[DATABASE] connection – ERROR'), {
         mail,
         redis,
