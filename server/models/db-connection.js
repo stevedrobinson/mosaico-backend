@@ -20,7 +20,12 @@ Object.entries(Op).forEach(([key, value]) => {
 })
 
 module.exports = new Sequelize(config.database, {
-  logging,
+    dialect: 'postgres',
+    protocol: 'postgres',
+    dialectOptions: {
+        ssl: true
+    },
+    logging,
   // remove sequelize deprecation warnings
   // https://github.com/sequelize/sequelize/issues/8417#issuecomment-341617577
   // http://docs.sequelizejs.com/manual/tutorial/querying.html#operators-security
