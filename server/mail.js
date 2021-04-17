@@ -27,7 +27,7 @@ function send(options) {
       resolve(info)
     })
     .catch( err => {
-      console.log(chalk.red('email error'))
+      console.log(chalk.red('email error',err.message))
       console.log('config',mailOptions);
       const message = err.code === 'ECONNREFUSED' ?
       'smtp connection failed'
