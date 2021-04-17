@@ -16,7 +16,6 @@ if (mailConfig.service) {
 }
 
 const transporter = nodemailer.createTransport(nodemailerSendgrid(config.emailTransport.auth));
-console.log('auth', config.emailTransport.auth);
 
 function send(options) {
   var mailOptions = extend({}, options, pick( config.emailOptions, ['from'] ) )
@@ -29,7 +28,6 @@ function send(options) {
     })
     .catch( err => {
       console.log(chalk.red('email error',err.code,err.message))
-      console.log('config',mailOptions);
       const message = err.code === 'ECONNREFUSED' ?
       'smtp connection failed'
       : 'email error'
