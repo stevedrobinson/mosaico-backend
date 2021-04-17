@@ -106,7 +106,7 @@ if (config.TEST) {
 if (process.env.SENDGRID_API_KEY) {
   config.emailTransport.service = 'SendGrid'
   config.emailTransport.auth = {
-    api_key: process.env.SENDGRID_API_KEY,
+    apiKey: process.env.SENDGRID_API_KEY,
   }
 }
 
